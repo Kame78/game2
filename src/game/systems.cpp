@@ -1,6 +1,8 @@
 #include "game/systems.hpp"
 #include "engine/input.hpp"
 #include "engine/networking.hpp"
+#include "engine/math/noise.hpp"
+#include "engine/terrain/chunk_manager.hpp"
 #include "raylib.h"
 #include "raymath.h"
 #include <cmath>
@@ -124,9 +126,11 @@ namespace game::systems {
             input.velocityY -= GRAVITY * dt;
             transform.position.y += input.velocityY * dt;
 
-            // --- Floor collision ---
-            if (transform.position.y < EYE_HEIGHT) {
-                transform.position.y = EYE_HEIGHT;
+            // --- Terrain floor collision (sample world height under player) ---
+            float groundY = engine::math::WorldHeight(transform.position.x, transform.position.z);
+            float eyeY    = groundY + EYE_HEIGHT;
+            if (transform.position.y < eyeY) {
+                transform.position.y = eyeY;
                 input.velocityY = 0.0f;
                 input.grounded = true;
             }
@@ -299,8 +303,8 @@ namespace game::systems {
                 }
             }
 
-            // Hit the ground
-            if (t.position.y <= 0.0f) hit = true;
+            // Hit the ground (sample terrain height)
+            if (t.position.y <= engine::math::WorldHeight(t.position.x, t.position.z)) hit = true;
 
             if (hit) {
                 // AoE damage: hurt all enemies within aoeRadius
@@ -384,6 +388,9 @@ namespace game::systems {
                 playerHP.current -= ai.attackDamage;
                 ai.attackTimer = ai.attackCooldown;
             }
+
+            // Follow terrain (enemy body sits so its center is 1m above ground)
+            t.position.y = engine::math::WorldHeight(t.position.x, t.position.z) + 1.0f;
         }
     }
 
@@ -398,10 +405,12 @@ namespace game::systems {
             // Spawn in a ring 15-25 units from player
             float angle = ((float)rand() / (float)RAND_MAX) * 2.0f * PI;
             float dist = 15.0f + ((float)rand() / (float)RAND_MAX) * 10.0f;
+            float sx = playerPos.x + cosf(angle) * dist;
+            float sz = playerPos.z + sinf(angle) * dist;
             Vector3 pos = {
-                playerPos.x + cosf(angle) * dist,
-                1.0f,
-                playerPos.z + sinf(angle) * dist
+                sx,
+                engine::math::WorldHeight(sx, sz) + 1.0f,
+                sz
             };
 
             engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
@@ -578,8 +587,8 @@ namespace game::systems {
     }
 
     void Render3DSystem(engine::ecs::Registry& reg) {
-        // Floor
-        DrawPlane({0.0f, 0.0f, 0.0f}, {200.0f, 200.0f}, GRAY);
+        // Streaming terrain (replaces the old flat plane).
+        engine::terrain::chunks::Draw();
 
         // Draw all renderable entities as cubes
         for (size_t i = 0; i < reg.renderables.data.size(); i++) {

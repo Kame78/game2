@@ -11,11 +11,13 @@ namespace engine::networking {
     static constexpr int CHANNEL_POSITION = 0;
     static constexpr int CHANNEL_ENEMIES = 1;
     static constexpr int CHANNEL_DAMAGE = 2;
+    static constexpr int CHANNEL_FIREBALL = 3;
 
     #pragma pack(push, 1)
     struct WirePacket {
         uint8_t type;      // 1 = position update
-        float x, y, z, yaw;
+        float x, y, z, yaw, pitch;
+        uint8_t swinging;  // 0 or 1
     };
     struct WireEnemyEntry {
         uint32_t netId;
@@ -26,6 +28,12 @@ namespace engine::networking {
         uint8_t type;      // 3 = damage event
         uint32_t netId;
         float damage;
+    };
+    struct WireFireball {
+        uint8_t type;      // 4 = fireball spawn
+        float x, y, z;
+        float dirX, dirY, dirZ;
+        float speed;
     };
     #pragma pack(pop)
 
@@ -38,6 +46,18 @@ namespace engine::networking {
     static std::vector<EnemyNetState> latestSnapshot;
     static bool newSnapshotReady = false;
     static std::vector<DamageEvent> pendingDamage;
+    static std::vector<RemoteFireball> pendingFireballs;
+
+    // Username + lobby browser state
+    static std::string g_username;
+    static std::vector<LobbyInfo> g_lobbyList;
+    static bool g_lobbyListReady = false;
+    static bool g_lobbyListRefreshing = false;
+
+    // Steam lobby-data key used to filter lobbies to this game only.
+    static constexpr const char* GAME_TAG_KEY = "game_tag";
+    static constexpr const char* GAME_TAG_VAL = "game2_apocalypse";
+    static constexpr const char* HOST_NAME_KEY = "host_name";
 
     // --- Callback listener class ---
     class Listener {
@@ -47,7 +67,8 @@ namespace engine::networking {
               lobbyEnterCallback(this, &Listener::OnLobbyEnter),
               gameLobbyJoinRequestedCallback(this, &Listener::OnGameLobbyJoinRequested),
               sessionRequestCallback(this, &Listener::OnSessionRequest),
-              lobbyChatUpdate(this, &Listener::OnLobbyChatUpdate) {}
+              lobbyChatUpdate(this, &Listener::OnLobbyChatUpdate),
+              lobbyMatchListCallback(this, &Listener::OnLobbyMatchList) {}
 
         void OnLobbyCreated(LobbyCreated_t* result) {
             if (result->m_eResult == k_EResultOK) {
@@ -55,10 +76,34 @@ namespace engine::networking {
                 lobbyState = LobbyState::InLobby;
                 printf("[net] Lobby created: %llu\n", result->m_ulSteamIDLobby);
                 SteamMatchmaking()->SetLobbyJoinable(currentLobby, true);
+                // Tag the lobby so the browser can filter to our game.
+                SteamMatchmaking()->SetLobbyData(currentLobby, GAME_TAG_KEY, GAME_TAG_VAL);
+                SteamMatchmaking()->SetLobbyData(currentLobby, HOST_NAME_KEY,
+                    g_username.empty() ? "Unknown" : g_username.c_str());
             } else {
                 printf("[net] Lobby create failed: %d\n", result->m_eResult);
                 lobbyState = LobbyState::None;
+                isHostFlag = false;
             }
+        }
+
+        void OnLobbyMatchList(LobbyMatchList_t* result) {
+            g_lobbyList.clear();
+            int total = static_cast<int>(result->m_nLobbiesMatching);
+            if (total > 32) total = 32;
+            for (int i = 0; i < total; ++i) {
+                CSteamID lobbyId = SteamMatchmaking()->GetLobbyByIndex(i);
+                LobbyInfo info;
+                info.id          = lobbyId.ConvertToUint64();
+                const char* name = SteamMatchmaking()->GetLobbyData(lobbyId, HOST_NAME_KEY);
+                info.hostName    = (name && *name) ? name : "Unknown";
+                info.playerCount = SteamMatchmaking()->GetNumLobbyMembers(lobbyId);
+                info.maxPlayers  = SteamMatchmaking()->GetLobbyMemberLimit(lobbyId);
+                g_lobbyList.push_back(std::move(info));
+            }
+            g_lobbyListReady = true;
+            g_lobbyListRefreshing = false;
+            printf("[net] Lobby list refreshed: %d lobbies\n", (int)g_lobbyList.size());
         }
 
         void OnLobbyEnter(LobbyEnter_t* result) {
@@ -72,7 +117,7 @@ namespace engine::networking {
             for (int i = 0; i < count; i++) {
                 CSteamID member = SteamMatchmaking()->GetLobbyMemberByIndex(currentLobby, i);
                 if (member == me) continue;
-                WirePacket hello = {1, 0, 0, 0, 0};
+                WirePacket hello = {1, 0, 0, 0, 0, 0, 0};
                 SteamNetworkingIdentity id = {};
                 id.SetSteamID(member);
                 SteamNetworkingMessages()->SendMessageToUser(
@@ -110,6 +155,7 @@ namespace engine::networking {
         CCallback<Listener, GameLobbyJoinRequested_t> gameLobbyJoinRequestedCallback;
         CCallback<Listener, SteamNetworkingMessagesSessionRequest_t> sessionRequestCallback;
         CCallback<Listener, LobbyChatUpdate_t> lobbyChatUpdate;
+        CCallback<Listener, LobbyMatchList_t> lobbyMatchListCallback;
     };
 
     static Listener* listener = nullptr;
@@ -158,6 +204,8 @@ namespace engine::networking {
                     remoteState.y = pkt->y;
                     remoteState.z = pkt->z;
                     remoteState.yaw = pkt->yaw;
+                    remoteState.pitch = pkt->pitch;
+                    remoteState.swinging = pkt->swinging != 0;
                     haveRemote = true;
                 }
             }
@@ -204,6 +252,19 @@ namespace engine::networking {
             }
             dMsgs[i]->Release();
         }
+
+        // Receive fireball spawns from peers
+        SteamNetworkingMessage_t* fMsgs[8];
+        int fReceived = SteamNetworkingMessages()->ReceiveMessagesOnChannel(CHANNEL_FIREBALL, fMsgs, 8);
+        for (int i = 0; i < fReceived; i++) {
+            if (fMsgs[i]->GetSize() == sizeof(WireFireball)) {
+                WireFireball* f = (WireFireball*)fMsgs[i]->GetData();
+                if (f->type == 4) {
+                    pendingFireballs.push_back({f->x, f->y, f->z, f->dirX, f->dirY, f->dirZ, f->speed});
+                }
+            }
+            fMsgs[i]->Release();
+        }
     }
 
     void CreateLobby() {
@@ -237,7 +298,7 @@ namespace engine::networking {
     void BroadcastLocalState(const PlayerState& state) {
         if (!steamInitialized || lobbyState != LobbyState::InLobby) return;
 
-        WirePacket pkt = {1, state.x, state.y, state.z, state.yaw};
+        WirePacket pkt = {1, state.x, state.y, state.z, state.yaw, state.pitch, (uint8_t)(state.swinging ? 1 : 0)};
         int count = SteamMatchmaking()->GetNumLobbyMembers(currentLobby);
         CSteamID me = SteamUser()->GetSteamID();
         for (int i = 0; i < count; i++) {
@@ -260,6 +321,49 @@ namespace engine::networking {
     bool HasRemotePeer() { return haveRemote; }
 
     bool IsHost() { return isHostFlag; }
+
+    // -------- Username --------
+    void SetUsername(const std::string& name) {
+        g_username = name;
+        // If we already have a lobby, update its host_name key too.
+        if (steamInitialized && lobbyState == LobbyState::InLobby && isHostFlag) {
+            SteamMatchmaking()->SetLobbyData(currentLobby, HOST_NAME_KEY,
+                g_username.empty() ? "Unknown" : g_username.c_str());
+        }
+    }
+
+    const std::string& GetUsername() { return g_username; }
+
+    std::string GetSteamPersonaName() {
+        if (!steamInitialized) return "";
+        const char* n = SteamFriends()->GetPersonaName();
+        return n ? std::string(n) : "";
+    }
+
+    // -------- Lobby browser --------
+    void RefreshLobbyList() {
+        if (!steamInitialized) return;
+        g_lobbyList.clear();
+        g_lobbyListReady = false;
+        g_lobbyListRefreshing = true;
+        // Filter to our game only (other Spacewar-appid users won't pollute the list).
+        SteamMatchmaking()->AddRequestLobbyListStringFilter(
+            GAME_TAG_KEY, GAME_TAG_VAL, k_ELobbyComparisonEqual);
+        SteamMatchmaking()->AddRequestLobbyListDistanceFilter(k_ELobbyDistanceFilterWorldwide);
+        SteamMatchmaking()->RequestLobbyList();
+    }
+
+    bool IsLobbyListRefreshing() { return g_lobbyListRefreshing; }
+    bool IsLobbyListReady() { return g_lobbyListReady; }
+    const std::vector<LobbyInfo>& GetLobbyList() { return g_lobbyList; }
+
+    void JoinLobbyById(uint64_t lobbyId) {
+        if (!steamInitialized) return;
+        if (lobbyState == LobbyState::InLobby) return;  // already in one
+        lobbyState = LobbyState::Joining;
+        isHostFlag = false;
+        SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyId)));
+    }
 
     void BroadcastEnemySnapshot(const std::vector<EnemyNetState>& enemies) {
         if (!steamInitialized || lobbyState != LobbyState::InLobby) return;
@@ -315,5 +419,29 @@ namespace engine::networking {
     void GetPendingDamage(std::vector<DamageEvent>& out) {
         out = pendingDamage;
         pendingDamage.clear();
+    }
+
+    void BroadcastFireball(float x, float y, float z, float dirX, float dirY, float dirZ, float speed) {
+        if (!steamInitialized || lobbyState != LobbyState::InLobby) return;
+
+        WireFireball pkt = {4, x, y, z, dirX, dirY, dirZ, speed};
+        int memberCount = SteamMatchmaking()->GetNumLobbyMembers(currentLobby);
+        CSteamID me = SteamUser()->GetSteamID();
+        for (int i = 0; i < memberCount; i++) {
+            CSteamID member = SteamMatchmaking()->GetLobbyMemberByIndex(currentLobby, i);
+            if (member == me) continue;
+            SteamNetworkingIdentity id = {};
+            id.SetSteamID(member);
+            SteamNetworkingMessages()->SendMessageToUser(
+                id, &pkt, sizeof(pkt),
+                k_nSteamNetworkingSend_Reliable, CHANNEL_FIREBALL);
+        }
+    }
+
+    bool GetRemoteFireballs(std::vector<RemoteFireball>& out) {
+        if (pendingFireballs.empty()) return false;
+        out = pendingFireballs;
+        pendingFireballs.clear();
+        return true;
     }
 }

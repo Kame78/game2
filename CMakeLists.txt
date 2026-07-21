@@ -22,25 +22,38 @@ add_executable(game
 	src/core/window.cpp
 	src/engine/input.cpp
 	src/engine/networking.cpp
+	src/engine/math/noise.cpp
+	src/engine/jobs/thread_pool.cpp
+	src/engine/terrain/chunk_manager.cpp
 	src/game/game_app.cpp
-	src/game/systems.cpp)
+	src/game/systems.cpp
+	src/game/world/world_gen.cpp)
 
-target_include_directories(game PRIVATE include)
+target_include_directories(game PRIVATE
+	include
+	${CMAKE_SOURCE_DIR}/vendor/FastNoiseLite)
+
+# Threads (thread pool for background terrain generation)
+find_package(Threads REQUIRED)
+target_link_libraries(game PRIVATE Threads::Threads)
 
 # ---------------------------------------------------------------------------
 # Steamworks SDK
-# Override with: cmake -B build -DSTEAM_SDK_ROOT=C:/path/to/sdk
-# Default expects the SDK extracted at:
-#   Windows : %USERPROFILE%\steamworks_sdk_164\sdk
-#   Linux   : ~/steamworks_sdk_164/sdk
+# Resolution order:
+#   1. -DSTEAM_SDK_ROOT=... passed on the command line
+#   2. vendor/steamworks/  inside the repo  (recommended)
+#   3. Global install: %USERPROFILE%/steamworks_sdk_164/sdk  or  ~/steamworks_sdk_164/sdk
 # ---------------------------------------------------------------------------
 if(NOT DEFINED STEAM_SDK_ROOT)
-	if(WIN32)
+	if(EXISTS "${CMAKE_SOURCE_DIR}/vendor/steamworks/public/steam/steam_api.h")
+		set(STEAM_SDK_ROOT "${CMAKE_SOURCE_DIR}/vendor/steamworks")
+	elseif(WIN32)
 		set(STEAM_SDK_ROOT "$ENV{USERPROFILE}/steamworks_sdk_164/sdk")
 	else()
 		set(STEAM_SDK_ROOT "$ENV{HOME}/steamworks_sdk_164/sdk")
 	endif()
 endif()
+message(STATUS "Steamworks SDK: ${STEAM_SDK_ROOT}")
 
 target_include_directories(game PRIVATE ${STEAM_SDK_ROOT}/public)
 

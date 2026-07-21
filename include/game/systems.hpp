@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/ecs/registry.hpp"
+#include "engine/networking.hpp"
 
 namespace game::systems {
     void PlayerMovementSystem(engine::ecs::Registry& registry);
@@ -11,4 +12,7 @@ namespace game::systems {
     void Render3DSystem(engine::ecs::Registry& registry);
     void SwordViewmodelSystem(engine::ecs::Registry& registry);
     void HealthBarSystem(engine::ecs::Registry& registry);
+    void DrawRemotePlayer(const engine::networking::PlayerState& remote);
+    void SpawnRemoteFireballs(engine::ecs::Registry& registry);
+    bool IsSwinging();
 }

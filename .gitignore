@@ -3,6 +3,7 @@ cmake-build-*/
 .cache/
 compile_commands.json
 .vscode/
+vendor/
 
 # ANTIGRAVITY: Ignoring the .agents customization folder
 .agents/
