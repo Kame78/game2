@@ -31,11 +31,11 @@ static void initNoise() {
     // Ridged mountains — sharp peaks, only kick in above threshold
     g_mountainNoise.SetSeed(seedB);
     g_mountainNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    g_mountainNoise.SetFrequency(0.0018f);
-    g_mountainNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-    g_mountainNoise.SetFractalOctaves(5);
+    g_mountainNoise.SetFrequency(0.0005f); // Keeps the huge, wide bases
+    g_mountainNoise.SetFractalType(FastNoiseLite::FractalType_Ridged); // Ridged noise creates sharp, pointy peaks
+    g_mountainNoise.SetFractalOctaves(4);
     g_mountainNoise.SetFractalLacunarity(2.0f);
-    g_mountainNoise.SetFractalGain(0.5f);
+    g_mountainNoise.SetFractalGain(0.4f);
 
     // High-frequency detail for surface texture
     g_detailNoise.SetSeed(seedC);
@@ -55,12 +55,12 @@ float RawTerrainHeight(float x, float z) {
     // Base terrain: -1..1 → -baseAmp..baseAmp
     float base = g_baseNoise.GetNoise(x, z) * g_config.baseAmplitude;
 
-    // Mountains: ridged noise returns high values only along ridges. Threshold + smooth ramp.
+    // Mountains: threshold + smooth ramp.
     float ridge = g_mountainNoise.GetNoise(x, z);  // roughly -1..1
     float mountain = 0.0f;
     if (ridge > g_config.mountainThreshold) {
         float t = (ridge - g_config.mountainThreshold) / (1.0f - g_config.mountainThreshold);
-        mountain = t * t * g_config.mountainAmplitude;  // squared for steeper base
+        mountain = t * t * g_config.mountainAmplitude;  // squared for a smooth valley that shoots up into a sharp peak
     }
 
     // Fine detail

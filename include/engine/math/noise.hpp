@@ -37,9 +37,9 @@ struct WorldConfig {
 
     // Height layer amplitudes (world units)
     float baseAmplitude     = 8.0f;    // rolling hills
-    float mountainAmplitude = 90.0f;   // dramatic peaks (mountains visible from afar)
+    float mountainAmplitude = 250.0f;  // massive scaled up mountains
     float detailAmplitude   = 1.5f;    // small variation
-    float mountainThreshold = 0.15f;   // ridged noise > this becomes mountain
+    float mountainThreshold = 0.10f;   // Ridged noise > this becomes mountain
 };
 
 // Global world config — set once at startup, then read from anywhere.
