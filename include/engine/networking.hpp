@@ -97,4 +97,8 @@ namespace engine::networking {
 
     // Directly join a lobby by its uint64 id (from LobbyInfo).
     void JoinLobbyById(uint64_t lobbyId);
+
+    // Lobby metadata helpers (thin wrappers over SteamMatchmaking lobby data).
+    void SetLobbyData(const std::string& key, const std::string& value);
+    std::string GetLobbyData(const std::string& key);
 }

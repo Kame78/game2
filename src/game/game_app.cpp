@@ -297,16 +297,24 @@ namespace Game::GameApp {
 
     // ---------- Pre-game Lobby (L4D-style ready-up) ----------
     static void updateLobby() {
-        // In single player, auto-start when ready is clicked.
-        // In multiplayer, start only when ALL players are ready.
-        // For now (2 player max): local + remote both ready → start.
         if (g_isSinglePlayer) {
             if (g_localReady) enterGame();
-        } else {
-            // TODO: send/receive ready state over network (using lobby metadata for simplicity).
-            // For now, host can force-start once ready.
-            if (g_localReady && (engine::networking::IsHost() || g_remoteReady)) {
+            return;
+        }
+
+        // Host: once ready, signal all clients via lobby metadata and start.
+        if (engine::networking::IsHost() && g_localReady) {
+            engine::networking::SetLobbyData("game_started", "1");
+            enterGame();
+            return;
+        }
+
+        // Client: poll lobby metadata for the host's start signal.
+        if (!engine::networking::IsHost()) {
+            std::string started = engine::networking::GetLobbyData("game_started");
+            if (started == "1") {
                 enterGame();
+                return;
             }
         }
     }

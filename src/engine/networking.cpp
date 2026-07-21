@@ -365,6 +365,17 @@ namespace engine::networking {
         SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyId)));
     }
 
+    void SetLobbyData(const std::string& key, const std::string& value) {
+        if (!steamInitialized || lobbyState != LobbyState::InLobby) return;
+        SteamMatchmaking()->SetLobbyData(currentLobby, key.c_str(), value.c_str());
+    }
+
+    std::string GetLobbyData(const std::string& key) {
+        if (!steamInitialized || lobbyState != LobbyState::InLobby) return "";
+        const char* v = SteamMatchmaking()->GetLobbyData(currentLobby, key.c_str());
+        return v ? std::string(v) : "";
+    }
+
     void BroadcastEnemySnapshot(const std::vector<EnemyNetState>& enemies) {
         if (!steamInitialized || lobbyState != LobbyState::InLobby) return;
 
