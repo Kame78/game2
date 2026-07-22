@@ -1,0 +1,19 @@
+# CMake generation dependency list for this directory.
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/CompileDefinitions.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/GlfwImport.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/InstallConfigurations.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/JoinPaths.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/LibraryConfigurations.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/LibraryPathToLinkerFlags.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/PackConfigurations.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/PopulateConfigVariablesLocally.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/cmake/raylib-config-version.cmake
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/raylib.pc.in
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/src/CMakeLists.txt
+C:/msys64/ucrt64/share/cmake/Modules/CPack.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CPackComponent.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindOpenGL.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake
+C:/msys64/ucrt64/share/cmake/Modules/GNUInstallDirs.cmake
+C:/msys64/ucrt64/share/cmake/Templates/CPackConfig.cmake.in

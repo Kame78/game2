@@ -12,6 +12,8 @@ namespace game::systems {
     void Render3DSystem(engine::ecs::Registry& registry);
     void SwordViewmodelSystem(engine::ecs::Registry& registry);
     void HealthBarSystem(engine::ecs::Registry& registry);
+    void EditorInputSystem(engine::ecs::Registry& registry);
+    void EditorUISystem(engine::ecs::Registry& registry);
     void DrawRemotePlayer(const engine::networking::PlayerState& remote);
     void SpawnRemoteFireballs(engine::ecs::Registry& registry);
     bool IsSwinging();

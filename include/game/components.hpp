@@ -17,6 +17,8 @@ namespace game {
     struct PlayerInputComponent {
         float velocityY = 0.0f;
         bool grounded   = true;
+        bool isFlying   = false;
+        bool noClip     = false;
     };
 
     struct RenderComponent {

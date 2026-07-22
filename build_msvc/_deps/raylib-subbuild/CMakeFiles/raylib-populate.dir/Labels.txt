@@ -1,0 +1,14 @@
+# Target labels
+ raylib-populate
+# Source files and their labels
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/raylib-populate
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/29d330d1bc8027d0cf4b599c101a6da7/raylib-populate.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/ce362298f96145044fd693d22fe94574/raylib-populate-complete.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-build.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-configure.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-download.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-install.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-mkdir.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-patch.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-test.rule
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-update.rule

@@ -17,25 +17,25 @@ static Vector3 g_camPos = {0, 0, 0};  // set each frame in DrawLandmarks()
 // ---------------------------------------------------------------------------
 const Landmark LANDMARKS[] = {
     // Spawn: flat elevated churchyard so gravestones sit level.
-    {LandmarkType::Church,       "Church of the Vigil",  { 0.0f,   0.0f,    0.0f}, 180.0f, 180.0f,  4.0f, 60.0f},
+    {LandmarkType::Church,       "Church of the Vigil",  { 0.0f,   0.0f,    0.0f}, 180.0f, 180.0f,  4.0f, 120.0f},
 
-    // Dwarven mountain range: DO NOT flatten (we want peaks!). Mine entrance is placed on a small flat pad.
-    {LandmarkType::DwarvenMines, "Kharaz-Dûm",           {-2500.0f, 0.0f, -1500.0f}, 700.0f, 60.0f, 30.0f, 40.0f},
+    // Dwarven mountain range: Mine entrance pad with gentle slope into mountains.
+    {LandmarkType::DwarvenMines, "Kharaz-Dûm",           {-2500.0f, 0.0f, -1500.0f}, 700.0f, 60.0f, 30.0f, 180.0f},
 
     // Elven forest: gently flatten so trees are on rolling but stable ground.
-    {LandmarkType::ElvenForest,  "Silverleaf Wood",      { 2500.0f, 0.0f, -1000.0f}, 800.0f, 700.0f, 6.0f, 100.0f},
+    {LandmarkType::ElvenForest,  "Silverleaf Wood",      { 2500.0f, 0.0f, -1000.0f}, 800.0f, 700.0f, 6.0f, 200.0f},
 
     // Witch's hut: small clearing hidden inside the forest.
-    {LandmarkType::WitchHouse,   "Hut of the Ashwitch",  { 2700.0f, 0.0f, -1200.0f},  40.0f,  30.0f, 6.0f, 20.0f},
+    {LandmarkType::WitchHouse,   "Hut of the Ashwitch",  { 2700.0f, 0.0f, -1200.0f},  40.0f,  30.0f, 6.0f, 60.0f},
 
     // Lake town: LAKE is dug into terrain (flatHeight negative → lake bed). Town sits on shore.
-    {LandmarkType::LakeTown,     "Blackmere",            {-2000.0f, 0.0f,  1500.0f}, 900.0f, 750.0f, -6.0f, 150.0f},
+    {LandmarkType::LakeTown,     "Blackmere",            {-2000.0f, 0.0f,  1500.0f}, 900.0f, 750.0f, -6.0f, 250.0f},
 
     // Capital city: massive walled plateau.
-    {LandmarkType::CapitalCity,  "Aurelia",              { 2000.0f, 0.0f,  2000.0f}, 700.0f, 650.0f, 12.0f, 120.0f},
+    {LandmarkType::CapitalCity,  "Aurelia",              { 2000.0f, 0.0f,  2000.0f}, 700.0f, 650.0f, 12.0f, 200.0f},
 
     // Lich King's castle: raised cursed ground far south.
-    {LandmarkType::LichCastle,   "The Black Spire",      { 0.0f,    0.0f, -2800.0f}, 500.0f, 450.0f, 20.0f, 100.0f},
+    {LandmarkType::LichCastle,   "The Black Spire",      { 0.0f,    0.0f, -2800.0f}, 500.0f, 450.0f, 20.0f, 180.0f},
 };
 
 const size_t LANDMARK_COUNT = sizeof(LANDMARKS) / sizeof(LANDMARKS[0]);

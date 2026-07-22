@@ -10,6 +10,8 @@
 #include "game/world/world_gen.hpp"
 #include <cstring>
 #include <cstdio>
+#include "imgui.h"
+#include "rlImGui.h"
 
 namespace Game::GameApp {
 
@@ -114,6 +116,8 @@ namespace Game::GameApp {
 
     // ---------- Init / Shutdown ----------
     void Init() {
+        rlImGuiSetup(true);
+
         engine::input::BindKey("MoveForward",  KEY_W);
         engine::input::BindKey("MoveBackward", KEY_S);
         engine::input::BindKey("MoveRight",    KEY_D);
@@ -139,6 +143,7 @@ namespace Game::GameApp {
 
     void Shutdown() {
         engine::terrain::chunks::Shutdown();
+        rlImGuiShutdown();
     }
 
     // ---------- Menu screens ----------
@@ -389,11 +394,18 @@ namespace Game::GameApp {
     // ---------- Gameplay (existing per-frame logic) ----------
     static void updateInGame() {
         if (IsKeyPressed(KEY_ESCAPE)) engine::input::UnlockCursor();
-        if (!engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-            engine::input::LockCursor();
+        
+        // Only lock cursor on click if ImGui isn't hovering over a window
+        if (!engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (!ImGui::GetIO().WantCaptureMouse) {
+                engine::input::LockCursor();
+            }
+        }
+        
         if (IsKeyPressed(KEY_F10)) { leaveGame(); return; }
         if (IsKeyPressed(KEY_F3))  engine::networking::OpenInviteOverlay();
 
+        game::systems::EditorInputSystem(registry);
         game::systems::PlayerMovementSystem(registry);
 
         if (registry.transforms.Has(playerEntity)) {
@@ -531,6 +543,12 @@ namespace Game::GameApp {
             case State::Lobby:         drawLobby();         break;
             case State::InGame:        drawInGameHUD();     break;
         }
+
+        rlImGuiBegin();
+        if (g_state == State::InGame) {
+            game::systems::EditorUISystem(registry);
+        }
+        rlImGuiEnd();
     }
 
 }

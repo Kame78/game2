@@ -1,0 +1,1834 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineSystem.cmake:212 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Windows - 10.0.19045 - AMD64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "C:/msys64/ucrt64/share/cmake/Modules/"
+    found: "C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+      Build started 7/21/2026 1:11:44 AM.
+      
+      Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdCXX.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
+      Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:00.72
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/Cameron/game2/build_msvc2/CMakeFiles/4.3.2/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:103 (__resolve_linker_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/link.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:104 (__resolve_linker_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files (x86)/Calibre2/lld-link.com"
+      - "C:/Program Files (x86)/Calibre2/lld-link.exe"
+      - "C:/Program Files (x86)/Calibre2/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link"
+      - "C:/msys64/ucrt64/bin/lld-link.com"
+      - "C:/msys64/ucrt64/bin/lld-link.exe"
+      - "C:/msys64/ucrt64/bin/lld-link"
+      - "C:/SFML-3.1.0/lld-link.com"
+      - "C:/SFML-3.1.0/lld-link.exe"
+      - "C:/SFML-3.1.0/lld-link"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/Program Files/Tailscale/lld-link.com"
+      - "C:/Program Files/Tailscale/lld-link.exe"
+      - "C:/Program Files/Tailscale/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link.com"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link.exe"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/link.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_MT"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "mt"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/mt.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/mt.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/mt"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/mt.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/mt.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/mt"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/mt.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/mt.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/mt"
+      - "C:/VulkanSDK/1.4.350.0/Bin/mt.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/mt.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/mt"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/mt"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/mt.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/mt.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/mt"
+      - "C:/Windows/System32/mt.com"
+      - "C:/Windows/System32/mt.exe"
+      - "C:/Windows/System32/mt"
+      - "C:/Windows/mt.com"
+      - "C:/Windows/mt.exe"
+      - "C:/Windows/mt"
+      - "C:/Windows/System32/wbem/mt.com"
+      - "C:/Windows/System32/wbem/mt.exe"
+      - "C:/Windows/System32/wbem/mt"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/mt"
+      - "C:/Windows/System32/OpenSSH/mt.com"
+      - "C:/Windows/System32/OpenSSH/mt.exe"
+      - "C:/Windows/System32/OpenSSH/mt"
+      - "C:/Program Files (x86)/Calibre2/mt.com"
+      - "C:/Program Files (x86)/Calibre2/mt.exe"
+      - "C:/Program Files (x86)/Calibre2/mt"
+      - "C:/Program Files/dotnet/mt.com"
+      - "C:/Program Files/dotnet/mt.exe"
+      - "C:/Program Files/dotnet/mt"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/mt"
+      - "C:/msys64/ucrt64/bin/mt.com"
+      - "C:/msys64/ucrt64/bin/mt.exe"
+      - "C:/msys64/ucrt64/bin/mt"
+      - "C:/SFML-3.1.0/mt.com"
+      - "C:/SFML-3.1.0/mt.exe"
+      - "C:/SFML-3.1.0/mt"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/mt"
+      - "C:/Program Files/nodejs/mt.com"
+      - "C:/Program Files/nodejs/mt.exe"
+      - "C:/Program Files/nodejs/mt"
+      - "C:/Program Files/Tailscale/mt.com"
+      - "C:/Program Files/Tailscale/mt.exe"
+      - "C:/Program Files/Tailscale/mt"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/mt.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/mt.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/mt"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/mt.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/mt.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/mt"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/mt.com"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/mt.exe"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/mt"
+      - "C:/Users/Cameron/.dotnet/tools/mt.com"
+      - "C:/Users/Cameron/.dotnet/tools/mt.exe"
+      - "C:/Users/Cameron/.dotnet/tools/mt"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/mt.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/mt.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/mt"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/mt.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/mt.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/mt"
+      - "C:/Users/Cameron/AppData/Roaming/npm/mt.com"
+      - "C:/Users/Cameron/AppData/Roaming/npm/mt.exe"
+      - "C:/Users/Cameron/AppData/Roaming/npm/mt"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:243 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_AR"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lib"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lib.com"
+    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lib.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineRCCompiler.cmake:40 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-MSVC.cmake:592 (enable_language)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-MSVC.cmake:565 (__windows_compiler_msvc_enable_rc)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-MSVC-CXX.cmake:6 (__windows_compiler_msvc)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeCXXInformation.cmake:48 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_RC_COMPILER"
+    description: "RC compiler"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "rc"
+    candidate_directories:
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+      - "C:/Program Files/bin/"
+      - "C:/Program Files/sbin/"
+      - "C:/Program Files/"
+      - "C:/Program Files (x86)/bin/"
+      - "C:/Program Files (x86)/sbin/"
+      - "C:/Program Files (x86)/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/msys64/ucrt64/sbin/"
+      - "C:/msys64/ucrt64/"
+      - "C:/Program Files/game/bin/"
+      - "C:/Program Files/game/sbin/"
+      - "C:/Program Files/game/"
+    searched_directories:
+      - "C:/Users/Cameron/.gemini/antigravity/bin/rc.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/rc.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/rc"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/rc.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/rc.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/rc"
+      - "C:/VulkanSDK/1.4.350.0/Bin/rc.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/rc.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/rc"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/rc"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/rc.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/rc.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/rc"
+      - "C:/Windows/System32/rc.com"
+      - "C:/Windows/System32/rc.exe"
+      - "C:/Windows/System32/rc"
+      - "C:/Windows/rc.com"
+      - "C:/Windows/rc.exe"
+      - "C:/Windows/rc"
+      - "C:/Windows/System32/wbem/rc.com"
+      - "C:/Windows/System32/wbem/rc.exe"
+      - "C:/Windows/System32/wbem/rc"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/rc"
+      - "C:/Windows/System32/OpenSSH/rc.com"
+      - "C:/Windows/System32/OpenSSH/rc.exe"
+      - "C:/Windows/System32/OpenSSH/rc"
+      - "C:/Program Files (x86)/Calibre2/rc.com"
+      - "C:/Program Files (x86)/Calibre2/rc.exe"
+      - "C:/Program Files (x86)/Calibre2/rc"
+      - "C:/Program Files/dotnet/rc.com"
+      - "C:/Program Files/dotnet/rc.exe"
+      - "C:/Program Files/dotnet/rc"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/rc"
+      - "C:/msys64/ucrt64/bin/rc.com"
+      - "C:/msys64/ucrt64/bin/rc.exe"
+      - "C:/msys64/ucrt64/bin/rc"
+      - "C:/SFML-3.1.0/rc.com"
+      - "C:/SFML-3.1.0/rc.exe"
+      - "C:/SFML-3.1.0/rc"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/rc"
+      - "C:/Program Files/nodejs/rc.com"
+      - "C:/Program Files/nodejs/rc.exe"
+      - "C:/Program Files/nodejs/rc"
+      - "C:/Program Files/Tailscale/rc.com"
+      - "C:/Program Files/Tailscale/rc.exe"
+      - "C:/Program Files/Tailscale/rc"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/rc.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/rc.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/rc"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/rc.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/rc.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/rc"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/rc.com"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/rc.exe"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/rc"
+      - "C:/Users/Cameron/.dotnet/tools/rc.com"
+      - "C:/Users/Cameron/.dotnet/tools/rc.exe"
+      - "C:/Users/Cameron/.dotnet/tools/rc"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/rc.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/rc.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/rc"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/rc.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/rc.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/rc"
+      - "C:/Users/Cameron/AppData/Roaming/npm/rc.com"
+      - "C:/Users/Cameron/AppData/Roaming/npm/rc.exe"
+      - "C:/Users/Cameron/AppData/Roaming/npm/rc"
+      - "C:/Program Files/bin/rc.com"
+      - "C:/Program Files/bin/rc.exe"
+      - "C:/Program Files/bin/rc"
+      - "C:/Program Files/sbin/rc.com"
+      - "C:/Program Files/sbin/rc.exe"
+      - "C:/Program Files/sbin/rc"
+      - "C:/Program Files/rc.com"
+      - "C:/Program Files/rc.exe"
+      - "C:/Program Files/rc"
+      - "C:/Program Files (x86)/bin/rc.com"
+      - "C:/Program Files (x86)/bin/rc.exe"
+      - "C:/Program Files (x86)/bin/rc"
+      - "C:/Program Files (x86)/sbin/rc.com"
+      - "C:/Program Files (x86)/sbin/rc.exe"
+      - "C:/Program Files (x86)/sbin/rc"
+      - "C:/Program Files (x86)/rc.com"
+      - "C:/Program Files (x86)/rc.exe"
+      - "C:/Program Files (x86)/rc"
+      - "C:/msys64/ucrt64/bin/rc.com"
+      - "C:/msys64/ucrt64/bin/rc.exe"
+      - "C:/msys64/ucrt64/bin/rc"
+      - "C:/msys64/ucrt64/sbin/rc.com"
+      - "C:/msys64/ucrt64/sbin/rc.exe"
+      - "C:/msys64/ucrt64/sbin/rc"
+      - "C:/msys64/ucrt64/rc.com"
+      - "C:/msys64/ucrt64/rc.exe"
+      - "C:/msys64/ucrt64/rc"
+      - "C:/Program Files/game/bin/rc.com"
+      - "C:/Program Files/game/bin/rc.exe"
+      - "C:/Program Files/game/bin/rc"
+      - "C:/Program Files/game/sbin/rc.com"
+      - "C:/Program Files/game/sbin/rc.exe"
+      - "C:/Program Files/game/sbin/rc"
+      - "C:/Program Files/game/rc.com"
+      - "C:/Program Files/game/rc.exe"
+      - "C:/Program Files/game/rc"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/game"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/msys64/ucrt64"
+        - "C:/Program Files/game"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-8sasef"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-8sasef"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-8sasef'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_7150f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:11:46 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-8sasef\\cmTC_7150f.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-8sasef\\Debug\\".
+          Creating directory "cmTC_7150f.dir\\Debug\\cmTC_7150f.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_7150f.dir\\Debug\\cmTC_7150f.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_7150f.dir\\Debug\\cmTC_7150f.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_7150f.dir\\Debug\\\\" /Fd"cmTC_7150f.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue C:\\msys64\\ucrt64\\share\\cmake\\Modules\\CMakeCXXCompilerABI.cpp
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_7150f.dir\\Debug\\\\" /Fd"cmTC_7150f.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue C:\\msys64\\ucrt64\\share\\cmake\\Modules\\CMakeCXXCompilerABI.cpp
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-8sasef\\Debug\\cmTC_7150f.exe" /INCREMENTAL /ILK:"cmTC_7150f.dir\\Debug\\cmTC_7150f.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-8sasef/Debug/cmTC_7150f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-8sasef/Debug/cmTC_7150f.lib" /MACHINE:X64  /machine:x64 cmTC_7150f.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_7150f.vcxproj -> C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-8sasef\\Debug\\cmTC_7150f.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_7150f.dir\\Debug\\cmTC_7150f.tlog\\unsuccessfulbuild".
+          Touching "cmTC_7150f.dir\\Debug\\cmTC_7150f.tlog\\cmTC_7150f.lastbuildstate".
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-8sasef\\cmTC_7150f.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.69
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'CXX': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the CXX compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.38.33130.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindGit.cmake:111 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FetchContent.cmake:1887 (find_package)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FetchContent.cmake:1622 (__FetchContent_populateSubbuild)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FetchContent.cmake:2158:EVAL:2 (__FetchContent_doPopulation)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FetchContent.cmake:2158 (cmake_language)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FetchContent.cmake:2399 (__FetchContent_Populate)"
+      - "CMakeLists.txt:17 (FetchContent_MakeAvailable)"
+    mode: "program"
+    variable: "GIT_EXECUTABLE"
+    description: "Git command line client"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "git.cmd"
+      - "git"
+    candidate_directories:
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+      - "C:/Program Files/bin/"
+      - "C:/Program Files/sbin/"
+      - "C:/Program Files/"
+      - "C:/Program Files (x86)/bin/"
+      - "C:/Program Files (x86)/sbin/"
+      - "C:/Program Files (x86)/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/msys64/ucrt64/sbin/"
+      - "C:/msys64/ucrt64/"
+      - "C:/Program Files/game/bin/"
+      - "C:/Program Files/game/sbin/"
+      - "C:/Program Files/game/"
+      - "C:/Users/Cameron/AppData/Local/Atlassian/SourceTree/git_local/bin/"
+    searched_directories:
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git.cmd.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git.cmd.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git.cmd"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git.cmd"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git.cmd.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git.cmd.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git.cmd"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git.cmd.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git.cmd.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git.cmd"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git.cmd.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git.cmd.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git.cmd"
+      - "C:/Windows/System32/git.cmd.com"
+      - "C:/Windows/System32/git.cmd.exe"
+      - "C:/Windows/System32/git.cmd"
+      - "C:/Windows/git.cmd.com"
+      - "C:/Windows/git.cmd.exe"
+      - "C:/Windows/git.cmd"
+      - "C:/Windows/System32/wbem/git.cmd.com"
+      - "C:/Windows/System32/wbem/git.cmd.exe"
+      - "C:/Windows/System32/wbem/git.cmd"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git.cmd.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git.cmd.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git.cmd"
+      - "C:/Windows/System32/OpenSSH/git.cmd.com"
+      - "C:/Windows/System32/OpenSSH/git.cmd.exe"
+      - "C:/Windows/System32/OpenSSH/git.cmd"
+      - "C:/Program Files (x86)/Calibre2/git.cmd.com"
+      - "C:/Program Files (x86)/Calibre2/git.cmd.exe"
+      - "C:/Program Files (x86)/Calibre2/git.cmd"
+      - "C:/Program Files/dotnet/git.cmd.com"
+      - "C:/Program Files/dotnet/git.cmd.exe"
+      - "C:/Program Files/dotnet/git.cmd"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git.cmd.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git.cmd.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git.cmd"
+      - "C:/msys64/ucrt64/bin/git.cmd.com"
+      - "C:/msys64/ucrt64/bin/git.cmd.exe"
+      - "C:/msys64/ucrt64/bin/git.cmd"
+      - "C:/SFML-3.1.0/git.cmd.com"
+      - "C:/SFML-3.1.0/git.cmd.exe"
+      - "C:/SFML-3.1.0/git.cmd"
+      - "C:/Program Files/Docker/Docker/resources/bin/git.cmd.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/git.cmd.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/git.cmd"
+      - "C:/Program Files/nodejs/git.cmd.com"
+      - "C:/Program Files/nodejs/git.cmd.exe"
+      - "C:/Program Files/nodejs/git.cmd"
+      - "C:/Program Files/Tailscale/git.cmd.com"
+      - "C:/Program Files/Tailscale/git.cmd.exe"
+      - "C:/Program Files/Tailscale/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/git.cmd"
+      - "C:/Users/Cameron/.dotnet/tools/git.cmd.com"
+      - "C:/Users/Cameron/.dotnet/tools/git.cmd.exe"
+      - "C:/Users/Cameron/.dotnet/tools/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/git.cmd"
+      - "C:/Users/Cameron/AppData/Roaming/npm/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Roaming/npm/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Roaming/npm/git.cmd"
+      - "C:/Program Files/bin/git.cmd.com"
+      - "C:/Program Files/bin/git.cmd.exe"
+      - "C:/Program Files/bin/git.cmd"
+      - "C:/Program Files/sbin/git.cmd.com"
+      - "C:/Program Files/sbin/git.cmd.exe"
+      - "C:/Program Files/sbin/git.cmd"
+      - "C:/Program Files/git.cmd.com"
+      - "C:/Program Files/git.cmd.exe"
+      - "C:/Program Files/git.cmd"
+      - "C:/Program Files (x86)/bin/git.cmd.com"
+      - "C:/Program Files (x86)/bin/git.cmd.exe"
+      - "C:/Program Files (x86)/bin/git.cmd"
+      - "C:/Program Files (x86)/sbin/git.cmd.com"
+      - "C:/Program Files (x86)/sbin/git.cmd.exe"
+      - "C:/Program Files (x86)/sbin/git.cmd"
+      - "C:/Program Files (x86)/git.cmd.com"
+      - "C:/Program Files (x86)/git.cmd.exe"
+      - "C:/Program Files (x86)/git.cmd"
+      - "C:/msys64/ucrt64/bin/git.cmd.com"
+      - "C:/msys64/ucrt64/bin/git.cmd.exe"
+      - "C:/msys64/ucrt64/bin/git.cmd"
+      - "C:/msys64/ucrt64/sbin/git.cmd.com"
+      - "C:/msys64/ucrt64/sbin/git.cmd.exe"
+      - "C:/msys64/ucrt64/sbin/git.cmd"
+      - "C:/msys64/ucrt64/git.cmd.com"
+      - "C:/msys64/ucrt64/git.cmd.exe"
+      - "C:/msys64/ucrt64/git.cmd"
+      - "C:/Program Files/game/bin/git.cmd.com"
+      - "C:/Program Files/game/bin/git.cmd.exe"
+      - "C:/Program Files/game/bin/git.cmd"
+      - "C:/Program Files/game/sbin/git.cmd.com"
+      - "C:/Program Files/game/sbin/git.cmd.exe"
+      - "C:/Program Files/game/sbin/git.cmd"
+      - "C:/Program Files/game/git.cmd.com"
+      - "C:/Program Files/game/git.cmd.exe"
+      - "C:/Program Files/game/git.cmd"
+      - "C:/Users/Cameron/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd.com"
+      - "C:/Users/Cameron/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd.exe"
+      - "C:/Users/Cameron/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/git"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/git"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/git"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/git"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/git"
+      - "C:/Windows/System32/git.com"
+      - "C:/Windows/System32/git.exe"
+      - "C:/Windows/System32/git"
+      - "C:/Windows/git.com"
+      - "C:/Windows/git.exe"
+      - "C:/Windows/git"
+      - "C:/Windows/System32/wbem/git.com"
+      - "C:/Windows/System32/wbem/git.exe"
+      - "C:/Windows/System32/wbem/git"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/git"
+      - "C:/Windows/System32/OpenSSH/git.com"
+      - "C:/Windows/System32/OpenSSH/git.exe"
+      - "C:/Windows/System32/OpenSSH/git"
+      - "C:/Program Files (x86)/Calibre2/git.com"
+      - "C:/Program Files (x86)/Calibre2/git.exe"
+      - "C:/Program Files (x86)/Calibre2/git"
+      - "C:/Program Files/dotnet/git.com"
+      - "C:/Program Files/dotnet/git.exe"
+      - "C:/Program Files/dotnet/git"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/git"
+      - "C:/msys64/ucrt64/bin/git.com"
+    found: "C:/msys64/ucrt64/bin/git.exe"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/game"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/msys64/ucrt64"
+        - "C:/Program Files/game"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:468 (find_file)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:506 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "C:/msys64/ucrt64/share/cmake/Modules/"
+    found: "C:/msys64/ucrt64/share/cmake/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/game"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/msys64/ucrt64"
+        - "C:/Program Files/game"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+      Build started 7/21/2026 1:13:40 AM.
+      
+      Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
+      PrepareForBuild:
+        Creating directory "Debug\\".
+        Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+        Creating directory "Debug\\CompilerIdC.tlog\\".
+      InitializeBuildStatus:
+        Creating "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+        Touching "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdC\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Deleting file "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+        Touching "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate".
+      Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\4.3.2\\CompilerIdC\\CompilerIdC.vcxproj" (default targets).
+      
+      Build succeeded.
+          0 Warning(s)
+          0 Error(s)
+      
+      Time Elapsed 00:00:00.90
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/Cameron/game2/build_msvc2/CMakeFiles/4.3.2/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:37 (find_program)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:65 (__resolve_tool_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeFindBinUtils.cmake:104 (__resolve_linker_path)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "_CMAKE_TOOL_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "lld-link"
+    candidate_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/"
+      - "C:/VulkanSDK/1.4.350.0/Bin/"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/"
+      - "C:/Windows/System32/"
+      - "C:/Windows/"
+      - "C:/Windows/System32/wbem/"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/"
+      - "C:/Windows/System32/OpenSSH/"
+      - "C:/Program Files (x86)/Calibre2/"
+      - "C:/Program Files/dotnet/"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/SFML-3.1.0/"
+      - "C:/Program Files/Docker/Docker/resources/bin/"
+      - "C:/Program Files/nodejs/"
+      - "C:/Program Files/Tailscale/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/"
+      - "C:/Users/Cameron/.dotnet/tools/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/"
+      - "C:/Users/Cameron/AppData/Roaming/npm/"
+      - "C:/Program Files/bin/"
+      - "C:/Program Files/sbin/"
+      - "C:/Program Files/"
+      - "C:/Program Files (x86)/bin/"
+      - "C:/Program Files (x86)/sbin/"
+      - "C:/Program Files (x86)/"
+      - "C:/msys64/ucrt64/bin/"
+      - "C:/msys64/ucrt64/sbin/"
+      - "C:/msys64/ucrt64/"
+      - "C:/Program Files/game/bin/"
+      - "C:/Program Files/game/sbin/"
+      - "C:/Program Files/game/"
+    searched_directories:
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/Hostx64/x64/lld-link"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link.com"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link.exe"
+      - "C:/Users/Cameron/.gemini/antigravity/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Roaming/Antigravity/bin/lld-link"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link.com"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link.exe"
+      - "C:/VulkanSDK/1.4.350.0/Bin/lld-link"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.com"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link.exe"
+      - "C:/Program Files (x86)/NVIDIA Corporation/PhysX/Common/lld-link"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link.com"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link.exe"
+      - "C:/Program Files/Common Files/Oracle/Java/javapath/lld-link"
+      - "C:/Windows/System32/lld-link.com"
+      - "C:/Windows/System32/lld-link.exe"
+      - "C:/Windows/System32/lld-link"
+      - "C:/Windows/lld-link.com"
+      - "C:/Windows/lld-link.exe"
+      - "C:/Windows/lld-link"
+      - "C:/Windows/System32/wbem/lld-link.com"
+      - "C:/Windows/System32/wbem/lld-link.exe"
+      - "C:/Windows/System32/wbem/lld-link"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.com"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link.exe"
+      - "C:/Windows/System32/WindowsPowerShell/v1.0/lld-link"
+      - "C:/Windows/System32/OpenSSH/lld-link.com"
+      - "C:/Windows/System32/OpenSSH/lld-link.exe"
+      - "C:/Windows/System32/OpenSSH/lld-link"
+      - "C:/Program Files (x86)/Calibre2/lld-link.com"
+      - "C:/Program Files (x86)/Calibre2/lld-link.exe"
+      - "C:/Program Files (x86)/Calibre2/lld-link"
+      - "C:/Program Files/dotnet/lld-link.com"
+      - "C:/Program Files/dotnet/lld-link.exe"
+      - "C:/Program Files/dotnet/lld-link"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.com"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link.exe"
+      - "C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/lld-link"
+      - "C:/msys64/ucrt64/bin/lld-link.com"
+      - "C:/msys64/ucrt64/bin/lld-link.exe"
+      - "C:/msys64/ucrt64/bin/lld-link"
+      - "C:/SFML-3.1.0/lld-link.com"
+      - "C:/SFML-3.1.0/lld-link.exe"
+      - "C:/SFML-3.1.0/lld-link"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.com"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link.exe"
+      - "C:/Program Files/Docker/Docker/resources/bin/lld-link"
+      - "C:/Program Files/nodejs/lld-link.com"
+      - "C:/Program Files/nodejs/lld-link.exe"
+      - "C:/Program Files/nodejs/lld-link"
+      - "C:/Program Files/Tailscale/lld-link.com"
+      - "C:/Program Files/Tailscale/lld-link.exe"
+      - "C:/Program Files/Tailscale/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/Scripts/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Python/Python39/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Microsoft/WindowsApps/lld-link"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link.com"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link.exe"
+      - "C:/Users/Cameron/.dotnet/tools/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Microsoft VS Code/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link.com"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Local/Programs/Antigravity IDE/bin/lld-link"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link.com"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link.exe"
+      - "C:/Users/Cameron/AppData/Roaming/npm/lld-link"
+      - "C:/Program Files/bin/lld-link.com"
+      - "C:/Program Files/bin/lld-link.exe"
+      - "C:/Program Files/bin/lld-link"
+      - "C:/Program Files/sbin/lld-link.com"
+      - "C:/Program Files/sbin/lld-link.exe"
+      - "C:/Program Files/sbin/lld-link"
+      - "C:/Program Files/lld-link.com"
+      - "C:/Program Files/lld-link.exe"
+      - "C:/Program Files/lld-link"
+      - "C:/Program Files (x86)/bin/lld-link.com"
+      - "C:/Program Files (x86)/bin/lld-link.exe"
+      - "C:/Program Files (x86)/bin/lld-link"
+      - "C:/Program Files (x86)/sbin/lld-link.com"
+      - "C:/Program Files (x86)/sbin/lld-link.exe"
+      - "C:/Program Files (x86)/sbin/lld-link"
+      - "C:/Program Files (x86)/lld-link.com"
+      - "C:/Program Files (x86)/lld-link.exe"
+      - "C:/Program Files (x86)/lld-link"
+      - "C:/msys64/ucrt64/bin/lld-link.com"
+      - "C:/msys64/ucrt64/bin/lld-link.exe"
+      - "C:/msys64/ucrt64/bin/lld-link"
+      - "C:/msys64/ucrt64/sbin/lld-link.com"
+      - "C:/msys64/ucrt64/sbin/lld-link.exe"
+      - "C:/msys64/ucrt64/sbin/lld-link"
+      - "C:/msys64/ucrt64/lld-link.com"
+      - "C:/msys64/ucrt64/lld-link.exe"
+      - "C:/msys64/ucrt64/lld-link"
+      - "C:/Program Files/game/bin/lld-link.com"
+      - "C:/Program Files/game/bin/lld-link.exe"
+      - "C:/Program Files/game/bin/lld-link"
+      - "C:/Program Files/game/sbin/lld-link.com"
+      - "C:/Program Files/game/sbin/lld-link.exe"
+      - "C:/Program Files/game/sbin/lld-link"
+      - "C:/Program Files/game/lld-link.com"
+      - "C:/Program Files/game/lld-link.exe"
+      - "C:/Program Files/game/lld-link"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "C:/Users/Cameron/.gemini/antigravity/bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\Antigravity\\bin"
+        - "C:\\VulkanSDK\\1.4.350.0\\Bin"
+        - "C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common"
+        - "C:\\Program Files\\Common Files\\Oracle\\Java\\javapath"
+        - "C:\\Windows\\system32"
+        - "C:\\Windows"
+        - "C:\\Windows\\System32\\Wbem"
+        - "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+        - "C:\\Windows\\System32\\OpenSSH\\"
+        - "C:\\Program Files (x86)\\Calibre2\\"
+        - "C:\\Program Files\\dotnet\\"
+        - "C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\"
+        - "C:\\msys64\\ucrt64\\bin"
+        - "C:\\SFML-3.1.0"
+        - "C:\\Program Files\\Docker\\Docker\\resources\\bin"
+        - "C:\\Program Files\\nodejs\\"
+        - "C:\\Program Files\\Tailscale\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\Scripts\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Python\\Python39\\"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Microsoft\\WindowsApps"
+        - "C:\\Users\\Cameron\\.dotnet\\tools"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Local\\Programs\\Antigravity IDE\\bin"
+        - "C:\\Users\\Cameron\\AppData\\Roaming\\npm"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files/game"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "C:/Program Files"
+        - "C:/Program Files (x86)"
+        - "C:/msys64/ucrt64"
+        - "C:/Program Files/game"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:83 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1bloy4"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1bloy4"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1bloy4'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_5edf4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:13:41 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1bloy4\\cmTC_5edf4.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1bloy4\\Debug\\".
+          Creating directory "cmTC_5edf4.dir\\Debug\\cmTC_5edf4.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_5edf4.dir\\Debug\\cmTC_5edf4.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_5edf4.dir\\Debug\\cmTC_5edf4.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_5edf4.dir\\Debug\\\\" /Fd"cmTC_5edf4.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue C:\\msys64\\ucrt64\\share\\cmake\\Modules\\CMakeCCompilerABI.c
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_5edf4.dir\\Debug\\\\" /Fd"cmTC_5edf4.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue C:\\msys64\\ucrt64\\share\\cmake\\Modules\\CMakeCCompilerABI.c
+          CMakeCCompilerABI.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1bloy4\\Debug\\cmTC_5edf4.exe" /INCREMENTAL /ILK:"cmTC_5edf4.dir\\Debug\\cmTC_5edf4.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1bloy4/Debug/cmTC_5edf4.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1bloy4/Debug/cmTC_5edf4.lib" /MACHINE:X64  /machine:x64 cmTC_5edf4.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_5edf4.vcxproj -> C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1bloy4\\Debug\\cmTC_5edf4.exe
+        FinalizeBuildStatus:
+          Deleting file "cmTC_5edf4.dir\\Debug\\cmTC_5edf4.tlog\\unsuccessfulbuild".
+          Touching "cmTC_5edf4.dir\\Debug\\cmTC_5edf4.tlog\\cmTC_5edf4.lastbuildstate".
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1bloy4\\cmTC_5edf4.vcxproj" (default targets).
+        
+        Build succeeded.
+            0 Warning(s)
+            0 Error(s)
+        
+        Time Elapsed 00:00:00.90
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:253 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
+        linker tool for 'C': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/HostX64/x64/link.exe
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: []
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:38 (message)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:299 (cmake_determine_linker_id)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:2 (project)"
+    message: |
+      Running the C compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.38.33130/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.38.33130.0
+      Copyright (C) Microsoft Corporation.  All rights reserved.
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCCompilerFlag.cmake:105 (cmake_check_compiler_flag)"
+      - "build_msvc2/_deps/raylib-src/cmake/AddIfFlagCompiles.cmake:3 (CHECK_C_COMPILER_FLAG)"
+      - "build_msvc2/_deps/raylib-src/cmake/CompilerFlags.cmake:5 (add_if_flag_compiles)"
+      - "build_msvc2/_deps/raylib-src/CMakeLists.txt:34 (include)"
+    checks:
+      - "Performing Test COMPILER_HAS_THOSE_TOGGLES"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-dlgn8q"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-dlgn8q"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/cmake"
+    buildResult:
+      variable: "COMPILER_HAS_THOSE_TOGGLES"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-dlgn8q'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_c8831.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:13:43 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\cmTC_c8831.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\Debug\\".
+          Creating directory "cmTC_c8831.dir\\Debug\\cmTC_c8831.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_c8831.dir\\Debug\\cmTC_c8831.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_c8831.dir\\Debug\\cmTC_c8831.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D COMPILER_HAS_THOSE_TOGGLES /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_c8831.dir\\Debug\\\\" /Fd"cmTC_c8831.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue  -Werror=pointer-arith "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\src.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D COMPILER_HAS_THOSE_TOGGLES /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_c8831.dir\\Debug\\\\" /Fd"cmTC_c8831.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue  -Werror=pointer-arith "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\src.c"
+        cl : command line  error D8021: invalid numeric argument '/Werror=pointer-arith' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\cmTC_c8831.vcxproj]
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\cmTC_c8831.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\cmTC_c8831.vcxproj" (default target) (1) ->
+        (ClCompile target) -> 
+          cl : command line  error D8021: invalid numeric argument '/Werror=pointer-arith' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-dlgn8q\\cmTC_c8831.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.59
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:104 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:160 (check_c_source_compiles)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "build_msvc2/_deps/raylib-src/src/external/glfw/CMakeLists.txt:60 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1yk6s0"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1yk6s0"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/cmake;C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/src/external/glfw/CMake/modules"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-1yk6s0'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_4874f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:13:44 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\cmTC_4874f.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\Debug\\".
+          Creating directory "cmTC_4874f.dir\\Debug\\cmTC_4874f.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_4874f.dir\\Debug\\cmTC_4874f.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_4874f.dir\\Debug\\cmTC_4874f.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_4874f.dir\\Debug\\\\" /Fd"cmTC_4874f.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\src.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_4874f.dir\\Debug\\\\" /Fd"cmTC_4874f.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\src.c"
+          src.c
+        C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\cmTC_4874f.vcxproj]
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\cmTC_4874f.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\cmTC_4874f.vcxproj" (default target) (1) ->
+        (ClCompile target) -> 
+          C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-1yk6s0\\cmTC_4874f.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.72
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:238 (_threads_check_lib)"
+      - "build_msvc2/_deps/raylib-src/src/external/glfw/CMakeLists.txt:60 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-898rbz"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-898rbz"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/cmake;C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/src/external/glfw/CMake/modules"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-898rbz'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_b8e84.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:13:45 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\cmTC_b8e84.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\Debug\\".
+          Creating directory "cmTC_b8e84.dir\\Debug\\cmTC_b8e84.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_b8e84.dir\\Debug\\cmTC_b8e84.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_b8e84.dir\\Debug\\cmTC_b8e84.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_b8e84.dir\\Debug\\\\" /Fd"cmTC_b8e84.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_b8e84.dir\\Debug\\\\" /Fd"cmTC_b8e84.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\Debug\\cmTC_b8e84.exe" /INCREMENTAL /ILK:"cmTC_b8e84.dir\\Debug\\cmTC_b8e84.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-898rbz/Debug/cmTC_b8e84.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-898rbz/Debug/cmTC_b8e84.lib" /MACHINE:X64  /machine:x64 cmTC_b8e84.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\cmTC_b8e84.vcxproj]
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\cmTC_b8e84.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\cmTC_b8e84.vcxproj" (default target) (1) ->
+        (Link target) -> 
+          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-898rbz\\cmTC_b8e84.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:01.65
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/msys64/ucrt64/share/cmake/Modules/CheckLibraryExists.cmake:154 (try_compile)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake:239 (_threads_check_lib)"
+      - "build_msvc2/_deps/raylib-src/src/external/glfw/CMakeLists.txt:60 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-kglvz8"
+      binary: "C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-kglvz8"
+    cmakeVariables:
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
+      CMAKE_C_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/cmake;C:/Users/Cameron/game2/build_msvc2/_deps/raylib-src/src/external/glfw/CMake/modules"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-kglvz8'
+        
+        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_77d60.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
+        MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+        Build started 7/21/2026 1:13:48 AM.
+        
+        Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\cmTC_77d60.vcxproj" on node 1 (default targets).
+        PrepareForBuild:
+          Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
+          Creating directory "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\Debug\\".
+          Creating directory "cmTC_77d60.dir\\Debug\\cmTC_77d60.tlog\\".
+        InitializeBuildStatus:
+          Creating "cmTC_77d60.dir\\Debug\\cmTC_77d60.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_77d60.dir\\Debug\\cmTC_77d60.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_77d60.dir\\Debug\\\\" /Fd"cmTC_77d60.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.38.33130 for x64
+          Copyright (C) Microsoft Corporation.  All rights reserved.
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_77d60.dir\\Debug\\\\" /Fd"cmTC_77d60.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\Debug\\cmTC_77d60.exe" /INCREMENTAL /ILK:"cmTC_77d60.dir\\Debug\\cmTC_77d60.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-kglvz8/Debug/cmTC_77d60.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/Cameron/game2/build_msvc2/CMakeFiles/CMakeScratch/TryCompile-kglvz8/Debug/cmTC_77d60.lib" /MACHINE:X64  /machine:x64 cmTC_77d60.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\cmTC_77d60.vcxproj]
+        Done Building Project "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\cmTC_77d60.vcxproj" (default targets) -- FAILED.
+        
+        Build FAILED.
+        
+        "C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\cmTC_77d60.vcxproj" (default target) (1) ->
+        (Link target) -> 
+          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\Cameron\\game2\\build_msvc2\\CMakeFiles\\CMakeScratch\\TryCompile-kglvz8\\cmTC_77d60.vcxproj]
+        
+            0 Warning(s)
+            1 Error(s)
+        
+        Time Elapsed 00:00:00.96
+        
+      exitCode: 1
+...

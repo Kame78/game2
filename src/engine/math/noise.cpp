@@ -6,6 +6,7 @@ namespace engine::math {
 static WorldConfig g_config;
 static FastNoiseLite g_baseNoise;
 static FastNoiseLite g_mountainNoise;
+static FastNoiseLite g_mountainMassNoise;
 static FastNoiseLite g_detailNoise;
 static bool g_initialized = false;
 static uint64_t g_lastSeed = 0;
@@ -18,6 +19,7 @@ static void initNoise() {
     const int seedA = static_cast<int>(splitmix64(g_config.seed ^ 0x1111ULL));
     const int seedB = static_cast<int>(splitmix64(g_config.seed ^ 0x2222ULL));
     const int seedC = static_cast<int>(splitmix64(g_config.seed ^ 0x3333ULL));
+    const int seedD = static_cast<int>(splitmix64(g_config.seed ^ 0x4444ULL));
 
     // Base rolling terrain — smooth low-frequency simplex, fractal for variety
     g_baseNoise.SetSeed(seedA);
@@ -28,11 +30,20 @@ static void initNoise() {
     g_baseNoise.SetFractalLacunarity(2.0f);
     g_baseNoise.SetFractalGain(0.5f);
 
-    // Ridged mountains — sharp peaks, only kick in above threshold
+    // --- NEW: Broad 3D Mountain Mass (FBm Simplex gives 3D round mountain bodies with broad bases) ---
+    g_mountainMassNoise.SetSeed(seedD);
+    g_mountainMassNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+    g_mountainMassNoise.SetFrequency(0.0006f);
+    g_mountainMassNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
+    g_mountainMassNoise.SetFractalOctaves(4);
+    g_mountainMassNoise.SetFractalLacunarity(2.0f);
+    g_mountainMassNoise.SetFractalGain(0.5f);
+
+    // Ridged mountains — sharp peak details applied on top of mountain mass
     g_mountainNoise.SetSeed(seedB);
     g_mountainNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-    g_mountainNoise.SetFrequency(0.0005f); // Keeps the huge, wide bases
-    g_mountainNoise.SetFractalType(FastNoiseLite::FractalType_Ridged); // Ridged noise creates sharp, pointy peaks
+    g_mountainNoise.SetFrequency(0.0012f); 
+    g_mountainNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     g_mountainNoise.SetFractalOctaves(4);
     g_mountainNoise.SetFractalLacunarity(2.0f);
     g_mountainNoise.SetFractalGain(0.4f);
@@ -55,13 +66,23 @@ float RawTerrainHeight(float x, float z) {
     // Base terrain: -1..1 → -baseAmp..baseAmp
     float base = g_baseNoise.GetNoise(x, z) * g_config.baseAmplitude;
 
-    // Mountains: threshold + smooth ramp.
-    float ridge = g_mountainNoise.GetNoise(x, z);  // roughly -1..1
-    float mountain = 0.0f;
-    if (ridge > g_config.mountainThreshold) {
-        float t = (ridge - g_config.mountainThreshold) / (1.0f - g_config.mountainThreshold);
-        mountain = t * t * g_config.mountainAmplitude;  // squared for a smooth valley that shoots up into a sharp peak
-    }
+    // --- MODIFIED: Two-Tier Volumetric Mountain System with C1 Continuity ---
+    // Tier 1: Broad 3D Mountain Mass (FBm Simplex creates volumetric 3D bases with equal width in all directions)
+    float massVal = g_mountainMassNoise.GetNoise(x, z); // roughly -1..1
+    float massMask = (massVal > 0.0f) ? std::pow(massVal, 1.3f) : 0.0f;
+    float mountainMass = massMask * (g_config.mountainAmplitude * 0.75f);
+
+    // Tier 2: Pointy Peak Details (Ridged noise scaled smoothly by massMask to guarantee C1 mathematical continuity)
+    float ridge1 = g_mountainNoise.GetNoise(x, z);
+    float rx = x * 0.7071f - z * 0.7071f;
+    float rz = x * 0.7071f + z * 0.7071f;
+    float ridge2 = g_mountainNoise.GetNoise(rx, rz);
+    float ridge = (ridge1 + ridge2 * 0.5f) / 1.5f;
+
+    float ridgeT = (ridge > 0.1f) ? (ridge - 0.1f) / 0.9f : 0.0f;
+    float peakDetail = (ridgeT * ridgeT) * massMask * (g_config.mountainAmplitude * 0.25f);
+
+    float mountain = mountainMass + peakDetail;
 
     // Fine detail
     float detail = g_detailNoise.GetNoise(x, z) * g_config.detailAmplitude;

@@ -1,0 +1,14 @@
+# Target labels
+ rlimgui-populate
+# Source files and their labels
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/rlimgui-populate
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/0f92215fad38402e7aeb364eadaadd13/rlimgui-populate.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/7cb6d6a465cab67e7fdb590223925db8/rlimgui-populate-complete.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-build.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-configure.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-download.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-install.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-mkdir.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-patch.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-test.rule
+C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-update.rule

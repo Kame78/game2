@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\32db1af6de1b3dfc6577321ceb3466c5\imgui-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\5937606ea693c18b096da0c8154736e1\imgui-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\94b874a3b85fa0fdfb90e5aeaf0dc241\imgui-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-subbuild\CMakeFiles\imgui-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{F1756B57-5AAF-39D7-892F-154BA0AF51D7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

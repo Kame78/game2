@@ -1,0 +1,16 @@
+C:\Users\Cameron\game2\src\main.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\main.obj
+C:\Users\Cameron\game2\src\core\app.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\app.obj
+C:\Users\Cameron\game2\src\core\window.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\window.obj
+C:\Users\Cameron\game2\src\engine\input.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\input.obj
+C:\Users\Cameron\game2\src\engine\networking.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\networking.obj
+C:\Users\Cameron\game2\src\engine\math\noise.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\noise.obj
+C:\Users\Cameron\game2\src\engine\jobs\thread_pool.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\thread_pool.obj
+C:\Users\Cameron\game2\src\engine\terrain\chunk_manager.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\chunk_manager.obj
+C:\Users\Cameron\game2\src\game\game_app.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\game_app.obj
+C:\Users\Cameron\game2\src\game\systems.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\systems.obj
+C:\Users\Cameron\game2\src\game\world\world_gen.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\world_gen.obj
+C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src\rlImGui.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\rlImGui.obj
+C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\imgui.obj
+C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_draw.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\imgui_draw.obj
+C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_tables.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\imgui_tables.obj
+C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_widgets.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\imgui_widgets.obj

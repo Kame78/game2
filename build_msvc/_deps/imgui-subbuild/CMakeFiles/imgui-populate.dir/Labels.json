@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/imgui-populate"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/94b874a3b85fa0fdfb90e5aeaf0dc241/imgui-populate.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/5937606ea693c18b096da0c8154736e1/imgui-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/imgui-subbuild/CMakeFiles/32db1af6de1b3dfc6577321ceb3466c5/imgui-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"imgui-populate"
+		],
+		"name" : "imgui-populate"
+	}
+}

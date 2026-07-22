@@ -8,11 +8,14 @@
 #include <cmath>
 #include <cstdlib>
 #include <unordered_map>
+#include "imgui.h"
 
 namespace game::systems {
 
+    static bool g_showEditor = false;
+    static float g_playerMoveSpeed = 10.0f;
+
     static constexpr float MOUSE_SENSITIVITY = 0.003f;
-    static constexpr float MOVE_SPEED = 10.0f;
     static constexpr float EYE_HEIGHT = 2.0f;
     static constexpr float GRAVITY = 20.0f;
     static constexpr float JUMP_FORCE = 8.0f;
@@ -60,19 +63,22 @@ namespace game::systems {
             Vector3 right   = {-cosf(cam.yaw), 0.0f, sinf(cam.yaw)};
 
             Vector3 moveDir = {0.0f, 0.0f, 0.0f};
-            if (engine::input::IsActionDown("MoveForward"))  moveDir = Vector3Add(moveDir, forward);
-            if (engine::input::IsActionDown("MoveBackward")) moveDir = Vector3Subtract(moveDir, forward);
-            if (engine::input::IsActionDown("MoveRight"))    moveDir = Vector3Add(moveDir, right);
-            if (engine::input::IsActionDown("MoveLeft"))     moveDir = Vector3Subtract(moveDir, right);
+            if (engine::input::IsCursorLocked()) {
+                if (engine::input::IsActionDown("MoveForward"))  moveDir = Vector3Add(moveDir, forward);
+                if (engine::input::IsActionDown("MoveBackward")) moveDir = Vector3Subtract(moveDir, forward);
+                if (engine::input::IsActionDown("MoveRight"))    moveDir = Vector3Add(moveDir, right);
+                if (engine::input::IsActionDown("MoveLeft"))     moveDir = Vector3Subtract(moveDir, right);
+            }
 
             if (Vector3Length(moveDir) > 0.0f) {
                 moveDir = Vector3Normalize(moveDir);
             }
 
-            transform.position.x += moveDir.x * MOVE_SPEED * dt;
-            transform.position.z += moveDir.z * MOVE_SPEED * dt;
+            transform.position.x += moveDir.x * g_playerMoveSpeed * dt;
+            transform.position.z += moveDir.z * g_playerMoveSpeed * dt;
 
             // --- Cube collision against all renderable entities ---
+            if (!input.noClip) {
             for (size_t j = 0; j < reg.renderables.data.size(); j++) {
                 engine::ecs::Entity other = {reg.renderables.indexToEntity[j]};
                 if (other == e) continue;
@@ -115,24 +121,37 @@ namespace game::systems {
                     }
                 }
             }
+            } // end !input.noClip
 
             // --- Jump ---
-            if (engine::input::IsActionPressed("Jump") && input.grounded) {
+            if (engine::input::IsCursorLocked() && engine::input::IsActionPressed("Jump") && input.grounded) {
                 input.velocityY = JUMP_FORCE;
                 input.grounded = false;
             }
 
-            // --- Gravity ---
-            input.velocityY -= GRAVITY * dt;
-            transform.position.y += input.velocityY * dt;
+            // --- Gravity / Flight ---
+            if (!input.isFlying) {
+                input.velocityY -= GRAVITY * dt;
+                transform.position.y += input.velocityY * dt;
+            } else {
+                input.velocityY = 0.0f;
+                if (engine::input::IsCursorLocked()) {
+                    if (engine::input::IsActionDown("Jump")) transform.position.y += g_playerMoveSpeed * dt;
+                    if (IsKeyDown(KEY_LEFT_SHIFT))           transform.position.y -= g_playerMoveSpeed * dt;
+                }
+            }
 
             // --- Terrain floor collision (sample world height under player) ---
-            float groundY = engine::math::WorldHeight(transform.position.x, transform.position.z);
-            float eyeY    = groundY + EYE_HEIGHT;
-            if (transform.position.y < eyeY) {
-                transform.position.y = eyeY;
-                input.velocityY = 0.0f;
-                input.grounded = true;
+            if (!input.noClip) {
+                float groundY = engine::math::WorldHeight(transform.position.x, transform.position.z);
+                float eyeY    = groundY + EYE_HEIGHT;
+                if (transform.position.y < eyeY) {
+                    transform.position.y = eyeY;
+                    input.velocityY = 0.0f;
+                    input.grounded = true;
+                }
+            } else {
+                input.grounded = false;
             }
 
             // --- Sync camera to transform + angles ---
@@ -655,6 +674,65 @@ namespace game::systems {
             DrawRectangle(barX, barY, (int)(barW * ratio), barH, barColor);
             DrawRectangleLines(barX, barY, barW, barH, BLACK);
         }
+    }
+
+    void EditorInputSystem(engine::ecs::Registry& reg) {
+        // Toggle editor with ~ (KEY_GRAVE), F2, or P
+        if (IsKeyPressed(KEY_GRAVE) || IsKeyPressed(KEY_F2) || IsKeyPressed(KEY_P)) {
+            g_showEditor = !g_showEditor;
+            if (g_showEditor) {
+                engine::input::UnlockCursor();
+            } else {
+                engine::input::LockCursor();
+            }
+        }
+
+        if (g_showEditor) {
+            // While editor is open, press Left Alt to toggle mouse look vs mouse cursor
+            if (IsKeyPressed(KEY_LEFT_ALT)) {
+                if (engine::input::IsCursorLocked()) engine::input::UnlockCursor();
+                else engine::input::LockCursor();
+            }
+        }
+    }
+
+    void EditorUISystem(engine::ecs::Registry& reg) {
+        if (!g_showEditor) return;
+
+        ImGui::Begin("Developer Editor (~ / F2 / P)");
+        ImGui::Text("Press LEFT ALT to toggle mouse lock.");
+        ImGui::Separator();
+        
+        if (!reg.playerInputs.data.empty()) {
+            engine::ecs::Entity playerE = {reg.playerInputs.indexToEntity[0]};
+            if (reg.playerInputs.Has(playerE)) {
+                auto& input = reg.playerInputs.Get(playerE);
+                ImGui::Checkbox("Flight Mode", &input.isFlying);
+                ImGui::Checkbox("NoClip", &input.noClip);
+            }
+        }
+
+        ImGui::SliderFloat("Move Speed", &g_playerMoveSpeed, 5.0f, 100.0f);
+        
+        // Developer Mode Coordinates Readout
+        ImGui::Separator();
+        ImGui::Text("Dev Coordinates:");
+        if (!reg.transforms.data.empty()) {
+            engine::ecs::Entity playerE = {reg.transforms.indexToEntity[0]};
+            if (reg.transforms.Has(playerE)) {
+                auto& t = reg.transforms.Get(playerE);
+                ImGui::Text("Position: X: %.2f | Y: %.2f | Z: %.2f", t.position.x, t.position.y, t.position.z);
+            }
+        }
+        if (!reg.cameras.data.empty()) {
+            engine::ecs::Entity playerE = {reg.cameras.indexToEntity[0]};
+            if (reg.cameras.Has(playerE)) {
+                auto& c = reg.cameras.Get(playerE);
+                ImGui::Text("Facing Yaw: %.2f rad", c.yaw);
+            }
+        }
+
+        ImGui::End();
     }
 
 }

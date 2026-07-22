@@ -13,8 +13,21 @@ FetchContent_Declare(
 	GIT_TAG 5.5
 	GIT_SHALLOW TRUE
 )
-
 FetchContent_MakeAvailable(raylib)
+
+FetchContent_Declare(
+	rlImGui
+	GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+	GIT_TAG main
+	GIT_SHALLOW TRUE
+)
+FetchContent_Declare(
+	imgui
+	GIT_REPOSITORY https://github.com/ocornut/imgui.git
+	GIT_TAG master
+	GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(rlImGui imgui)
 
 add_executable(game
 	src/main.cpp
@@ -27,11 +40,18 @@ add_executable(game
 	src/engine/terrain/chunk_manager.cpp
 	src/game/game_app.cpp
 	src/game/systems.cpp
-	src/game/world/world_gen.cpp)
+	src/game/world/world_gen.cpp
+	${rlimgui_SOURCE_DIR}/rlImGui.cpp
+	${imgui_SOURCE_DIR}/imgui.cpp
+	${imgui_SOURCE_DIR}/imgui_draw.cpp
+	${imgui_SOURCE_DIR}/imgui_tables.cpp
+	${imgui_SOURCE_DIR}/imgui_widgets.cpp)
 
 target_include_directories(game PRIVATE
 	include
-	${CMAKE_SOURCE_DIR}/vendor/FastNoiseLite)
+	${CMAKE_SOURCE_DIR}/vendor/FastNoiseLite
+	${rlimgui_SOURCE_DIR}
+	${imgui_SOURCE_DIR})
 
 # Threads (thread pool for background terrain generation)
 find_package(Threads REQUIRED)

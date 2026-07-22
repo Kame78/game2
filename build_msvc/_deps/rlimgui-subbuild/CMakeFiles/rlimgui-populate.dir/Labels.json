@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/rlimgui-populate"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/0f92215fad38402e7aeb364eadaadd13/rlimgui-populate.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/7cb6d6a465cab67e7fdb590223925db8/rlimgui-populate-complete.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-build.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-configure.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-download.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-install.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-patch.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-test.rule"
+		},
+		{
+			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/abc4799fae04ced1e5fab87c0206510e/rlimgui-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"rlimgui-populate"
+		],
+		"name" : "rlimgui-populate"
+	}
+}

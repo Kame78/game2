@@ -1,0 +1,10 @@
+^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\0F92215FAD38402E7AEB364EADAADD13\GENERATE.STAMP.RULE
+setlocal
+C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild -BC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

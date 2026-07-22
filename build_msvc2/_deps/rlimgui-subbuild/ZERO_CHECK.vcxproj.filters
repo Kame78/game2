@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc2\_deps\rlimgui-subbuild\CMakeFiles\e1e42e8ca3db8e22a09060ac946629e6\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{18271C2D-D0C3-388C-94E3-04BBEAA13BDA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

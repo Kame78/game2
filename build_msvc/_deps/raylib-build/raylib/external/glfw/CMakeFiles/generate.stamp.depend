@@ -1,0 +1,14 @@
+# CMake generation dependency list for this directory.
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/src/external/glfw/CMake/glfw3Config.cmake.in
+C:/Users/Cameron/game2/build_msvc/_deps/raylib-src/src/external/glfw/CMakeLists.txt
+C:/msys64/ucrt64/share/cmake/Modules/BasicConfigVersion-SameMajorVersion.cmake.in
+C:/msys64/ucrt64/share/cmake/Modules/CMakeDependentOption.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CMakePackageConfigHelpers.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CheckCSourceCompiles.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CheckIncludeFile.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CheckLibraryExists.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindPackageHandleStandardArgs.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindPackageMessage.cmake
+C:/msys64/ucrt64/share/cmake/Modules/FindThreads.cmake
+C:/msys64/ucrt64/share/cmake/Modules/GNUInstallDirs.cmake
+C:/msys64/ucrt64/share/cmake/Modules/WriteBasicConfigVersionFile.cmake
