@@ -175,6 +175,7 @@ namespace Game::GameApp {
             ClearBackground({180, 200, 220, 255});
             auto& cam = registry.cameras.Get(playerEntity).camera;
             
+            rlSetClipPlanes(0.1f, 3000.0f);
             BeginMode3D(cam);
                 // --- RESTORED: Draw terrain heightmap chunks in 3D pass ---
                 engine::terrain::chunks::Draw();
@@ -187,6 +188,7 @@ namespace Game::GameApp {
                     game::systems::DrawRemotePlayer(remote);
                 }
             EndMode3D();
+            rlSetClipPlanes(0.01f, 1000.0f);
         } else {
             ClearBackground({15, 15, 25, 255});
         }
