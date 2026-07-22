@@ -7,7 +7,16 @@ C:\Users\Cameron\game2\src\engine\math\noise.cpp;C:\Users\Cameron\game2\build_ms
 C:\Users\Cameron\game2\src\engine\jobs\thread_pool.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\thread_pool.obj
 C:\Users\Cameron\game2\src\engine\terrain\chunk_manager.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\chunk_manager.obj
 C:\Users\Cameron\game2\src\game\game_app.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\game_app.obj
-C:\Users\Cameron\game2\src\game\systems.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\systems.obj
+C:\Users\Cameron\game2\src\game\factories\entity_factory.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\entity_factory.obj
+C:\Users\Cameron\game2\src\game\ui\menu_screens.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\menu_screens.obj
+C:\Users\Cameron\game2\src\game\ui\hud.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\hud.obj
+C:\Users\Cameron\game2\src\game\systems\player_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\player_system.obj
+C:\Users\Cameron\game2\src\game\systems\combat_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\combat_system.obj
+C:\Users\Cameron\game2\src\game\systems\enemy_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\enemy_system.obj
+C:\Users\Cameron\game2\src\game\systems\spawner_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\spawner_system.obj
+C:\Users\Cameron\game2\src\game\systems\render_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\render_system.obj
+C:\Users\Cameron\game2\src\game\systems\network_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\network_system.obj
+C:\Users\Cameron\game2\src\game\systems\editor_system.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\editor_system.obj
 C:\Users\Cameron\game2\src\game\world\world_gen.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\world_gen.obj
 C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src\rlImGui.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\rlImGui.obj
 C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui.cpp;C:\Users\Cameron\game2\build_msvc\game.dir\Release\imgui.obj

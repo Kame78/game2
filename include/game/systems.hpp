@@ -3,6 +3,9 @@
 #include "engine/networking.hpp"
 
 namespace game::systems {
+    extern bool g_showEditor;
+    extern float g_playerMoveSpeed;
+
     void PlayerMovementSystem(engine::ecs::Registry& registry);
     void CombatSystem(engine::ecs::Registry& registry);
     void ProjectileSystem(engine::ecs::Registry& registry);

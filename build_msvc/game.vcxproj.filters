@@ -28,7 +28,34 @@
     <ClCompile Include="C:\Users\Cameron\game2\src\game\game_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems.cpp">
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\factories\entity_factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\menu_screens.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\hud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\player_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\combat_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\enemy_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\spawner_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\render_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\network_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\editor_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\Cameron\game2\src\game\world\world_gen.cpp">

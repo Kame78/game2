@@ -39,7 +39,16 @@ add_executable(game
 	src/engine/jobs/thread_pool.cpp
 	src/engine/terrain/chunk_manager.cpp
 	src/game/game_app.cpp
-	src/game/systems.cpp
+	src/game/factories/entity_factory.cpp
+	src/game/ui/menu_screens.cpp
+	src/game/ui/hud.cpp
+	src/game/systems/player_system.cpp
+	src/game/systems/combat_system.cpp
+	src/game/systems/enemy_system.cpp
+	src/game/systems/spawner_system.cpp
+	src/game/systems/render_system.cpp
+	src/game/systems/network_system.cpp
+	src/game/systems/editor_system.cpp
 	src/game/world/world_gen.cpp
 	${rlimgui_SOURCE_DIR}/rlImGui.cpp
 	${imgui_SOURCE_DIR}/imgui.cpp

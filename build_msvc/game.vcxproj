@@ -493,7 +493,16 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\Cameron\game2\src\engine\jobs\thread_pool.cpp" />
     <ClCompile Include="C:\Users\Cameron\game2\src\engine\terrain\chunk_manager.cpp" />
     <ClCompile Include="C:\Users\Cameron\game2\src\game\game_app.cpp" />
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\factories\entity_factory.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\menu_screens.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\hud.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\player_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\combat_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\enemy_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\spawner_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\render_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\network_system.cpp" />
+    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\editor_system.cpp" />
     <ClCompile Include="C:\Users\Cameron\game2\src\game\world\world_gen.cpp" />
     <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src\rlImGui.cpp" />
     <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui.cpp" />

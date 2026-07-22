@@ -31,9 +31,27 @@ struct WorldConfig {
 
     // World grid in meters — Skyrim-scale target (~6 km per side, ~37 km²)
     static constexpr float CHUNK_SIZE        = 128.0f;
-    static constexpr int   CHUNK_RESOLUTION  = 32;   // vertices per chunk edge
-    static constexpr int   LOAD_RADIUS       = 3;    // 7x7 = 49 chunks loaded (~450 m visible)
+    static constexpr int   CHUNK_RESOLUTION  = 32;   // default/LOD0 resolution
+    static constexpr int   LOAD_RADIUS       = 12;   // 25x25 = 625 chunks (~1.5 km view distance)
+    static constexpr int   UNLOAD_RADIUS     = 14;   // Unload hysteresis buffer (~1.8 km)
     static constexpr float WORLD_HALF_EXTENT = 3000.0f;  // ±3 km from origin
+
+    // --- NEW: Multi-Level Terrain LOD Definitions ---
+    static constexpr int LOD0_RADIUS = 3;  // LOD 0: 0..3 chunks (~384m) -> 32x32 resolution
+    static constexpr int LOD1_RADIUS = 7;  // LOD 1: 4..7 chunks (~896m) -> 16x16 resolution
+                                           // LOD 2: 8..12 chunks (~1.5km) -> 8x8 resolution
+
+    static inline int GetLODForDistance(int dist) {
+        if (dist <= LOD0_RADIUS) return 0;
+        if (dist <= LOD1_RADIUS) return 1;
+        return 2;
+    }
+
+    static inline int GetResolutionForLOD(int lod) {
+        if (lod == 0) return 32;
+        if (lod == 1) return 16;
+        return 8;
+    }
 
     // Height layer amplitudes (world units)
     float baseAmplitude     = 8.0f;    // rolling hills
@@ -41,6 +59,14 @@ struct WorldConfig {
     float detailAmplitude   = 1.5f;    // small variation
     float mountainThreshold = 0.10f;   // Ridged noise > this becomes mountain
 };
+
+inline int GetLODForDistance(int dist) {
+    return WorldConfig::GetLODForDistance(dist);
+}
+
+inline int GetResolutionForLOD(int lod) {
+    return WorldConfig::GetResolutionForLOD(lod);
+}
 
 // Global world config — set once at startup, then read from anywhere.
 WorldConfig& GetWorldConfig();
