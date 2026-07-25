@@ -21,7 +21,7 @@ namespace chunks {
     // Call inside BeginMode3D / EndMode3D.
     void Draw();
 
-    // Instanced grass (LOD0 chunks). Call after Draw(), before water/landmarks.
+    // Instanced grass with distance LODs (baked on LOD0 chunks). Call after Draw().
     void DrawGrass(Vector3 viewPos);
 
     // Optional debug overlays (chunk AABB wires). Call inside BeginMode3D after Draw().
@@ -37,6 +37,18 @@ namespace chunks {
     size_t LoadedChunkCount();
     size_t PendingUploadCount();
     size_t GrassInstanceCount();
+
+    // Live grass counters (updated each DrawGrass). Baked = loaded LOD0 lists; draw = last frame.
+    struct GrassDrawStats {
+        size_t bakedNear = 0;
+        size_t bakedMid  = 0;
+        size_t bakedFar  = 0;
+        size_t drawNear  = 0;
+        size_t drawMid   = 0;
+        size_t drawFar   = 0;
+        size_t approxTris = 0; // drawNear*clumpTris + (drawMid+drawFar)*impostorTris
+    };
+    const GrassDrawStats& GetGrassDrawStats();
 
     void SetShowChunkBounds(bool show);
     bool GetShowChunkBounds();
@@ -56,15 +68,57 @@ namespace chunks {
     float GetHazeEnd();
     float GetHazeStrength();
 
-    // Grass — density/slope/spacing changes need ReloadAround to rebuild instances.
+    // Grass — bake knobs need ReloadAround; LOD distances + enable are live.
     void SetGrassEnabled(bool enabled);
     bool GetGrassEnabled();
-    void SetGrassDensity(float density);       // 0..2 (1 = default)
+    void SetGrassDensity(float density);       // master 0..2 (1 = default)
     float GetGrassDensity();
     void SetGrassMaxSlope(float slope);        // TerrainSlope threshold
     float GetGrassMaxSlope();
-    void SetGrassDrawDistance(float meters);
+
+    // Distance LOD bands (meters). near < mid < far. Live (no rebuild).
+    void SetGrassNearDistance(float meters);
+    float GetGrassNearDistance();
+    void SetGrassMidDistance(float meters);
+    float GetGrassMidDistance();
+    void SetGrassFarDistance(float meters);
+    float GetGrassFarDistance();
+    void SetGrassDrawDistance(float meters); // alias for far
     float GetGrassDrawDistance();
+
+    // Per-band density multipliers (relative to master density). Rebuild to apply.
+    void SetGrassNearDensity(float mul);
+    float GetGrassNearDensity();
+    void SetGrassMidDensity(float mul);
+    float GetGrassMidDensity();
+    void SetGrassFarDensity(float mul);
+    float GetGrassFarDensity();
+
+    // Cluster placement (near bake). Rebuild to apply.
+    void SetGrassClusterMin(int n);
+    int  GetGrassClusterMin();
+    void SetGrassClusterMax(int n);
+    int  GetGrassClusterMax();
+    void SetGrassClusterRadius(float meters); // max patch disk radius
+    float GetGrassClusterRadius();
+    void SetGrassSeedSpacing(float meters);   // patch center spacing (independent of master density)
+    float GetGrassSeedSpacing();
+
+    // Meadow clearings. Rebuild to apply.
+    void SetGrassMeadowStrength(float strength); // 0=carpet, higher=more clearings
+    float GetGrassMeadowStrength();
+    void SetGrassMeadowScale(float scale);       // noise frequency (~0.01–0.08)
+    float GetGrassMeadowScale();
+
+    // Instance scale multipliers (× base clump scale). Rebuild to apply.
+    void SetGrassScaleMin(float mul);
+    float GetGrassScaleMin();
+    void SetGrassScaleMax(float mul);
+    float GetGrassScaleMax();
+
+    // Ground sink in centimeters. Rebuild to apply.
+    void SetGrassSinkCm(float cm);
+    float GetGrassSinkCm();
 }
 
 }  // namespace engine::terrain

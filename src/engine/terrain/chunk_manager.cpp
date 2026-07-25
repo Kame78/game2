@@ -372,26 +372,61 @@ static void applyTerrainShader(Model& model) {
 }
 
 // ---------------------------------------------------------------------------
-// Instanced grass (Poly Haven grass_medium clump, LOD0 chunks only)
+// Instanced grass — chunk-streamed bake + distance LODs at draw
+// ---------------------------------------------------------------------------
+// Near: full Poly Haven clump mesh. Mid/Far: shared cross-quad impostor.
+// Bake runs with terrain chunks (LOD0 only); lists unload with the chunk.
 // ---------------------------------------------------------------------------
 static bool     g_grassEnabled = true;
 static float    g_grassDensity = 1.0f;
 static float    g_grassMaxSlope = 0.32f;
-static float    g_grassDrawDistance = 220.0f;
+static float    g_grassNearDist = 20.0f;
+static float    g_grassMidDist = 45.0f;
+static float    g_grassFarDist = 100.0f;
+static float    g_grassNearDensMul = 1.40f;
+static float    g_grassMidDensMul = 0.55f;
+static float    g_grassFarDensMul = 0.18f;
+// Cluster / meadow / scale knobs — radius ≥ ~0.7× spacing so patches merge.
+static int      g_grassClusterMin = 6;
+static int      g_grassClusterMax = 12;
+static float    g_grassClusterRadius = 2.40f;   // max patch disk radius (m)
+static float    g_grassSeedSpacing = 2.60f;     // hex lattice spacing (m)
+static float    g_grassMeadowStrength = 0.0f;   // OFF by default — was carving large empty bands
+static float    g_grassMeadowScale = 0.022f;    // noise frequency
+static float    g_grassScaleMin = 0.78f;
+static float    g_grassScaleMax = 1.28f;
+static float    g_grassSink = 0.02f;            // meters into terrain
 static constexpr float kGrassWaterGateMax = 0.12f;
-static constexpr int   kGrassMaxPerChunk = 1400; // denser plains coverage cap
-static constexpr int   kGrassMaxLod = 0; // only near LOD0 rings
-// Source mesh is ~0.323 m tall, bottom-origin. Scale ≈4 → ~1.3 m clumps.
-static constexpr float kGrassMeshHeight = 0.323f;
+// Near clustered patches. Cap must not abort lattice early (that caused Z-stripes).
+static constexpr int   kGrassMaxNearPerChunk = 4800;
+static constexpr int   kGrassMaxMidPerChunk  = 220;
+static constexpr int   kGrassMaxFarPerChunk  = 80;
+static constexpr int   kGrassMaxNearDraw = 7500;
+static constexpr int   kGrassMaxMidDraw  = 3200;
+static constexpr int   kGrassMaxFarDraw  = 1600;
+static constexpr int   kGrassChunkLodMax = 0; // bake only on terrain LOD0 chunks
+static float    g_grassClumpHeight = 0.323f;
+static float    g_grassImpostorHeight = 0.32f;
 static constexpr float kGrassBaseScale = 3.9f;
-static constexpr float kGrassSink = 0.02f; // bury 2 cm so slopes don't show gaps
+static constexpr float kGrassImpostorScale = 4.2f;
+static chunks::GrassDrawStats g_grassDrawStats = {};
+
+struct GrassBake {
+    std::vector<Matrix> near; // full clump mesh
+    std::vector<Matrix> mid;  // impostor
+    std::vector<Matrix> far;  // sparse impostor
+};
 
 static Shader   g_grassShader = {};
-static Material g_grassMaterial = {};
-static Model    g_grassModel = {};
-static Mesh*    g_grassMesh = nullptr; // owned by g_grassModel
+static Material g_grassClumpMaterial = {};
+static Material g_grassImpostorMaterial = {};
+static Model    g_grassClumpModel = {};
+static Model    g_grassImpostorModel = {};
+static Mesh*    g_grassClumpMesh = nullptr;
+static Mesh*    g_grassImpostorMesh = nullptr;
 static Texture  g_grassTexture = {};
 static bool     g_grassOwnsTexture = false;
+static bool     g_grassClumpIsFallback = false;
 static bool     g_grassReady = false;
 static int      g_grassLocTime = -1;
 static int      g_grassLocViewPos = -1;
@@ -401,17 +436,76 @@ static int      g_grassLocSunDir = -1;
 static int      g_grassLocSunIntensity = -1;
 static int      g_grassLocMeshHeight = -1;
 
-static void loadGrassMaterials() {
-    if (g_grassReady) return;
+static void clampGrassLodDistances() {
+    g_grassNearDist = std::clamp(g_grassNearDist, 6.0f, 80.0f);
+    g_grassMidDist = std::clamp(g_grassMidDist, g_grassNearDist + 4.0f, 200.0f);
+    g_grassFarDist = std::clamp(g_grassFarDist, g_grassMidDist + 8.0f, 400.0f);
+}
 
-    std::string vs = makeAssetPath("assets/shaders/grass.vs");
-    std::string fs = makeAssetPath("assets/shaders/grass.fs");
-    g_grassShader = LoadShader(vs.c_str(), fs.c_str());
-    if (g_grassShader.id == 0) {
-        TraceLog(LOG_WARNING, "GRASS: shader failed to load");
-        return;
+// Crossed-quad impostor (bottom-origin). uAtlas=true samples a bottom clump on the albedo.
+static Model makeGrassBillboardModel(bool uAtlas) {
+    constexpr float W = 0.22f;
+    constexpr float H = 0.32f;
+    Mesh mesh = {};
+    mesh.vertexCount = 8;
+    mesh.triangleCount = 4;
+    mesh.vertices = static_cast<float*>(MemAlloc(8 * 3 * sizeof(float)));
+    mesh.texcoords = static_cast<float*>(MemAlloc(8 * 2 * sizeof(float)));
+    mesh.normals = static_cast<float*>(MemAlloc(8 * 3 * sizeof(float)));
+    mesh.colors = static_cast<unsigned char*>(MemAlloc(8 * 4 * sizeof(unsigned char)));
+    mesh.indices = static_cast<unsigned short*>(MemAlloc(4 * 3 * sizeof(unsigned short)));
+
+    // Atlas: bottom clumps live at high V after raylib/stbi upload (image top = v~0).
+    const float u0 = uAtlas ? 0.08f : 0.0f;
+    const float u1 = uAtlas ? 0.28f : 1.0f;
+    const float v0 = uAtlas ? 0.98f : 1.0f; // bottom of card → grass roots
+    const float v1 = uAtlas ? 0.62f : 0.0f; // tip
+
+    auto setV = [&](int i, float x, float y, float z, float u, float v, float nx, float nz) {
+        mesh.vertices[i * 3 + 0] = x;
+        mesh.vertices[i * 3 + 1] = y;
+        mesh.vertices[i * 3 + 2] = z;
+        mesh.texcoords[i * 2 + 0] = u;
+        mesh.texcoords[i * 2 + 1] = v;
+        mesh.normals[i * 3 + 0] = nx;
+        mesh.normals[i * 3 + 1] = 0.0f;
+        mesh.normals[i * 3 + 2] = nz;
+        mesh.colors[i * 4 + 0] = 180;
+        mesh.colors[i * 4 + 1] = 200;
+        mesh.colors[i * 4 + 2] = 90;
+        mesh.colors[i * 4 + 3] = 255;
+    };
+
+    setV(0, -W, 0.0f, 0.0f, u0, v0, 0.0f, 1.0f);
+    setV(1,  W, 0.0f, 0.0f, u1, v0, 0.0f, 1.0f);
+    setV(2,  W, H,    0.0f, u1, v1, 0.0f, 1.0f);
+    setV(3, -W, H,    0.0f, u0, v1, 0.0f, 1.0f);
+    setV(4, 0.0f, 0.0f, -W, u0, v0, 1.0f, 0.0f);
+    setV(5, 0.0f, 0.0f,  W, u1, v0, 1.0f, 0.0f);
+    setV(6, 0.0f, H,     W, u1, v1, 1.0f, 0.0f);
+    setV(7, 0.0f, H,    -W, u0, v1, 1.0f, 0.0f);
+
+    const unsigned short idx[] = {0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7};
+    std::memcpy(mesh.indices, idx, sizeof(idx));
+    UploadMesh(&mesh, false);
+    g_grassImpostorHeight = H;
+    return LoadModelFromMesh(mesh);
+}
+
+static float measureMeshHeightY(const Mesh& mesh) {
+    if (mesh.vertices == nullptr || mesh.vertexCount <= 0) return 0.323f;
+    float minY = mesh.vertices[1];
+    float maxY = minY;
+    for (int i = 0; i < mesh.vertexCount; ++i) {
+        const float y = mesh.vertices[i * 3 + 1];
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
     }
+    const float h = maxY - minY;
+    return (h > 0.05f) ? h : 0.323f;
+}
 
+static void bindGrassShaderLocs() {
     g_grassShader.locs[SHADER_LOC_MATRIX_MVP] =
         GetShaderLocation(g_grassShader, "mvp");
     g_grassShader.locs[SHADER_LOC_MATRIX_MODEL] =
@@ -436,67 +530,121 @@ static void loadGrassMaterials() {
     g_grassLocSunDir = GetShaderLocation(g_grassShader, "sunDir");
     g_grassLocSunIntensity = GetShaderLocation(g_grassShader, "sunIntensity");
     g_grassLocMeshHeight = GetShaderLocation(g_grassShader, "meshHeight");
+}
 
-    std::string modelPath = makeAssetPath("assets/models/grass/grass_medium.obj");
-    g_grassModel = LoadModel(modelPath.c_str());
-    if (g_grassModel.meshCount <= 0 || g_grassModel.meshes == nullptr) {
-        TraceLog(LOG_WARNING, "GRASS: failed to load model %s", modelPath.c_str());
+static void loadGrassMaterials() {
+    if (g_grassReady) return;
+    clampGrassLodDistances();
+
+    std::string vs = makeAssetPath("assets/shaders/grass.vs");
+    std::string fs = makeAssetPath("assets/shaders/grass.fs");
+    g_grassShader = LoadShader(vs.c_str(), fs.c_str());
+    if (g_grassShader.id == 0) {
+        TraceLog(LOG_ERROR, "GRASS: shader failed to load (%s / %s)", vs.c_str(), fs.c_str());
+        return;
+    }
+    bindGrassShaderLocs();
+    if (g_grassShader.locs[SHADER_LOC_MATRIX_MODEL] < 0) {
+        TraceLog(LOG_ERROR, "GRASS: instanceTransform attrib missing — instancing disabled");
         UnloadShader(g_grassShader);
         g_grassShader = {};
         return;
     }
-    g_grassMesh = &g_grassModel.meshes[0];
+
+    auto loadSolidGrassTex = [&]() {
+        Image fallback = GenImageColor(4, 4, Color{180, 200, 90, 255});
+        g_grassTexture = LoadTextureFromImage(fallback);
+        UnloadImage(fallback);
+        g_grassOwnsTexture = true;
+    };
 
     std::string texPath = makeAssetPath("assets/models/grass/grass_albedo.png");
     Image img = LoadImage(texPath.c_str());
-    if (img.data != nullptr) {
+    bool haveAtlas = img.data != nullptr;
+    if (haveAtlas) {
         ImageFormat(&img, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+        if (img.width > 512 || img.height > 512) ImageResize(&img, 512, 512);
         g_grassTexture = LoadTextureFromImage(img);
         UnloadImage(img);
         GenTextureMipmaps(&g_grassTexture);
         SetTextureFilter(g_grassTexture, TEXTURE_FILTER_BILINEAR);
         g_grassOwnsTexture = true;
     } else {
-        TraceLog(LOG_WARNING, "GRASS: albedo missing (%s), using white", texPath.c_str());
-        Image fallback = GenImageColor(4, 4, Color{180, 200, 90, 255});
-        g_grassTexture = LoadTextureFromImage(fallback);
-        UnloadImage(fallback);
-        g_grassOwnsTexture = true;
+        TraceLog(LOG_WARNING, "GRASS: albedo missing (%s), using solid green", texPath.c_str());
+        loadSolidGrassTex();
     }
 
-    g_grassMaterial = LoadMaterialDefault();
-    g_grassMaterial.shader = g_grassShader;
-    g_grassMaterial.maps[MATERIAL_MAP_ALBEDO].texture = g_grassTexture;
-    g_grassMaterial.maps[MATERIAL_MAP_ALBEDO].color = WHITE;
+    // Always build impostor mesh (mid/far + clump fallback).
+    g_grassImpostorModel = makeGrassBillboardModel(haveAtlas);
+    g_grassImpostorMesh = &g_grassImpostorModel.meshes[0];
+
+    std::string modelPath = makeAssetPath("assets/models/grass/grass_medium.obj");
+    g_grassClumpModel = LoadModel(modelPath.c_str());
+    g_grassClumpIsFallback = false;
+    if (g_grassClumpModel.meshCount <= 0 || g_grassClumpModel.meshes == nullptr ||
+        g_grassClumpModel.meshes[0].vertexCount <= 0) {
+        TraceLog(LOG_ERROR,
+                 "GRASS: failed to load model '%s' — near LOD uses billboard impostor. "
+                 "Check assets/ next to the exe.",
+                 modelPath.c_str());
+        if (g_grassClumpModel.meshCount > 0) UnloadModel(g_grassClumpModel);
+        g_grassClumpModel = makeGrassBillboardModel(haveAtlas);
+        g_grassClumpIsFallback = true;
+        g_grassClumpHeight = g_grassImpostorHeight;
+    } else {
+        g_grassClumpHeight = measureMeshHeightY(g_grassClumpModel.meshes[0]);
+        TraceLog(LOG_INFO, "GRASS: loaded clump %s (%d verts, %d tris, h=%.3f)",
+                 modelPath.c_str(),
+                 g_grassClumpModel.meshes[0].vertexCount,
+                 g_grassClumpModel.meshes[0].triangleCount,
+                 g_grassClumpHeight);
+    }
+    g_grassClumpMesh = &g_grassClumpModel.meshes[0];
+
+    g_grassClumpMaterial = LoadMaterialDefault();
+    g_grassClumpMaterial.shader = g_grassShader;
+    g_grassClumpMaterial.maps[MATERIAL_MAP_ALBEDO].texture = g_grassTexture;
+    g_grassClumpMaterial.maps[MATERIAL_MAP_ALBEDO].color = WHITE;
+
+    g_grassImpostorMaterial = LoadMaterialDefault();
+    g_grassImpostorMaterial.shader = g_grassShader;
+    g_grassImpostorMaterial.maps[MATERIAL_MAP_ALBEDO].texture = g_grassTexture;
+    g_grassImpostorMaterial.maps[MATERIAL_MAP_ALBEDO].color = WHITE;
+
     g_grassReady = true;
     TraceLog(LOG_INFO,
-             "GRASS: loaded %s (%d verts, %d tris) + albedo; denser plains instancing",
-             modelPath.c_str(),
-             g_grassMesh->vertexCount,
-             g_grassMesh->triangleCount);
+             "GRASS: LOD ready near<=%.0fm (clump) mid<=%.0fm far<=%.0fm | caps %d/%d/%d per chunk",
+             g_grassNearDist, g_grassMidDist, g_grassFarDist,
+             kGrassMaxNearPerChunk, kGrassMaxMidPerChunk, kGrassMaxFarPerChunk);
 }
 
 static void unloadGrassMaterials() {
-    if (!g_grassReady && g_grassModel.meshCount == 0 && g_grassShader.id == 0) return;
+    if (!g_grassReady && g_grassClumpModel.meshCount == 0 && g_grassShader.id == 0) return;
 
-    // Detach owned resources before UnloadMaterial (it would free shader/texture).
-    if (g_grassMaterial.maps) {
-        g_grassMaterial.maps[MATERIAL_MAP_ALBEDO].texture = {};
-        g_grassMaterial.shader.id = rlGetShaderIdDefault();
-        UnloadMaterial(g_grassMaterial);
-    }
-    g_grassMaterial = {};
+    auto detachMat = [](Material& mat) {
+        if (!mat.maps) return;
+        mat.maps[MATERIAL_MAP_ALBEDO].texture = {};
+        mat.shader.id = rlGetShaderIdDefault();
+        UnloadMaterial(mat);
+        mat = {};
+    };
+    detachMat(g_grassClumpMaterial);
+    detachMat(g_grassImpostorMaterial);
 
-    if (g_grassModel.meshCount > 0) {
-        // Model may own a default material; clear our shared texture refs first.
-        for (int i = 0; i < g_grassModel.materialCount; ++i) {
-            g_grassModel.materials[i].maps[MATERIAL_MAP_ALBEDO].texture = {};
-            g_grassModel.materials[i].shader.id = rlGetShaderIdDefault();
+    auto unloadModelSafe = [](Model& model) {
+        if (model.meshCount <= 0) return;
+        for (int i = 0; i < model.materialCount; ++i) {
+            model.materials[i].maps[MATERIAL_MAP_ALBEDO].texture = {};
+            model.materials[i].shader.id = rlGetShaderIdDefault();
         }
-        UnloadModel(g_grassModel);
-    }
-    g_grassModel = {};
-    g_grassMesh = nullptr;
+        UnloadModel(model);
+        model = {};
+    };
+    unloadModelSafe(g_grassClumpModel);
+    unloadModelSafe(g_grassImpostorModel);
+    g_grassClumpMesh = nullptr;
+    g_grassImpostorMesh = nullptr;
+    g_grassClumpIsFallback = false;
 
     if (g_grassOwnsTexture && g_grassTexture.id > 0) UnloadTexture(g_grassTexture);
     g_grassTexture = {};
@@ -505,77 +653,300 @@ static void unloadGrassMaterials() {
     if (g_grassShader.id > 0) UnloadShader(g_grassShader);
     g_grassShader = {};
     g_grassReady = false;
+    g_grassClumpHeight = 0.323f;
+    g_grassImpostorHeight = 0.32f;
 }
 
 static Matrix makeGrassTransform(float x, float y, float z, float yaw, float scaleY, float scaleXZ) {
     Matrix S = MatrixScale(scaleXZ, scaleY, scaleXZ);
     Matrix R = MatrixRotateY(yaw);
     Matrix T = MatrixTranslate(x, y, z);
-    return MatrixMultiply(MatrixMultiply(T, R), S);
+    return MatrixMultiply(MatrixMultiply(S, R), T);
 }
 
-// Deterministic grass instances for one chunk. Safe on worker threads.
-// Approx at density=1 on Plains: ~1.35 m spacing → up to kGrassMaxPerChunk (1400)
-// instances / 128 m chunk. ~9–16 LOD0 chunks in draw range → ~12k–22k instances
-// × ~195 tris ≈ 2.3–4.3 M tris peak after frustum cull (typically lower).
-static std::vector<Matrix> generateGrassCPU(float originX, float originZ, float size, int lod) {
-    std::vector<Matrix> out;
-    if (lod > kGrassMaxLod) return out;
-    const float density = std::clamp(g_grassDensity, 0.0f, 2.0f);
-    if (density < 0.01f) return out;
+static inline Vector3 grassOrigin(const Matrix& m) {
+    return {m.m12, m.m13, m.m14};
+}
 
-    // Dense plains carpet: ~1.35 m cell at density 1 on a 128 m chunk.
-    const float spacing = 1.35f / std::sqrt(density);
+// Smooth value-noise sample at one frequency (bilinear + smoothstep).
+static float valueNoise2D(float x, float z, uint64_t s) {
+    const int ix = static_cast<int>(std::floor(x));
+    const int iz = static_cast<int>(std::floor(z));
+    const float fx = x - static_cast<float>(ix);
+    const float fz = z - static_cast<float>(iz);
+    const float a = engine::math::randFloat01(engine::math::hash2D(s, ix, iz));
+    const float b = engine::math::randFloat01(engine::math::hash2D(s, ix + 1, iz));
+    const float c = engine::math::randFloat01(engine::math::hash2D(s, ix, iz + 1));
+    const float d = engine::math::randFloat01(engine::math::hash2D(s, ix + 1, iz + 1));
+    const float u = fx * fx * (3.0f - 2.0f * fx);
+    const float v = fz * fz * (3.0f - 2.0f * fz);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+
+// Soft meadow mask (0..1). Domain-rotated FBM so clearings aren't axis-aligned stripes.
+static float meadowMask(float x, float z, uint64_t seed, float baseFreq) {
+    // Rotate ~37° to break world-axis banding from chunk grids / value lattice.
+    constexpr float c = 0.7986f; // cos
+    constexpr float sRot = 0.6018f; // sin
+    const float rx = x * c - z * sRot;
+    const float rz = x * sRot + z * c;
+
+    float n = 0.0f;
+    float amp = 1.0f;
+    float freq = std::clamp(baseFreq, 0.005f, 0.12f);
+    float sum = 0.0f;
+    uint64_t s = seed ^ 0xBEEF045FULL;
+    for (int o = 0; o < 4; ++o) {
+        // Slight per-octave shear further reduces lattice artifacts.
+        const float ox = rx * freq + static_cast<float>(o) * 17.13f;
+        const float oz = rz * freq * 1.07f + static_cast<float>(o) * 9.71f;
+        n += valueNoise2D(ox, oz, s) * amp;
+        sum += amp;
+        amp *= 0.5f;
+        freq *= 2.03f;
+        s = engine::math::splitmix64(s);
+    }
+    return (sum > 1e-5f) ? (n / sum) : 0.5f;
+}
+
+static void clampGrassClusterKnobs() {
+    g_grassClusterMin = std::clamp(g_grassClusterMin, 1, 20);
+    g_grassClusterMax = std::clamp(g_grassClusterMax, g_grassClusterMin, 24);
+    g_grassClusterRadius = std::clamp(g_grassClusterRadius, 0.25f, 4.0f);
+    g_grassSeedSpacing = std::clamp(g_grassSeedSpacing, 1.2f, 12.0f);
+    g_grassMeadowStrength = std::clamp(g_grassMeadowStrength, 0.0f, 1.0f);
+    g_grassMeadowScale = std::clamp(g_grassMeadowScale, 0.008f, 0.10f);
+    float sMin = std::clamp(g_grassScaleMin, 0.35f, 2.5f);
+    float sMax = std::clamp(g_grassScaleMax, 0.35f, 2.5f);
+    if (sMax < sMin) std::swap(sMin, sMax);
+    g_grassScaleMin = sMin;
+    g_grassScaleMax = sMax;
+    g_grassSink = std::clamp(g_grassSink, 0.0f, 0.15f);
+}
+
+// Biome / water / slope gate. Uses continuous blend weights (not PrimaryRegion
+// winner-take-all), so soft Voronoi borders don't flicker into bare stripes.
+static bool grassSiteOk(float wx, float wz, float maxSlope, float* biomeScaleOut) {
+    if (engine::math::WaterGate(wx, wz) > kGrassWaterGateMax) return false;
+
+    const auto w = engine::math::SampleRegion(wx, wz);
+    // Cover ground wherever plains (or light wetlands) dominate the blend.
+    const float grassWeight = w.plains + w.wetlands * 0.55f + w.hills * 0.12f;
+    if (grassWeight < 0.22f) return false; // mountains / deep water cells
+    if (w.mountains > 0.55f) return false;
+
+    if (engine::math::TerrainSlope(wx, wz) > maxSlope) return false;
+    const float groundY = engine::math::WorldHeight(wx, wz);
+    if (groundY < engine::math::LocalWaterLevel(wx, wz) + 0.2f) return false;
+
+    if (biomeScaleOut) {
+        *biomeScaleOut = (w.wetlands > w.plains) ? 1.10f : 1.0f;
+    }
+    return true;
+}
+
+// Ground one clump at (wx,wz). Re-checks water/slope; yaw/scale from hash.
+static bool placeGrassClump(float wx, float wz, float maxSlope, float scaleBase,
+                            float biomeScale, uint64_t h0, Matrix* out) {
+    if (engine::math::WaterGate(wx, wz) > kGrassWaterGateMax) return false;
+    if (engine::math::TerrainSlope(wx, wz) > maxSlope) return false;
+    const float groundY = engine::math::WorldHeight(wx, wz);
+    if (groundY < engine::math::LocalWaterLevel(wx, wz) + 0.2f) return false;
+    const float wy = groundY - g_grassSink;
+
+    uint64_t h1 = engine::math::splitmix64(h0);
+    const float yaw = engine::math::randFloat01(h1) * 6.2831853f;
+    uint64_t h2 = engine::math::splitmix64(h1);
+    const float s0 = g_grassScaleMin;
+    const float s1 = g_grassScaleMax;
+    const float scaleMul =
+        (s0 + engine::math::randFloat01(h2) * (s1 - s0)) * biomeScale;
+    const float scaleY = scaleBase * scaleMul;
+    // Slight XZ variance so clumps aren't perfect cylinders.
+    const float xzJitter = 0.92f +
+        engine::math::randFloat01(engine::math::splitmix64(h2 ^ 0xA5ULL)) * 0.16f;
+    const float scaleXZ = scaleBase * scaleMul * xzJitter;
+    *out = makeGrassTransform(wx, wy, wz, yaw, scaleY, scaleXZ);
+    return true;
+}
+
+// Mid/far: single impostors on a coarse grid (cheap).
+static void fillGrassBand(std::vector<Matrix>& out, float originX, float originZ, float size,
+                          float spacing, int maxCount, float scaleBase, uint64_t seedTag) {
+    out.clear();
+    if (spacing < 0.4f || maxCount <= 0) return;
     const int cells = std::max(1, static_cast<int>(std::floor(size / spacing)));
-    out.reserve(static_cast<size_t>(std::min(cells * cells, kGrassMaxPerChunk)));
-
-    const uint64_t seed = engine::math::GetWorldConfig().seed ^ 0x67A55ULL;
+    out.reserve(static_cast<size_t>(std::min(cells * cells, maxCount)));
+    const uint64_t seed = engine::math::GetWorldConfig().seed ^ seedTag;
     const float maxSlope = g_grassMaxSlope;
 
-    for (int iz = 0; iz < cells && static_cast<int>(out.size()) < kGrassMaxPerChunk; ++iz) {
-        for (int ix = 0; ix < cells && static_cast<int>(out.size()) < kGrassMaxPerChunk; ++ix) {
+    for (int iz = 0; iz < cells && static_cast<int>(out.size()) < maxCount; ++iz) {
+        for (int ix = 0; ix < cells && static_cast<int>(out.size()) < maxCount; ++ix) {
             const int32_t gx = static_cast<int32_t>(std::floor(originX)) + ix * 17 + iz * 3;
             const int32_t gz = static_cast<int32_t>(std::floor(originZ)) + iz * 17 + ix * 5;
             uint64_t h0 = engine::math::hash2D(seed, gx, gz);
-            float jx = engine::math::randFloat01(h0);
-            float jz = engine::math::randFloat01(engine::math::splitmix64(h0));
-            float wx = originX + (static_cast<float>(ix) + jx) * (size / static_cast<float>(cells));
-            float wz = originZ + (static_cast<float>(iz) + jz) * (size / static_cast<float>(cells));
-
-            const float gate = engine::math::WaterGate(wx, wz);
-            if (gate > kGrassWaterGateMax) continue;
-
-            const auto biome = engine::math::PrimaryRegion(wx, wz);
-            float accept = 0.0f;
-            switch (biome) {
-                case engine::math::WorldRegion::Plains:   accept = 1.00f; break;
-                case engine::math::WorldRegion::Wetlands: accept = 0.35f; break;
-                case engine::math::WorldRegion::Hills:    accept = 0.10f; break;
-                default: continue; // Mountains / Water
+            const float jx = engine::math::randFloat01(h0);
+            const float jz = engine::math::randFloat01(engine::math::splitmix64(h0));
+            const float wx = originX + (static_cast<float>(ix) + jx) * (size / static_cast<float>(cells));
+            const float wz = originZ + (static_cast<float>(iz) + jz) * (size / static_cast<float>(cells));
+            float biomeScale = 1.0f;
+            if (!grassSiteOk(wx, wz, maxSlope, &biomeScale)) continue;
+            Matrix m{};
+            if (placeGrassClump(wx, wz, maxSlope, scaleBase, biomeScale, h0, &m)) {
+                out.push_back(m);
             }
-            uint64_t h1 = engine::math::splitmix64(h0 ^ 0x9E3779B97F4A7C15ULL);
-            if (engine::math::randFloat01(h1) > accept) continue;
-
-            if (engine::math::TerrainSlope(wx, wz) > maxSlope) continue;
-
-            // Match rendered chunk mesh height; bottom-origin mesh + slight sink.
-            const float groundY = engine::math::WorldHeight(wx, wz);
-            const float waterY = engine::math::LocalWaterLevel(wx, wz);
-            if (groundY < waterY + 0.2f) continue;
-            const float wy = groundY - kGrassSink;
-
-            uint64_t h2 = engine::math::splitmix64(h1);
-            float yaw = engine::math::randFloat01(h2) * 6.2831853f;
-            float scaleMul = 0.85f + engine::math::randFloat01(engine::math::splitmix64(h2)) * 0.40f;
-            if (biome == engine::math::WorldRegion::Wetlands) scaleMul *= 1.10f;
-            float scaleY = kGrassBaseScale * scaleMul;
-            float scaleXZ = kGrassBaseScale * (0.90f +
-                engine::math::randFloat01(engine::math::splitmix64(h2 ^ 0xA5ULL)) * 0.25f);
-
-            out.push_back(makeGrassTransform(wx, wy, wz, yaw, scaleY, scaleXZ));
         }
     }
-    return out;
+}
+
+struct GrassSeedCand {
+    float    x = 0.0f;
+    float    z = 0.0f;
+    uint64_t h = 0;
+    float    biomeScale = 1.0f;
+};
+
+// Near: world hex lattice → filter → uniform subsample under budget → clusters.
+// IMPORTANT: never abort the lattice mid-row when the instance cap fills — that
+// left entire +Z halves of each chunk bare (visible world-aligned stripes).
+static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float originZ,
+                                  float size, float densityMul) {
+    out.clear();
+    if (densityMul < 0.05f) return;
+    clampGrassClusterKnobs();
+
+    const float sp = std::max(1.2f, g_grassSeedSpacing);
+    const float rowH = sp * 0.8660254f; // √3/2
+    const uint64_t worldSeed = engine::math::GetWorldConfig().seed;
+    const uint64_t seed = worldSeed ^ 0x67A55ULL;
+    const float maxSlope = g_grassMaxSlope;
+    const float meadowThresh = g_grassMeadowStrength * 0.50f;
+    const int cMin = g_grassClusterMin;
+    const int cMax = g_grassClusterMax;
+    const float rMax = std::max(g_grassClusterRadius, sp * 0.65f);
+    const float rMin = rMax * 0.72f;
+    const float jitter = sp * 0.45f;
+
+    const float margin = jitter + 0.5f;
+    const int iz0 = static_cast<int>(std::floor((originZ - margin) / rowH)) - 1;
+    const int iz1 = static_cast<int>(std::floor((originZ + size + margin) / rowH)) + 1;
+    const int ix0 = static_cast<int>(std::floor((originX - margin) / sp)) - 1;
+    const int ix1 = static_cast<int>(std::floor((originX + size + margin) / sp)) + 1;
+
+    std::vector<GrassSeedCand> cands;
+    cands.reserve(static_cast<size_t>((iz1 - iz0 + 1) * (ix1 - ix0 + 1)));
+
+    // Pass 1: gather every valid seed in the chunk (no instance cap here).
+    for (int iz = iz0; iz <= iz1; ++iz) {
+        const float rowOff = (iz & 1) ? (sp * 0.5f) : 0.0f;
+        for (int ix = ix0; ix <= ix1; ++ix) {
+            uint64_t h0 = engine::math::hash2D(seed, ix, iz);
+            const float jx = (engine::math::randFloat01(h0) - 0.5f) * 2.0f * jitter;
+            const float jz =
+                (engine::math::randFloat01(engine::math::splitmix64(h0)) - 0.5f) * 2.0f * jitter;
+            const float sx = static_cast<float>(ix) * sp + rowOff + jx;
+            const float sz = static_cast<float>(iz) * rowH + jz;
+
+            if (sx < originX || sx >= originX + size || sz < originZ || sz >= originZ + size) {
+                continue;
+            }
+
+            if (meadowThresh > 1e-4f &&
+                meadowMask(sx, sz, worldSeed, g_grassMeadowScale) < meadowThresh) {
+                continue;
+            }
+
+            float biomeScale = 1.0f;
+            if (!grassSiteOk(sx, sz, maxSlope, &biomeScale)) continue;
+
+            cands.push_back({sx, sz, h0, biomeScale});
+        }
+    }
+
+    if (cands.empty()) return;
+
+    // Pass 2: if clumps would exceed the cap, keep a uniform random subset of seeds
+    // (hash-ordered), NOT "first rows until full".
+    const float tDens = std::clamp(densityMul * 0.55f, 0.0f, 1.0f);
+    const int avgClumps = std::max(1, (cMin + cMax + static_cast<int>(tDens * 3.0f)) / 2);
+    const int maxSeeds = std::max(1, kGrassMaxNearPerChunk / avgClumps);
+
+    if (static_cast<int>(cands.size()) > maxSeeds) {
+        // Deterministic partial shuffle by sorting on a hash of position.
+        std::sort(cands.begin(), cands.end(), [seed](const GrassSeedCand& a, const GrassSeedCand& b) {
+            const uint64_t ha = engine::math::hash2D(
+                seed ^ 0xA11CEULL,
+                static_cast<int32_t>(std::floor(a.x * 10.0f)),
+                static_cast<int32_t>(std::floor(a.z * 10.0f)));
+            const uint64_t hb = engine::math::hash2D(
+                seed ^ 0xA11CEULL,
+                static_cast<int32_t>(std::floor(b.x * 10.0f)),
+                static_cast<int32_t>(std::floor(b.z * 10.0f)));
+            return ha < hb;
+        });
+        cands.resize(static_cast<size_t>(maxSeeds));
+    }
+
+    out.reserve(static_cast<size_t>(std::min(
+        kGrassMaxNearPerChunk, static_cast<int>(cands.size()) * (cMax + 2))));
+
+    // Pass 3: place clusters for the (possibly thinned) seeds.
+    for (const GrassSeedCand& cand : cands) {
+        if (static_cast<int>(out.size()) >= kGrassMaxNearPerChunk) break;
+
+        uint64_t h1 = engine::math::splitmix64(cand.h ^ 0xC1A55ULL);
+        const int span = std::max(0, cMax - cMin);
+        const int baseN = cMin +
+            static_cast<int>(engine::math::randFloat01(h1) * static_cast<float>(span + 1));
+        const int bonus = static_cast<int>(tDens * 3.0f);
+        const int nClumps = std::clamp(baseN + bonus, cMin, cMax + 2);
+
+        uint64_t h2 = engine::math::splitmix64(h1);
+        const float clusterR = rMin + engine::math::randFloat01(h2) * (rMax - rMin);
+
+        {
+            Matrix m{};
+            if (placeGrassClump(cand.x, cand.z, maxSlope, kGrassBaseScale, cand.biomeScale, h2, &m)) {
+                out.push_back(m);
+            }
+        }
+
+        for (int c = 1; c < nClumps && static_cast<int>(out.size()) < kGrassMaxNearPerChunk; ++c) {
+            uint64_t hc = engine::math::splitmix64(h2 + static_cast<uint64_t>(c) * 0x9E37ULL);
+            const float ang = engine::math::randFloat01(hc) * 6.2831853f;
+            const float r = std::sqrt(engine::math::randFloat01(engine::math::splitmix64(hc))) *
+                            clusterR;
+            const float wx = cand.x + std::cos(ang) * r;
+            const float wz = cand.z + std::sin(ang) * r;
+            Matrix m{};
+            if (placeGrassClump(wx, wz, maxSlope, kGrassBaseScale, cand.biomeScale, hc, &m)) {
+                out.push_back(m);
+            }
+        }
+    }
+}
+
+// Deterministic per-chunk grass bake (worker-safe). Near = clusters; mid/far = sparse impostors.
+static GrassBake generateGrassCPU(float originX, float originZ, float size, int lod) {
+    GrassBake bake;
+    if (lod > kGrassChunkLodMax) return bake;
+    const float density = std::clamp(g_grassDensity, 0.0f, 2.0f);
+    if (density < 0.01f) return bake;
+
+    const float nearD = std::max(0.05f, density * g_grassNearDensMul);
+    const float midD  = std::max(0.05f, density * g_grassMidDensMul);
+    const float farD  = std::max(0.05f, density * g_grassFarDensMul);
+
+    fillGrassNearClusters(bake.near, originX, originZ, size, nearD);
+
+    // Mid/far stay single-instance grids — do not blow LOD budgets.
+    const float midSpacing = 3.20f / std::sqrt(midD);
+    const float farSpacing = 6.50f / std::sqrt(farD);
+    fillGrassBand(bake.mid, originX, originZ, size, midSpacing, kGrassMaxMidPerChunk,
+                  kGrassImpostorScale, 0x91C3FULL);
+    fillGrassBand(bake.far, originX, originZ, size, farSpacing, kGrassMaxFarPerChunk,
+                  kGrassImpostorScale * 1.15f, 0xC0FFEEULL);
+    return bake;
 }
 
 // ---------------------------------------------------------------------------
@@ -629,7 +1000,7 @@ struct ChunkSlot {
     int        lod = 0;
     Vector3    aabbMin = {0, 0, 0};
     Vector3    aabbMax = {0, 0, 0};
-    std::vector<Matrix> grassTransforms;
+    GrassBake  grass;
 };
 
 static std::unordered_map<uint64_t, std::unique_ptr<ChunkSlot>> g_chunks;
@@ -639,7 +1010,7 @@ struct PendingUpload {
     ChunkCoord coord;
     int        lod;
     MeshCPU    mesh;
-    std::vector<Matrix> grass;
+    GrassBake  grass;
 };
 static std::mutex                 g_pendingMutex;
 static std::vector<PendingUpload> g_pendingUploads;
@@ -713,7 +1084,7 @@ static void generateChunkAsync(ChunkCoord coord, int lod) {
     float originZ = coord.z * S;
 
     MeshCPU cpu = generateMeshCPU(originX, originZ, S, S, R, R);
-    std::vector<Matrix> grass = generateGrassCPU(originX, originZ, S, lod);
+    GrassBake grass = generateGrassCPU(originX, originZ, S, lod);
 
     std::lock_guard<std::mutex> lock(g_pendingMutex);
     g_pendingUploads.push_back({coord, lod, std::move(cpu), std::move(grass)});
@@ -736,7 +1107,7 @@ static void generateChunkBlocking(ChunkCoord coord) {
     slot->lod         = 0;
     slot->aabbMin     = cpu.aabbMin;
     slot->aabbMax     = cpu.aabbMax;
-    slot->grassTransforms = generateGrassCPU(originX, originZ, S, 0);
+    slot->grass       = generateGrassCPU(originX, originZ, S, 0);
     g_chunks[packCoord(coord.x, coord.z)] = std::move(slot);
 }
 
@@ -863,7 +1234,7 @@ void Update(Vector3 playerPos) {
             it->second->lod         = up.lod;
             it->second->aabbMin     = up.mesh.aabbMin;
             it->second->aabbMax     = up.mesh.aabbMax;
-            it->second->grassTransforms = std::move(up.grass);
+            it->second->grass       = std::move(up.grass);
         } else {
             // Brand new chunk slot
             auto slot = std::make_unique<ChunkSlot>();
@@ -873,7 +1244,7 @@ void Update(Vector3 playerPos) {
             slot->lod         = up.lod;
             slot->aabbMin     = up.mesh.aabbMin;
             slot->aabbMax     = up.mesh.aabbMax;
-            slot->grassTransforms = std::move(up.grass);
+            slot->grass       = std::move(up.grass);
             g_chunks[k] = std::move(slot);
         }
     }
@@ -902,46 +1273,9 @@ void Draw() {
     rlEnableBackfaceCulling();
 }
 
-void DrawGrass(Vector3 viewPos) {
-    if (!g_grassEnabled || !g_grassReady) return;
-    if (g_grassMesh == nullptr || g_grassMesh->vaoId == 0) return;
-
-    static std::vector<Matrix> batch;
-    batch.clear();
-
-    const float S = engine::math::WorldConfig::CHUNK_SIZE;
-    const float drawDist = std::max(40.0f, g_grassDrawDistance);
-    const float drawDistSq = drawDist * drawDist;
-    // Pad AABB for scaled clumps (~1.3 m tall).
-    constexpr float padY = 2.0f;
-
-    for (auto& [key, slot] : g_chunks) {
-        (void)key;
-        if (slot->lod > kGrassMaxLod) continue;
-        if (slot->grassTransforms.empty()) continue;
-
-        const float cx = (static_cast<float>(slot->coord.x) + 0.5f) * S;
-        const float cz = (static_cast<float>(slot->coord.z) + 0.5f) * S;
-        const float dx = cx - viewPos.x;
-        const float dz = cz - viewPos.z;
-        if (dx * dx + dz * dz > drawDistSq) continue;
-
-        Vector3 mn = slot->aabbMin;
-        Vector3 mx = slot->aabbMax;
-        mx.y += padY;
-        if (!aabbInFrustum(mn, mx)) continue;
-
-        batch.insert(batch.end(), slot->grassTransforms.begin(), slot->grassTransforms.end());
-    }
-
-    if (batch.empty()) return;
-
+static void pushGrassBandUniforms(Vector3 viewPos, float fadeStart, float fadeEnd, float meshH) {
     const float t = static_cast<float>(GetTime());
-    const float fadeStart = drawDist * 0.72f;
-    const float fadeEnd = drawDist;
     Vector3 sun = Vector3Normalize(g_sunDir);
-    const float meshH = kGrassMeshHeight;
-
     if (g_grassLocTime >= 0) {
         SetShaderValue(g_grassShader, g_grassLocTime, &t, SHADER_UNIFORM_FLOAT);
     }
@@ -963,10 +1297,132 @@ void DrawGrass(Vector3 viewPos) {
     if (g_grassLocMeshHeight >= 0) {
         SetShaderValue(g_grassShader, g_grassLocMeshHeight, &meshH, SHADER_UNIFORM_FLOAT);
     }
+}
+
+void DrawGrass(Vector3 viewPos) {
+    g_grassDrawStats = {};
+
+    // Always refresh baked totals (cheap) so editor counters stay valid when disabled.
+    for (const auto& [key, slot] : g_chunks) {
+        (void)key;
+        if (slot->lod > kGrassChunkLodMax) continue;
+        g_grassDrawStats.bakedNear += slot->grass.near.size();
+        g_grassDrawStats.bakedMid  += slot->grass.mid.size();
+        g_grassDrawStats.bakedFar  += slot->grass.far.size();
+    }
+
+    if (!g_grassEnabled || !g_grassReady) return;
+    if (g_grassClumpMesh == nullptr || g_grassClumpMesh->vaoId == 0) return;
+    if (g_grassImpostorMesh == nullptr || g_grassImpostorMesh->vaoId == 0) return;
+
+    clampGrassLodDistances();
+    const float nearEnd = g_grassNearDist;
+    const float midEnd = g_grassMidDist;
+    const float farEnd = g_grassFarDist;
+    const float nearEndSq = nearEnd * nearEnd;
+    const float midEndSq = midEnd * midEnd;
+    const float farEndSq = farEnd * farEnd;
+
+    static std::vector<Matrix> nearBatch;
+    static std::vector<Matrix> midBatch;
+    static std::vector<Matrix> farBatch;
+    nearBatch.clear();
+    midBatch.clear();
+    farBatch.clear();
+    nearBatch.reserve(static_cast<size_t>(kGrassMaxNearDraw));
+    midBatch.reserve(static_cast<size_t>(kGrassMaxMidDraw));
+    farBatch.reserve(static_cast<size_t>(kGrassMaxFarDraw));
+
+    const float S = engine::math::WorldConfig::CHUNK_SIZE;
+    const float chunkCull = farEnd + S * 0.75f;
+    const float chunkCullSq = chunkCull * chunkCull;
+    constexpr float padY = 2.0f;
+
+    for (auto& [key, slot] : g_chunks) {
+        (void)key;
+        if (slot->lod > kGrassChunkLodMax) continue;
+        const GrassBake& g = slot->grass;
+        if (g.near.empty() && g.mid.empty() && g.far.empty()) continue;
+
+        const float cx = (static_cast<float>(slot->coord.x) + 0.5f) * S;
+        const float cz = (static_cast<float>(slot->coord.z) + 0.5f) * S;
+        const float cdx = cx - viewPos.x;
+        const float cdz = cz - viewPos.z;
+        if (cdx * cdx + cdz * cdz > chunkCullSq) continue;
+
+        Vector3 mn = slot->aabbMin;
+        Vector3 mx = slot->aabbMax;
+        mx.y += padY;
+        if (!aabbInFrustum(mn, mx)) continue;
+
+        if (static_cast<int>(nearBatch.size()) < kGrassMaxNearDraw) {
+            for (const Matrix& m : g.near) {
+                if (static_cast<int>(nearBatch.size()) >= kGrassMaxNearDraw) break;
+                const Vector3 o = grassOrigin(m);
+                const float dx = o.x - viewPos.x;
+                const float dz = o.z - viewPos.z;
+                if (dx * dx + dz * dz < nearEndSq) nearBatch.push_back(m);
+            }
+        }
+
+        if (static_cast<int>(midBatch.size()) < kGrassMaxMidDraw) {
+            for (const Matrix& m : g.mid) {
+                if (static_cast<int>(midBatch.size()) >= kGrassMaxMidDraw) break;
+                const Vector3 o = grassOrigin(m);
+                const float dx = o.x - viewPos.x;
+                const float dz = o.z - viewPos.z;
+                const float d2 = dx * dx + dz * dz;
+                if (d2 >= nearEndSq && d2 < midEndSq) midBatch.push_back(m);
+            }
+        }
+
+        if (static_cast<int>(farBatch.size()) < kGrassMaxFarDraw) {
+            for (const Matrix& m : g.far) {
+                if (static_cast<int>(farBatch.size()) >= kGrassMaxFarDraw) break;
+                const Vector3 o = grassOrigin(m);
+                const float dx = o.x - viewPos.x;
+                const float dz = o.z - viewPos.z;
+                const float d2 = dx * dx + dz * dz;
+                if (d2 >= midEndSq && d2 < farEndSq) farBatch.push_back(m);
+            }
+        }
+    }
+
+    g_grassDrawStats.drawNear = nearBatch.size();
+    g_grassDrawStats.drawMid  = midBatch.size();
+    g_grassDrawStats.drawFar  = farBatch.size();
+    const size_t clumpTris =
+        (g_grassClumpMesh && g_grassClumpMesh->triangleCount > 0)
+            ? static_cast<size_t>(g_grassClumpMesh->triangleCount) : 195u;
+    const size_t impostorTris =
+        (g_grassImpostorMesh && g_grassImpostorMesh->triangleCount > 0)
+            ? static_cast<size_t>(g_grassImpostorMesh->triangleCount) : 4u;
+    g_grassDrawStats.approxTris =
+        g_grassDrawStats.drawNear * clumpTris +
+        (g_grassDrawStats.drawMid + g_grassDrawStats.drawFar) * impostorTris;
+
+    if (nearBatch.empty() && midBatch.empty() && farBatch.empty()) return;
 
     rlDisableBackfaceCulling();
-    // Alpha-tested cutout (discard in FS) — no blend sort needed.
-    DrawMeshInstanced(*g_grassMesh, g_grassMaterial, batch.data(), static_cast<int>(batch.size()));
+
+    if (!nearBatch.empty()) {
+        pushGrassBandUniforms(viewPos, farEnd * 2.0f, farEnd * 2.0f + 1.0f, g_grassClumpHeight);
+        DrawMeshInstanced(*g_grassClumpMesh, g_grassClumpMaterial,
+                          nearBatch.data(), static_cast<int>(nearBatch.size()));
+    }
+
+    if (!midBatch.empty()) {
+        pushGrassBandUniforms(viewPos, midEnd * 0.92f, farEnd, g_grassImpostorHeight);
+        DrawMeshInstanced(*g_grassImpostorMesh, g_grassImpostorMaterial,
+                          midBatch.data(), static_cast<int>(midBatch.size()));
+    }
+
+    if (!farBatch.empty()) {
+        pushGrassBandUniforms(viewPos, midEnd, farEnd, g_grassImpostorHeight);
+        DrawMeshInstanced(*g_grassImpostorMesh, g_grassImpostorMaterial,
+                          farBatch.data(), static_cast<int>(farBatch.size()));
+    }
+
     rlEnableBackfaceCulling();
 }
 
@@ -995,10 +1451,12 @@ size_t GrassInstanceCount() {
     size_t n = 0;
     for (const auto& [key, slot] : g_chunks) {
         (void)key;
-        n += slot->grassTransforms.size();
+        n += slot->grass.near.size() + slot->grass.mid.size() + slot->grass.far.size();
     }
     return n;
 }
+
+const GrassDrawStats& GetGrassDrawStats() { return g_grassDrawStats; }
 
 void ReloadAround(Vector3 center, int radiusChunks) {
     if (radiusChunks < 0) radiusChunks = 0;
@@ -1081,8 +1539,85 @@ float GetGrassDensity() { return g_grassDensity; }
 void SetGrassMaxSlope(float slope) { g_grassMaxSlope = std::clamp(slope, 0.05f, 1.0f); }
 float GetGrassMaxSlope() { return g_grassMaxSlope; }
 
-void SetGrassDrawDistance(float meters) { g_grassDrawDistance = std::clamp(meters, 40.0f, 800.0f); }
-float GetGrassDrawDistance() { return g_grassDrawDistance; }
+void SetGrassNearDistance(float meters) {
+    g_grassNearDist = meters;
+    clampGrassLodDistances();
+}
+float GetGrassNearDistance() { return g_grassNearDist; }
+
+void SetGrassMidDistance(float meters) {
+    g_grassMidDist = meters;
+    clampGrassLodDistances();
+}
+float GetGrassMidDistance() { return g_grassMidDist; }
+
+void SetGrassFarDistance(float meters) {
+    g_grassFarDist = meters;
+    clampGrassLodDistances();
+}
+float GetGrassFarDistance() { return g_grassFarDist; }
+
+void SetGrassDrawDistance(float meters) { SetGrassFarDistance(meters); }
+float GetGrassDrawDistance() { return g_grassFarDist; }
+
+void SetGrassNearDensity(float mul) { g_grassNearDensMul = std::clamp(mul, 0.05f, 3.0f); }
+float GetGrassNearDensity() { return g_grassNearDensMul; }
+void SetGrassMidDensity(float mul) { g_grassMidDensMul = std::clamp(mul, 0.05f, 2.0f); }
+float GetGrassMidDensity() { return g_grassMidDensMul; }
+void SetGrassFarDensity(float mul) { g_grassFarDensMul = std::clamp(mul, 0.02f, 1.0f); }
+float GetGrassFarDensity() { return g_grassFarDensMul; }
+
+void SetGrassClusterMin(int n) {
+    g_grassClusterMin = n;
+    clampGrassClusterKnobs();
+}
+int GetGrassClusterMin() { return g_grassClusterMin; }
+void SetGrassClusterMax(int n) {
+    g_grassClusterMax = n;
+    clampGrassClusterKnobs();
+}
+int GetGrassClusterMax() { return g_grassClusterMax; }
+
+void SetGrassClusterRadius(float meters) {
+    g_grassClusterRadius = meters;
+    clampGrassClusterKnobs();
+}
+float GetGrassClusterRadius() { return g_grassClusterRadius; }
+
+void SetGrassSeedSpacing(float meters) {
+    g_grassSeedSpacing = meters;
+    clampGrassClusterKnobs();
+}
+float GetGrassSeedSpacing() { return g_grassSeedSpacing; }
+
+void SetGrassMeadowStrength(float strength) {
+    g_grassMeadowStrength = strength;
+    clampGrassClusterKnobs();
+}
+float GetGrassMeadowStrength() { return g_grassMeadowStrength; }
+
+void SetGrassMeadowScale(float scale) {
+    g_grassMeadowScale = scale;
+    clampGrassClusterKnobs();
+}
+float GetGrassMeadowScale() { return g_grassMeadowScale; }
+
+void SetGrassScaleMin(float mul) {
+    g_grassScaleMin = mul;
+    clampGrassClusterKnobs();
+}
+float GetGrassScaleMin() { return g_grassScaleMin; }
+void SetGrassScaleMax(float mul) {
+    g_grassScaleMax = mul;
+    clampGrassClusterKnobs();
+}
+float GetGrassScaleMax() { return g_grassScaleMax; }
+
+void SetGrassSinkCm(float cm) {
+    g_grassSink = cm * 0.01f;
+    clampGrassClusterKnobs();
+}
+float GetGrassSinkCm() { return g_grassSink * 100.0f; }
 
 }  // namespace chunks
 }  // namespace engine::terrain

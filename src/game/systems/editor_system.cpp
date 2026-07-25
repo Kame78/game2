@@ -10,8 +10,12 @@
 #include "raymath.h"
 #include "imgui.h"
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -37,6 +41,273 @@ int g_placeMode = 0; // 0 none, 1 enemy, 2 spawner, 3 landmark
 int g_landmarkPlaceType = 0;
 uint32_t g_editorNetId = 9000;
 bool g_probeEnabled = true;
+
+// Last AI dump export status (shown under the button).
+std::string g_dumpStatus;
+float g_dumpStatusUntil = 0.0f;
+bool g_dumpStatusOk = false;
+
+engine::ecs::Entity playerEntity(engine::ecs::Registry& reg);
+Vector3 probeXZ(engine::ecs::Registry& reg);
+const char* regionName(engine::math::WorldRegion r);
+
+std::string findRepoRoot() {
+    namespace fs = std::filesystem;
+    auto tryFrom = [&](fs::path start) -> std::string {
+        std::error_code ec;
+        fs::path cur = fs::absolute(start, ec);
+        if (ec) return {};
+        for (int i = 0; i < 12; ++i) {
+            if (fs::exists(cur / "CMakeLists.txt", ec)) return cur.string();
+            fs::path parent = cur.parent_path();
+            if (parent == cur) break;
+            cur = parent;
+        }
+        return {};
+    };
+
+    // Prefer walking up from the exe dir (Release -> build_msvc -> repo).
+    const char* appDir = GetApplicationDirectory();
+    if (appDir && appDir[0]) {
+        std::string root = tryFrom(fs::path(appDir));
+        if (!root.empty()) return root;
+    }
+    // Fall back to cwd (useful when launched from the repo).
+    std::string root = tryFrom(fs::current_path());
+    if (!root.empty()) return root;
+    return {};
+}
+
+std::string timestampNow() {
+    using clock = std::chrono::system_clock;
+    auto now = clock::now();
+    std::time_t t = clock::to_time_t(now);
+    std::tm tmLocal{};
+#if defined(_WIN32)
+    localtime_s(&tmLocal, &t);
+#else
+    localtime_r(&t, &tmLocal);
+#endif
+    char buf[64];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &tmLocal);
+    return buf;
+}
+
+bool writeTextFile(const std::string& path, const std::string& contents) {
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    if (!out) return false;
+    out.write(contents.data(), (std::streamsize)contents.size());
+    return (bool)out;
+}
+
+std::string buildEditorDump(engine::ecs::Registry& reg) {
+    std::string s;
+    s.reserve(4096);
+    auto append = [&](const char* fmt, auto... args) {
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), fmt, args...);
+        s += buf;
+    };
+
+    append("=== Editor dump for AI ===\n");
+    append("timestamp: %s\n\n", timestampNow().c_str());
+
+    // --- Camera ---
+    append("--- Camera ---\n");
+    auto pe = playerEntity(reg);
+    if (reg.transforms.Has(pe)) {
+        const auto& t = reg.transforms.Get(pe);
+        append("position: %.3f, %.3f, %.3f\n", t.position.x, t.position.y, t.position.z);
+    } else {
+        append("position: (none)\n");
+    }
+    if (reg.cameras.Has(pe)) {
+        const auto& cam = reg.cameras.Get(pe);
+        append("yaw_rad: %.4f  pitch_rad: %.4f\n", cam.yaw, cam.pitch);
+        append("yaw_deg: %.2f  pitch_deg: %.2f\n", cam.yaw * RAD2DEG, cam.pitch * RAD2DEG);
+        append("cam_pos: %.3f, %.3f, %.3f\n",
+               cam.camera.position.x, cam.camera.position.y, cam.camera.position.z);
+        append("cam_target: %.3f, %.3f, %.3f\n",
+               cam.camera.target.x, cam.camera.target.y, cam.camera.target.z);
+    } else {
+        append("yaw/pitch: (no camera)\n");
+    }
+    if (reg.playerInputs.Has(pe)) {
+        const auto& in = reg.playerInputs.Get(pe);
+        append("flight: %s  noclip: %s  move_speed: %.1f\n",
+               in.isFlying ? "on" : "off",
+               in.noClip ? "on" : "off",
+               g_playerMoveSpeed);
+    }
+    s += "\n";
+
+    // --- Probe ---
+    append("--- Probe (under crosshair) ---\n");
+    {
+        Vector3 xz = probeXZ(reg);
+        auto probe = engine::math::SampleTerrainProbe(xz.x, xz.z);
+        append("xz: %.2f, %.2f\n", probe.x, probe.z);
+        append("height: %.3f\n", probe.height);
+        append("primary_biome: %s\n", regionName(probe.weights.primary));
+        append("weights P/H/M/W/Wa: %.3f %.3f %.3f %.3f %.3f\n",
+               probe.weights.plains, probe.weights.hills, probe.weights.mountains,
+               probe.weights.wetlands, probe.weights.water);
+        append("slope: %.4f\n", probe.slope);
+        append("water_gate: %.4f\n", probe.waterGate);
+        append("water_level: %.3f\n", probe.waterLevel);
+    }
+    s += "\n";
+
+    // --- Grass ---
+    append("--- Grass ---\n");
+    {
+        using namespace engine::terrain::chunks;
+        const auto& gs = GetGrassDrawStats();
+        append("enabled: %s\n", GetGrassEnabled() ? "yes" : "no");
+        append("master_density: %.3f\n", GetGrassDensity());
+        append("max_slope: %.3f\n", GetGrassMaxSlope());
+        append("cluster_min/max: %d / %d\n", GetGrassClusterMin(), GetGrassClusterMax());
+        append("cluster_radius_m: %.3f\n", GetGrassClusterRadius());
+        append("seed_spacing_m: %.3f\n", GetGrassSeedSpacing());
+        append("meadow_strength: %.3f\n", GetGrassMeadowStrength());
+        append("meadow_scale: %.4f\n", GetGrassMeadowScale());
+        append("scale_min/max: %.3f / %.3f\n", GetGrassScaleMin(), GetGrassScaleMax());
+        append("ground_sink_cm: %.2f\n", GetGrassSinkCm());
+        append("lod_near/mid/far_m: %.1f / %.1f / %.1f\n",
+               GetGrassNearDistance(), GetGrassMidDistance(), GetGrassFarDistance());
+        append("density_mul_near/mid/far: %.3f / %.3f / %.3f\n",
+               GetGrassNearDensity(), GetGrassMidDensity(), GetGrassFarDensity());
+        append("baked_N/M/F: %zu / %zu / %zu\n", gs.bakedNear, gs.bakedMid, gs.bakedFar);
+        append("drawn_N/M/F: %zu / %zu / %zu\n", gs.drawNear, gs.drawMid, gs.drawFar);
+        append("approx_tris: %zu\n", gs.approxTris);
+        append("total_baked_instances: %zu\n", GrassInstanceCount());
+    }
+    s += "\n";
+
+    // --- Noise / terrain knobs ---
+    append("--- Noise / terrain knobs ---\n");
+    {
+        const auto& cfg = engine::math::GetWorldConfig();
+        append("seed: 0x%llX\n", (unsigned long long)cfg.seed);
+        append("plains_frequency: %.6f\n", cfg.plainsFrequency);
+        append("plains_gain: %.4f\n", cfg.plainsGain);
+        append("mountain_amplitude: %.2f\n", cfg.mountainAmplitude);
+        append("mountain_approach: %.2f\n", cfg.mountainApproach);
+        append("land_shelf: %.2f\n", cfg.landShelf);
+        append("water_body_core_r: %.2f\n", cfg.waterBodyCoreR);
+        append("water_body_shore_w: %.2f\n", cfg.waterBodyShoreW);
+        append("base_amplitude: %.2f\n", cfg.baseAmplitude);
+        append("detail_amplitude: %.2f\n", cfg.detailAmplitude);
+        append("LOAD_RADIUS: %d  CHUNK_SIZE: %.0f\n",
+               engine::math::WorldConfig::LOAD_RADIUS,
+               engine::math::WorldConfig::CHUNK_SIZE);
+    }
+    s += "\n";
+
+    // --- Sky / haze ---
+    append("--- Sky / haze ---\n");
+    append("exposure: %.4f\n", engine::render::sky::GetExposure());
+    append("haze_start: %.1f\n", engine::terrain::chunks::GetHazeStart());
+    append("haze_end: %.1f\n", engine::terrain::chunks::GetHazeEnd());
+    append("haze_strength: %.4f\n", engine::terrain::chunks::GetHazeStrength());
+    append("haze_tint: %.4f\n", engine::render::sky::GetHazeTintStrength());
+    s += "\n";
+
+    // --- Sun ---
+    append("--- Sun ---\n");
+    {
+        Vector3 sun = engine::terrain::chunks::GetSunDirection();
+        float yaw = std::atan2(sun.z, sun.x);
+        float pitch = std::asin(std::clamp(sun.y, -1.0f, 1.0f));
+        append("direction: %.4f, %.4f, %.4f\n", sun.x, sun.y, sun.z);
+        append("yaw_deg: %.2f  pitch_deg: %.2f\n", yaw * RAD2DEG, pitch * RAD2DEG);
+        append("intensity: %.3f\n", engine::terrain::chunks::GetSunIntensity());
+    }
+    s += "\n";
+
+    // --- Chunks ---
+    append("--- Chunks ---\n");
+    append("loaded: %zu\n", engine::terrain::chunks::LoadedChunkCount());
+    append("pending_upload: %zu\n", engine::terrain::chunks::PendingUploadCount());
+    append("show_chunk_bounds: %s\n",
+           engine::terrain::chunks::GetShowChunkBounds() ? "yes" : "no");
+    s += "\n";
+
+    // --- Toggles ---
+    append("--- Active toggles ---\n");
+    {
+        int mode = engine::terrain::chunks::GetTerrainDebugMode();
+        const char* modes[] = {"Off", "Biome", "Slope", "Height bands", "WaterGate"};
+        const char* modeName = (mode >= 0 && mode < 5) ? modes[mode] : "?";
+        append("terrain_debug_mode: %d (%s)\n", mode, modeName);
+        append("draw_water_mesh: %s\n", game::world::GetDrawWaterEnabled() ? "yes" : "no");
+        append("viz_water_gate_discs: %s\n", g_showWaterGateViz ? "yes" : "no");
+        append("show_load_radius_ring: %s\n", g_showLoadRadius ? "yes" : "no");
+        append("visualize_exclusions: %s\n", g_showExclusions ? "yes" : "no");
+        append("live_probe: %s\n", g_probeEnabled ? "yes" : "no");
+        append("place_mode: %d\n", g_placeMode);
+        append("enemies/spawners/proxies: %d / %d / %d\n",
+               (int)reg.enemyAIs.data.size(),
+               (int)reg.spawners.data.size(),
+               (int)reg.landmarkProxies.data.size());
+        append("lakes: %d  selected: %d\n",
+               (int)engine::math::GetLakes().size(), g_selectedLake);
+    }
+    s += "\n=== end dump ===\n";
+    return s;
+}
+
+void exportEditorDump(engine::ecs::Registry& reg) {
+    const std::string contents = buildEditorDump(reg);
+    std::vector<std::string> written;
+    std::vector<std::string> failed;
+
+    // Always try next to the exe (e.g. build_msvc/Release/editor_dump.txt).
+    std::string exePath = std::string(GetApplicationDirectory()) + "editor_dump.txt";
+    if (writeTextFile(exePath, contents)) written.push_back(exePath);
+    else failed.push_back(exePath);
+
+    // Also write at repo root when CMakeLists.txt is found upward.
+    std::string root = findRepoRoot();
+    if (!root.empty()) {
+        namespace fs = std::filesystem;
+        std::string repoPath = (fs::path(root) / "editor_dump.txt").string();
+        // Skip duplicate if exe already lives at repo root.
+        if (repoPath != exePath) {
+            if (writeTextFile(repoPath, contents)) written.push_back(repoPath);
+            else failed.push_back(repoPath);
+        }
+    } else {
+        failed.push_back("(repo root not found - no CMakeLists.txt upward)");
+    }
+
+    g_dumpStatusOk = !written.empty();
+    g_dumpStatus.clear();
+    if (g_dumpStatusOk) {
+        g_dumpStatus = "Wrote dump:\n";
+        for (const auto& p : written) {
+            g_dumpStatus += "  ";
+            g_dumpStatus += p;
+            g_dumpStatus += "\n";
+        }
+        if (!failed.empty()) {
+            g_dumpStatus += "Failed:\n";
+            for (const auto& p : failed) {
+                g_dumpStatus += "  ";
+                g_dumpStatus += p;
+                g_dumpStatus += "\n";
+            }
+        }
+    } else {
+        g_dumpStatus = "Dump FAILED - could not write any path.\n";
+        for (const auto& p : failed) {
+            g_dumpStatus += "  ";
+            g_dumpStatus += p;
+            g_dumpStatus += "\n";
+        }
+    }
+    g_dumpStatusUntil = (float)GetTime() + 12.0f;
+}
 
 void seedBookmarks() {
     if (g_bookmarksSeeded) return;
@@ -239,6 +510,21 @@ void EditorUISystem(engine::ecs::Registry& reg) {
     }
 
     ImGui::TextWrapped("LEFT ALT: toggle mouse lock. Place modes: LMB place, RMB delete (while locked).");
+    ImGui::Separator();
+
+    // --- AI dump export ---
+    if (ImGui::Button("Export dump for AI")) {
+        exportEditorDump(reg);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("-> editor_dump.txt (repo + exe dir)");
+    if (!g_dumpStatus.empty() && (float)GetTime() < g_dumpStatusUntil) {
+        ImGui::PushStyleColor(ImGuiCol_Text,
+                              g_dumpStatusOk ? ImVec4(0.45f, 0.90f, 0.50f, 1.0f)
+                                             : ImVec4(1.0f, 0.40f, 0.35f, 1.0f));
+        ImGui::TextWrapped("%s", g_dumpStatus.c_str());
+        ImGui::PopStyleColor();
+    }
     ImGui::Separator();
 
     // --- Flight / speed ---
@@ -481,30 +767,106 @@ void EditorUISystem(engine::ecs::Registry& reg) {
     }
 
     if (ImGui::CollapsingHeader("11. Grass")) {
-        bool en = engine::terrain::chunks::GetGrassEnabled();
-        if (ImGui::Checkbox("Enable grass", &en)) {
-            engine::terrain::chunks::SetGrassEnabled(en);
-        }
+        using engine::terrain::chunks::GetGrassEnabled;
+        using engine::terrain::chunks::SetGrassEnabled;
+
+        bool en = GetGrassEnabled();
+        if (ImGui::Checkbox("Enable grass", &en)) SetGrassEnabled(en);
+
         float dens = engine::terrain::chunks::GetGrassDensity();
         float slope = engine::terrain::chunks::GetGrassMaxSlope();
-        float dist = engine::terrain::chunks::GetGrassDrawDistance();
-        if (ImGui::SliderFloat("Density", &dens, 0.0f, 2.0f, "%.2f")) {
+        if (ImGui::SliderFloat("Master density", &dens, 0.0f, 2.0f, "%.2f")) {
             engine::terrain::chunks::SetGrassDensity(dens);
         }
         if (ImGui::SliderFloat("Max slope", &slope, 0.05f, 0.80f, "%.2f")) {
             engine::terrain::chunks::SetGrassMaxSlope(slope);
         }
-        if (ImGui::SliderFloat("Draw distance", &dist, 40.0f, 500.0f, "%.0f m")) {
-            engine::terrain::chunks::SetGrassDrawDistance(dist);
+
+        ImGui::SeparatorText("Clusters (rebuild)");
+        int cMin = engine::terrain::chunks::GetGrassClusterMin();
+        int cMax = engine::terrain::chunks::GetGrassClusterMax();
+        if (ImGui::SliderInt("Cluster min", &cMin, 1, 20)) {
+            engine::terrain::chunks::SetGrassClusterMin(cMin);
         }
-        ImGui::Text("Instances (loaded LOD0): %zu", engine::terrain::chunks::GrassInstanceCount());
-        ImGui::TextDisabled("Model clumps; Plains heavy, Wetlands/Hills sparse. Cap 1400/chunk.");
-        if (ImGui::Button("Rebuild grass (reload r=4)")) {
+        if (ImGui::SliderInt("Cluster max", &cMax, 1, 24)) {
+            engine::terrain::chunks::SetGrassClusterMax(cMax);
+        }
+        float cRad = engine::terrain::chunks::GetGrassClusterRadius();
+        if (ImGui::SliderFloat("Cluster radius", &cRad, 0.3f, 3.5f, "%.2f m")) {
+            engine::terrain::chunks::SetGrassClusterRadius(cRad);
+        }
+        float seedSp = engine::terrain::chunks::GetGrassSeedSpacing();
+        if (ImGui::SliderFloat("Seed spacing", &seedSp, 1.5f, 10.0f, "%.2f m")) {
+            engine::terrain::chunks::SetGrassSeedSpacing(seedSp);
+        }
+        ImGui::TextDisabled("World hex lattice; seeds thinned uniformly under budget (no Z-row cutoff).");
+
+        ImGui::SeparatorText("Meadow / scale (rebuild)");
+        float mStr = engine::terrain::chunks::GetGrassMeadowStrength();
+        float mScl = engine::terrain::chunks::GetGrassMeadowScale();
+        if (ImGui::SliderFloat("Meadow strength", &mStr, 0.0f, 1.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassMeadowStrength(mStr);
+        }
+        ImGui::TextDisabled("Default 0 = full plains cover. Raise only for intentional clearings.");
+        if (ImGui::SliderFloat("Meadow scale", &mScl, 0.01f, 0.08f, "%.3f")) {
+            engine::terrain::chunks::SetGrassMeadowScale(mScl);
+        }
+        float sMin = engine::terrain::chunks::GetGrassScaleMin();
+        float sMax = engine::terrain::chunks::GetGrassScaleMax();
+        if (ImGui::SliderFloat("Scale min", &sMin, 0.4f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassScaleMin(sMin);
+        }
+        if (ImGui::SliderFloat("Scale max", &sMax, 0.4f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassScaleMax(sMax);
+        }
+        float sinkCm = engine::terrain::chunks::GetGrassSinkCm();
+        if (ImGui::SliderFloat("Ground sink", &sinkCm, 0.0f, 12.0f, "%.1f cm")) {
+            engine::terrain::chunks::SetGrassSinkCm(sinkCm);
+        }
+
+        ImGui::SeparatorText("Distance LODs (live)");
+        float nearD = engine::terrain::chunks::GetGrassNearDistance();
+        float midD = engine::terrain::chunks::GetGrassMidDistance();
+        float farD = engine::terrain::chunks::GetGrassFarDistance();
+        if (ImGui::SliderFloat("Near (full mesh)", &nearD, 6.0f, 60.0f, "%.0f m")) {
+            engine::terrain::chunks::SetGrassNearDistance(nearD);
+        }
+        if (ImGui::SliderFloat("Mid (impostor)", &midD, 20.0f, 120.0f, "%.0f m")) {
+            engine::terrain::chunks::SetGrassMidDistance(midD);
+        }
+        if (ImGui::SliderFloat("Far (sparse)", &farD, 40.0f, 300.0f, "%.0f m")) {
+            engine::terrain::chunks::SetGrassFarDistance(farD);
+        }
+
+        float nMul = engine::terrain::chunks::GetGrassNearDensity();
+        float mMul = engine::terrain::chunks::GetGrassMidDensity();
+        float fMul = engine::terrain::chunks::GetGrassFarDensity();
+        if (ImGui::SliderFloat("Near density mul", &nMul, 0.2f, 3.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassNearDensity(nMul);
+        }
+        if (ImGui::SliderFloat("Mid density mul", &mMul, 0.1f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassMidDensity(mMul);
+        }
+        if (ImGui::SliderFloat("Far density mul", &fMul, 0.05f, 1.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassFarDensity(fMul);
+        }
+
+        ImGui::SeparatorText("Live stats");
+        const auto& gs = engine::terrain::chunks::GetGrassDrawStats();
+        ImGui::Text("Baked  N/M/F: %zu / %zu / %zu", gs.bakedNear, gs.bakedMid, gs.bakedFar);
+        ImGui::Text("Drawn  N/M/F: %zu / %zu / %zu", gs.drawNear, gs.drawMid, gs.drawFar);
+        ImGui::Text("Approx tris:  %zu", gs.approxTris);
+        ImGui::TextDisabled("Total baked: %zu", engine::terrain::chunks::GrassInstanceCount());
+
+        static int rebuildR = 4;
+        ImGui::SliderInt("Rebuild radius", &rebuildR, 1, 8);
+        if (ImGui::Button("Rebuild grass")) {
             auto pe = playerEntity(reg);
             Vector3 c = reg.transforms.Has(pe) ? reg.transforms.Get(pe).position : Vector3{0, 0, 0};
-            engine::terrain::chunks::ReloadAround(c, 4);
+            engine::terrain::chunks::ReloadAround(c, rebuildR);
         }
-        ImGui::TextDisabled("After density/slope edits, press Rebuild.");
+        ImGui::TextDisabled("Rebuild after cluster/meadow/scale/sink/density edits.");
+        ImGui::TextDisabled("LOD distances + enable apply live.");
     }
 
     ImGui::End();

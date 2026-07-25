@@ -638,13 +638,17 @@ float TerrainSlope(float x, float z) {
 float LocalWaterLevel(float x, float z) {
     if (!IsHydrologyReady()) return WaterLevel();
     const auto& lakes = GetLakes();
-    float bestD2 = 1.0e30f;
     float y = WaterLevel();
+    float bestD2 = 1.0e30f;
+    // Only adopt a lake's surfaceY when actually near that lake.
+    // (Previously: nearest lake *anywhere* — rejected all plains grass when any
+    // distant lake sat above the land shelf.)
     for (const LakeSite& lake : lakes) {
         const float dx = x - lake.x;
         const float dz = z - lake.z;
         const float d2 = dx * dx + dz * dz;
-        if (d2 < bestD2) {
+        const float r = std::max(lake.fillRadius, lake.boundR) * 1.15f;
+        if (d2 <= r * r && d2 < bestD2) {
             bestD2 = d2;
             y = lake.surfaceY;
         }
