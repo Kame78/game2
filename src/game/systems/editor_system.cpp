@@ -1,5 +1,6 @@
 #include "game/systems.hpp"
 #include "game/factories/entity_factory.hpp"
+#include "game/spells.hpp"
 #include "game/world/world_gen.hpp"
 #include "game/world/landmarks.hpp"
 #include "engine/input.hpp"
@@ -467,6 +468,21 @@ void EditorInputSystem(engine::ecs::Registry& reg) {
                     factories::EntityFactory::CreateSpawner(reg, hit);
                 } else if (g_placeMode == 3) {
                     factories::EntityFactory::CreateLandmarkProxy(reg, hit, g_landmarkPlaceType);
+                } else if (g_placeMode == 4) {
+                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + 2.0f;
+                    factories::EntityFactory::CreateEliteEnemy(reg, hit, g_editorNetId++);
+                } else if (g_placeMode == 5) {
+                    constexpr float kGiantHalfH = 25.0f * 0.3048f * 0.5f;
+                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kGiantHalfH;
+                    factories::EntityFactory::CreateGiantEnemy(reg, hit, g_editorNetId++);
+                } else if (g_placeMode == 6) {
+                    constexpr float kColossalHalfH = 100.0f * 0.3048f * 0.5f;
+                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kColossalHalfH;
+                    factories::EntityFactory::CreateColossalEnemy(reg, hit, g_editorNetId++);
+                } else if (g_placeMode == 7) {
+                    constexpr float kTitanHalfH = 250.0f * 0.3048f * 0.5f;
+                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kTitanHalfH;
+                    factories::EntityFactory::CreateTitanEnemy(reg, hit, g_editorNetId++);
                 }
             }
             if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
@@ -725,8 +741,8 @@ void EditorUISystem(engine::ecs::Registry& reg) {
     }
 
     if (ImGui::CollapsingHeader("9. Entity place / delete")) {
-        const char* modes[] = {"Off", "Enemy", "Spawner", "Landmark proxy"};
-        ImGui::Combo("Place mode", &g_placeMode, modes, 4);
+        const char* modes[] = {"Off", "Enemy", "Spawner", "Landmark proxy", "Elite enemy", "Giant (25 ft)", "Colossal (100 ft)", "Titan (250 ft)"};
+        ImGui::Combo("Place mode", &g_placeMode, modes, 8);
         if (g_placeMode == 3) {
             static const char* lmNames[7] = {};
             static bool initNames = false;
@@ -752,6 +768,22 @@ void EditorUISystem(engine::ecs::Registry& reg) {
                 else if (g_placeMode == 2) factories::EntityFactory::CreateSpawner(reg, p);
                 else if (g_placeMode == 3)
                     factories::EntityFactory::CreateLandmarkProxy(reg, p, g_landmarkPlaceType);
+                else if (g_placeMode == 4) {
+                    p.y = engine::math::WorldHeight(p.x, p.z) + 2.0f;
+                    factories::EntityFactory::CreateEliteEnemy(reg, p, g_editorNetId++);
+                } else if (g_placeMode == 5) {
+                    constexpr float kGiantHalfH = 25.0f * 0.3048f * 0.5f;
+                    p.y = engine::math::WorldHeight(p.x, p.z) + kGiantHalfH;
+                    factories::EntityFactory::CreateGiantEnemy(reg, p, g_editorNetId++);
+                } else if (g_placeMode == 6) {
+                    constexpr float kColossalHalfH = 100.0f * 0.3048f * 0.5f;
+                    p.y = engine::math::WorldHeight(p.x, p.z) + kColossalHalfH;
+                    factories::EntityFactory::CreateColossalEnemy(reg, p, g_editorNetId++);
+                } else if (g_placeMode == 7) {
+                    constexpr float kTitanHalfH = 250.0f * 0.3048f * 0.5f;
+                    p.y = engine::math::WorldHeight(p.x, p.z) + kTitanHalfH;
+                    factories::EntityFactory::CreateTitanEnemy(reg, p, g_editorNetId++);
+                }
             }
         }
     }
@@ -867,6 +899,113 @@ void EditorUISystem(engine::ecs::Registry& reg) {
         }
         ImGui::TextDisabled("Rebuild after cluster/meadow/scale/sink/density edits.");
         ImGui::TextDisabled("LOD distances + enable apply live.");
+    }
+
+    if (ImGui::CollapsingHeader("12. Spells / Combat")) {
+        static bool freeCast = true;
+        ImGui::Checkbox("Free cast (ignore mana & cooldown)", &freeCast);
+        ImGui::TextWrapped("Tab cycles Fire/Water/Necro/Priest/Ranger. Number keys select a spell. RMB casts.");
+        ImGui::Separator();
+
+        auto pe = playerEntity(reg);
+        if (reg.spellCasters.Has(pe)) {
+            auto& caster = reg.spellCasters.Get(pe);
+            ImGui::Text("Mana: %.0f / %.0f", caster.mana, caster.manaMax);
+            ImGui::ProgressBar(caster.mana / fmaxf(caster.manaMax, 1.0f), ImVec2(-1, 0));
+            if (caster.castingSpell >= 0) {
+                const auto& def = game::GetSpellDef(caster.castingSpell);
+                ImGui::Text("Casting: %s (%.2fs)", def.name, caster.castTimer);
+            }
+            if (ImGui::Button("Refill mana")) caster.mana = caster.manaMax;
+            ImGui::SameLine();
+            if (ImGui::Button("Reset cooldowns")) {
+                for (int s = 0; s < (int)game::SpellId::Count; s++) caster.cooldowns[s] = 0.0f;
+            }
+            ImGui::Separator();
+        } else {
+            ImGui::TextDisabled("No SpellCaster on player.");
+        }
+
+        for (int s = 0; s < (int)game::SpellId::Count; s++) {
+            const auto& def = game::GetSpellDef(s);
+            ImGui::PushID(s);
+            float cd = 0.0f;
+            if (reg.spellCasters.Has(pe)) cd = reg.spellCasters.Get(pe).cooldowns[s];
+
+            char label[96];
+            if (cd > 0.0f && !freeCast) {
+                snprintf(label, sizeof(label), "Cast %s  (CD %.1fs)", def.name, cd);
+            } else {
+                snprintf(label, sizeof(label), "Cast %s  [%.0f dmg | %.0f mana | %.1fs CD]",
+                         def.name, def.damage, def.manaCost, def.cooldown);
+            }
+            if (ImGui::Button(label, ImVec2(-1, 0))) {
+                TryCastSpell(reg, s, freeCast);
+            }
+            ImGui::TextDisabled("  %s | cast %.2fs | %s",
+                def.delivery == game::SpellDelivery::Projectile ? "projectile" :
+                def.delivery == game::SpellDelivery::InstantAoE ? "instant AoE" :
+                def.delivery == game::SpellDelivery::PersistentZone ? "zone" :
+                def.delivery == game::SpellDelivery::MovingWave ? "moving wave" :
+                def.delivery == game::SpellDelivery::Mobility ? "mobility" :
+                def.delivery == game::SpellDelivery::Passive ? "passive" :
+                def.delivery == game::SpellDelivery::SelfBuff ? "self buff" :
+                def.delivery == game::SpellDelivery::SummonPet ? "summon" : "hitscan",
+                def.castTime, def.sfxCast);
+            ImGui::PopID();
+        }
+
+        ImGui::Separator();
+        ImGui::TextDisabled("Tab: cycle class | 1-0: select | RMB: cast");
+        ImGui::TextDisabled("Necro: Pixie, Gargoyle, Call of the Dead, Reaper");
+        ImGui::TextDisabled("Priest: Sprite, Battle Angel, Arch Angel");
+        ImGui::TextDisabled("Ranger: Dash (20 ft), Teleport, Double Jump (passive)");
+        if (ImGui::Button("Spawn test enemy ring")) {
+            if (reg.transforms.Has(pe)) {
+                Vector3 c = reg.transforms.Get(pe).position;
+                for (int i = 0; i < 8; i++) {
+                    float a = i * (6.28318f / 8.0f);
+                    Vector3 p = {c.x + cosf(a) * 8.0f, c.y, c.z + sinf(a) * 8.0f};
+                    p.y = engine::math::WorldHeight(p.x, p.z) + 1.0f;
+                    factories::EntityFactory::CreateEnemy(reg, p, g_editorNetId++);
+                }
+            }
+        }
+        if (ImGui::Button("Spawn elite enemy")) {
+            if (reg.transforms.Has(pe)) {
+                Vector3 p = reg.transforms.Get(pe).position;
+                p.x += 6.0f;
+                p.y = engine::math::WorldHeight(p.x, p.z) + 2.0f;
+                factories::EntityFactory::CreateEliteEnemy(reg, p, g_editorNetId++);
+            }
+        }
+        if (ImGui::Button("Spawn giant (25 ft)")) {
+            if (reg.transforms.Has(pe)) {
+                Vector3 p = reg.transforms.Get(pe).position;
+                p.x += 10.0f;
+                constexpr float kGiantHalfH = 25.0f * 0.3048f * 0.5f;
+                p.y = engine::math::WorldHeight(p.x, p.z) + kGiantHalfH;
+                factories::EntityFactory::CreateGiantEnemy(reg, p, g_editorNetId++);
+            }
+        }
+        if (ImGui::Button("Spawn colossal (100 ft)")) {
+            if (reg.transforms.Has(pe)) {
+                Vector3 p = reg.transforms.Get(pe).position;
+                p.x += 20.0f;
+                constexpr float kColossalHalfH = 100.0f * 0.3048f * 0.5f;
+                p.y = engine::math::WorldHeight(p.x, p.z) + kColossalHalfH;
+                factories::EntityFactory::CreateColossalEnemy(reg, p, g_editorNetId++);
+            }
+        }
+        if (ImGui::Button("Spawn titan (250 ft)")) {
+            if (reg.transforms.Has(pe)) {
+                Vector3 p = reg.transforms.Get(pe).position;
+                p.x += 40.0f;
+                constexpr float kTitanHalfH = 250.0f * 0.3048f * 0.5f;
+                p.y = engine::math::WorldHeight(p.x, p.z) + kTitanHalfH;
+                factories::EntityFactory::CreateTitanEnemy(reg, p, g_editorNetId++);
+            }
+        }
     }
 
     ImGui::End();

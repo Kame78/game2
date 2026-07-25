@@ -68,6 +68,10 @@ namespace engine::ecs {
         SparseSet<game::HealthComponent> healths;
         SparseSet<game::EnemyAIComponent> enemyAIs;
         SparseSet<game::ProjectileComponent> projectiles;
+        SparseSet<game::SpellCasterComponent> spellCasters;
+        SparseSet<game::SpellZoneComponent> spellZones;
+        SparseSet<game::StatusEffectComponent> statusEffects;
+        SparseSet<game::SummonComponent> summons;
         SparseSet<game::SpawnerComponent> spawners;
         SparseSet<game::LandmarkProxyComponent> landmarkProxies;
     };
@@ -101,6 +105,10 @@ namespace engine::ecs {
         reg.healths.Remove(entity);
         reg.enemyAIs.Remove(entity);
         reg.projectiles.Remove(entity);
+        reg.spellCasters.Remove(entity);
+        reg.spellZones.Remove(entity);
+        reg.statusEffects.Remove(entity);
+        reg.summons.Remove(entity);
         reg.spawners.Remove(entity);
         reg.landmarkProxies.Remove(entity);
         

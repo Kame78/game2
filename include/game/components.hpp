@@ -1,5 +1,7 @@
 #pragma once
 #include "raylib.h"
+#include "game/character_visual.hpp"
+#include <cstdint>
 
 namespace game {
     struct TransformComponent {
@@ -19,6 +21,12 @@ namespace game {
         bool grounded   = true;
         bool isFlying   = false;
         bool noClip     = false;
+        // Ranger dash burst
+        float dashTimer = 0.0f;
+        float dashVelX  = 0.0f;
+        float dashVelZ  = 0.0f;
+        // Ranger double-jump passive
+        bool canDoubleJump = false;
     };
 
     struct RenderComponent {
@@ -26,6 +34,8 @@ namespace game {
         float width  = 1.0f;
         float height = 1.0f;
         float depth  = 1.0f;
+        CharacterVisual visual = CharacterVisual::Box;
+        float facingYaw = 0.0f; // radians, 0 = +Z
     };
 
     struct HealthComponent {
@@ -39,7 +49,7 @@ namespace game {
         float attackDamage   = 8.0f;
         float attackCooldown = 1.0f;
         float attackTimer    = 0.0f;
-        uint32_t netId       = 0;  // network ID for multiplayer sync
+        uint32_t netId       = 0;
     };
 
     struct ProjectileComponent {
@@ -47,11 +57,106 @@ namespace game {
         float speed       = 25.0f;
         float damage      = 50.0f;
         float aoeRadius   = 4.0f;
-        float lifetime    = 3.0f;   // seconds before auto-despawn
-        float radius      = 0.25f;  // visual + collision radius
+        float lifetime    = 3.0f;
+        float radius      = 0.25f;
+        uint8_t spellId   = 0;
+        bool piercing     = false;
+        uint32_t piercedIds[8] = {};
+        uint8_t pierceCount    = 0;
     };
 
-    // Editor-placed spawn point (EnemySpawnSystem also drains these).
+    // Player mana + spell cooldowns / cast channel + class hotbar.
+    struct SpellCasterComponent {
+        float mana         = 160.0f;
+        float manaMax      = 160.0f;
+        float manaRegen    = 12.0f;
+        float cooldowns[32] = {};   // indexed by SpellId (Count <= 32)
+        float castTimer    = 0.0f;
+        int   castingSpell = -1;
+        float castAimX = 0.0f;
+        float castAimY = 0.0f;
+        float castAimZ = 0.0f;
+        float castDirX = 0.0f;
+        float castDirY = 0.0f;
+        float castDirZ = 0.0f;
+        // Class loadout: Fire vs Water; slot indexes spells of that element.
+        uint8_t selectedElement = 0; // SpellElement::Fire
+        uint8_t selectedSlot    = 0; // 0-based within element list
+    };
+
+    // Persistent / expanding / moving spell zones.
+    struct SpellZoneComponent {
+        uint8_t spellId   = 0;
+        float damage      = 0.0f;
+        float burnDps     = 0.0f;
+        float burnDuration = 0.0f;
+        float radius      = 0.0f;
+        float radiusMax   = 0.0f;
+        float expandSpeed = 0.0f;
+        float lifetime    = 1.0f;
+        float age         = 0.0f;
+        float tickTimer   = 0.0f;
+        float tickRate    = 0.25f;
+        float height      = 2.5f;
+        float force       = 0.0f;   // >0 push out/along, <0 pull in
+        float travelSpeed = 0.0f;
+        float moveDirX    = 0.0f;
+        float moveDirY    = 0.0f;
+        float moveDirZ    = 0.0f;
+        float waveHalfWidth = 0.0f; // tsunami lateral half-width
+        bool  damages     = false;
+        bool  expandingVisual = false;
+        bool  damageOnce  = false;
+        uint32_t hitEntityIds[32] = {};
+        uint8_t  hitCount = 0;
+    };
+
+    struct StatusEffectComponent {
+        float burnDps       = 0.0f;
+        float burnRemaining = 0.0f;
+        // Priest sprite: heal self over time
+        float healPerSec    = 0.0f;
+        float healRemaining = 0.0f;
+        // Necro pixie: steal HP/s from nearest enemy in range
+        float drainPerSec   = 0.0f;
+        float drainRemaining = 0.0f;
+        float drainRange    = 10.0f;
+    };
+
+    // Temporary ally (gargoyle / battle angel) or orbiting familiar (pixie / sprite).
+    enum class SummonKind : uint8_t {
+        Pixie = 0,
+        Gargoyle = 1,
+        Sprite = 2,
+        BattleAngel = 3,
+        Reaper = 4,
+        ArchAngel = 5,
+    };
+
+    struct SummonComponent {
+        SummonKind kind   = SummonKind::Gargoyle;
+        uint32_t ownerId  = 0;
+        float lifetime    = 10.0f;
+        float age         = 0.0f;
+        float attackDamage = 25.0f;
+        float attackRange  = 12.0f; // horizontal seek / aura radius
+        float strikeRange  = 4.5f;  // melee engage distance (XZ)
+        float attackCooldown = 0.85f;
+        float attackTimer  = 0.0f;
+        float hoverHeight  = 1.6f;
+        float orbitAngle   = 0.0f;
+        bool  combatPet    = true;  // false = orbit-only familiar
+        bool  auraAttack   = false; // damage all enemies in attackRange each tick
+        // Intro animation (Reaper rises from hell, Arch Angel descends in light)
+        float spawnAnimDuration = 0.0f;
+        float spawnHomeX = 0.0f;
+        float spawnHomeZ = 0.0f;
+        float spawnStartY = 0.0f;
+        float spawnEndY   = 0.0f;
+        float spawnGroundY = 0.0f;
+        float bodyHeight   = 2.0f;
+    };
+
     struct SpawnerComponent {
         float radius   = 18.0f;
         float interval = 4.0f;
@@ -59,8 +164,7 @@ namespace game {
         int   maxAlive = 4;
     };
 
-    // Editor-placed landmark proxy (visual only — does not flatten terrain).
     struct LandmarkProxyComponent {
-        int typeIndex = 0; // maps to LandmarkType / LANDMARKS table
+        int typeIndex = 0;
     };
 }

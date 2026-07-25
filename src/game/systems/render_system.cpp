@@ -1,29 +1,28 @@
 #include "game/systems.hpp"
+#include "game/character_visual.hpp"
 #include "raymath.h"
 
 namespace game::systems {
 
     void Render3DSystem(engine::ecs::Registry& reg) {
+        float t = (float)GetTime();
         for (size_t i = 0; i < reg.renderables.data.size(); i++) {
             engine::ecs::Entity e = {reg.renderables.indexToEntity[i]};
             if (!reg.transforms.Has(e)) continue;
 
             auto& render = reg.renderables.data[i];
-            auto& t      = reg.transforms.Get(e);
+            auto& tr     = reg.transforms.Get(e);
 
-            DrawCube(t.position, render.width, render.height, render.depth, render.color);
-            DrawCubeWires(t.position, render.width, render.height, render.depth, BLACK);
-        }
+            float anim = t;
+            if (reg.summons.Has(e)) {
+                anim = reg.summons.Get(e).age;
+            }
 
-        // Render projectiles as glowing spheres
-        for (size_t i = 0; i < reg.projectiles.data.size(); i++) {
-            engine::ecs::Entity e = {reg.projectiles.indexToEntity[i]};
-            if (!reg.transforms.Has(e)) continue;
-            auto& t = reg.transforms.Get(e);
-            auto& p = reg.projectiles.data[i];
-            DrawSphere(t.position, p.radius, ORANGE);
-            DrawSphereWires(t.position, p.radius + 0.05f, 6, 6, RED);
+            game::DrawCharacterVisual(render.visual, tr.position,
+                                      render.width, render.height, render.depth,
+                                      render.color, render.facingYaw, anim);
         }
+        // Projectiles / spell VFX are drawn by SpellVfxRenderSystem.
     }
 
     void HealthBarSystem(engine::ecs::Registry& reg) {

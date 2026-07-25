@@ -1,4 +1,5 @@
 #include "game/systems.hpp"
+#include "game/spells.hpp"
 #include "engine/input.hpp"
 #include "engine/math/noise.hpp"
 #include "raymath.h"
@@ -23,6 +24,13 @@ namespace game::systems {
             auto& input     = reg.playerInputs.data[i];
             auto& transform = reg.transforms.Get(e);
             auto& cam       = reg.cameras.Get(e);
+
+            bool rangerClass = false;
+            if (reg.spellCasters.Has(e)) {
+                rangerClass = (reg.spellCasters.Get(e).selectedElement ==
+                               (uint8_t)game::SpellElement::Ranger);
+            }
+            if (!rangerClass) input.canDoubleJump = false;
 
             // --- Mouse look ---
             if (engine::input::IsCursorLocked()) {
@@ -51,8 +59,16 @@ namespace game::systems {
                 moveDir = Vector3Normalize(moveDir);
             }
 
-            transform.position.x += moveDir.x * g_playerMoveSpeed * dt;
-            transform.position.z += moveDir.z * g_playerMoveSpeed * dt;
+            // Ranger dash overrides normal move briefly
+            if (input.dashTimer > 0.0f) {
+                transform.position.x += input.dashVelX * dt;
+                transform.position.z += input.dashVelZ * dt;
+                input.dashTimer -= dt;
+                if (input.dashTimer < 0.0f) input.dashTimer = 0.0f;
+            } else {
+                transform.position.x += moveDir.x * g_playerMoveSpeed * dt;
+                transform.position.z += moveDir.z * g_playerMoveSpeed * dt;
+            }
 
             // --- Cube collision against all renderable entities ---
             if (!input.noClip) {
@@ -105,10 +121,16 @@ namespace game::systems {
                 }
             } // end !input.noClip
 
-            // --- Jump ---
-            if (engine::input::IsCursorLocked() && engine::input::IsActionPressed("Jump") && input.grounded) {
-                input.velocityY = JUMP_FORCE;
-                input.grounded = false;
+            // --- Jump / Ranger double jump ---
+            if (engine::input::IsCursorLocked() && engine::input::IsActionPressed("Jump")) {
+                if (input.grounded) {
+                    input.velocityY = JUMP_FORCE;
+                    input.grounded = false;
+                    input.canDoubleJump = rangerClass;
+                } else if (input.canDoubleJump && rangerClass && !input.isFlying) {
+                    input.velocityY = JUMP_FORCE;
+                    input.canDoubleJump = false;
+                }
             }
 
             // --- Gravity / Flight ---

@@ -49,9 +49,11 @@ add_executable(game
 	src/game/ui/hud.cpp
 	src/game/systems/player_system.cpp
 	src/game/systems/combat_system.cpp
+	src/game/systems/spell_system.cpp
 	src/game/systems/enemy_system.cpp
 	src/game/systems/spawner_system.cpp
 	src/game/systems/render_system.cpp
+	src/game/character_visual.cpp
 	src/game/systems/network_system.cpp
 	src/game/systems/editor_system.cpp
 	src/game/world/world_gen.cpp
@@ -112,6 +114,33 @@ add_custom_command(TARGET game POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different
 	${CMAKE_SOURCE_DIR}/steam_appid.txt
 	$<TARGET_FILE_DIR:game>/steam_appid.txt)
+
+# -----------------------------------------------------------------------------
+# Necro-dagger viewmodel: raylib only supports 16-bit mesh indices, so the raw
+# ~1M-vertex model.glb has to be decimated. If Blender is available, we build
+# assets/models/necro-dagger/model_lowpoly.glb (~20k tris) at configure time.
+# -----------------------------------------------------------------------------
+set(DAGGER_DIR "${CMAKE_SOURCE_DIR}/assets/models/necro-dagger")
+set(DAGGER_SRC "${DAGGER_DIR}/model.glb")
+set(DAGGER_LOW "${DAGGER_DIR}/model_lowpoly.glb")
+if(EXISTS "${DAGGER_SRC}" AND NOT EXISTS "${DAGGER_LOW}")
+	find_program(BLENDER_EXECUTABLE blender)
+	if(BLENDER_EXECUTABLE)
+		message(STATUS "Decimating necro-dagger with ${BLENDER_EXECUTABLE}")
+		execute_process(
+			COMMAND ${BLENDER_EXECUTABLE} --background --python
+				"${DAGGER_DIR}/decimate.py" -- "${DAGGER_SRC}" "${DAGGER_LOW}" 20000
+			WORKING_DIRECTORY "${DAGGER_DIR}"
+			RESULT_VARIABLE DAGGER_RC
+			OUTPUT_QUIET)
+		if(NOT DAGGER_RC EQUAL 0)
+			message(WARNING "Dagger decimation failed (rc=${DAGGER_RC}); viewmodel will fall back to procedural sword")
+		endif()
+	else()
+		message(WARNING "Blender not found; skipping dagger decimation. Run manually:\n"
+			"  blender --background --python ${DAGGER_DIR}/decimate.py -- ${DAGGER_SRC} ${DAGGER_LOW} 20000")
+	endif()
+endif()
 
 # Copy assets into build directory so paths resolve at runtime
 add_custom_command(TARGET game POST_BUILD
