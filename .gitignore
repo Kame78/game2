@@ -1,5 +1,7 @@
-build/
-build_*/
+/build/
+/build_msvc/
+/build_msvc2/
+/build_*/
 cmake-build-*/
 .cache/
 compile_commands.json
