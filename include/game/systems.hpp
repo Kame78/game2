@@ -17,6 +17,7 @@ namespace game::systems {
     void HealthBarSystem(engine::ecs::Registry& registry);
     void EditorInputSystem(engine::ecs::Registry& registry);
     void EditorUISystem(engine::ecs::Registry& registry);
+    void EditorDebugDrawSystem(engine::ecs::Registry& registry); // inside BeginMode3D
     void DrawRemotePlayer(const engine::networking::PlayerState& remote);
     void SpawnRemoteFireballs(engine::ecs::Registry& registry);
     bool IsSwinging();

@@ -76,4 +76,45 @@ namespace game::factories {
         return proj;
     }
 
+    engine::ecs::Entity EntityFactory::CreateSpawner(engine::ecs::Registry& reg, Vector3 spawnPos) {
+        engine::ecs::Entity e = engine::ecs::CreateEntity(reg);
+
+        game::TransformComponent t;
+        t.position = spawnPos;
+
+        game::RenderComponent r;
+        r.color = Color{255, 180, 40, 255};
+        r.width = 1.4f;
+        r.height = 0.4f;
+        r.depth = 1.4f;
+
+        game::SpawnerComponent s;
+
+        reg.transforms.Insert(e, t);
+        reg.renderables.Insert(e, r);
+        reg.spawners.Insert(e, s);
+        return e;
+    }
+
+    engine::ecs::Entity EntityFactory::CreateLandmarkProxy(engine::ecs::Registry& reg, Vector3 spawnPos, int typeIndex) {
+        engine::ecs::Entity e = engine::ecs::CreateEntity(reg);
+
+        game::TransformComponent t;
+        t.position = spawnPos;
+
+        game::RenderComponent r;
+        r.color = Color{160, 100, 255, 255};
+        r.width = 2.0f;
+        r.height = 3.0f;
+        r.depth = 2.0f;
+
+        game::LandmarkProxyComponent lm;
+        lm.typeIndex = typeIndex;
+
+        reg.transforms.Insert(e, t);
+        reg.renderables.Insert(e, r);
+        reg.landmarkProxies.Insert(e, lm);
+        return e;
+    }
+
 }

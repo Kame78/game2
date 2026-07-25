@@ -6,6 +6,8 @@
 namespace Core::App {
 
     int Run() {
+        // Must be set before InitWindow — requests MSAA 4x (driver may fall back).
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, "game");
         SetTargetFPS(60);
 

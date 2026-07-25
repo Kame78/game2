@@ -68,6 +68,8 @@ namespace engine::ecs {
         SparseSet<game::HealthComponent> healths;
         SparseSet<game::EnemyAIComponent> enemyAIs;
         SparseSet<game::ProjectileComponent> projectiles;
+        SparseSet<game::SpawnerComponent> spawners;
+        SparseSet<game::LandmarkProxyComponent> landmarkProxies;
     };
 
     // --- Global Namespaced Functions ---
@@ -99,6 +101,8 @@ namespace engine::ecs {
         reg.healths.Remove(entity);
         reg.enemyAIs.Remove(entity);
         reg.projectiles.Remove(entity);
+        reg.spawners.Remove(entity);
+        reg.landmarkProxies.Remove(entity);
         
         // 2. Recycle the ID
         reg.generations[index]++; // Increment generation so old IDs pointing here become invalid

@@ -10,6 +10,8 @@ namespace game::factories {
         static engine::ecs::Entity CreatePlayer(engine::ecs::Registry& reg, Vector3 spawnPos);
         static engine::ecs::Entity CreateEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId);
         static engine::ecs::Entity CreateProjectile(engine::ecs::Registry& reg, Vector3 startPos, Vector3 direction);
+        static engine::ecs::Entity CreateSpawner(engine::ecs::Registry& reg, Vector3 spawnPos);
+        static engine::ecs::Entity CreateLandmarkProxy(engine::ecs::Registry& reg, Vector3 spawnPos, int typeIndex);
     };
 
 }

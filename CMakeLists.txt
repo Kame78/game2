@@ -15,6 +15,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
+# Enable Radiance .hdr loading (stbi_loadf) for the equirectangular sky HDRI.
+target_compile_definitions(raylib PUBLIC SUPPORT_FILEFORMAT_HDR)
+
 FetchContent_Declare(
 	rlImGui
 	GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
@@ -36,8 +39,10 @@ add_executable(game
 	src/engine/input.cpp
 	src/engine/networking.cpp
 	src/engine/math/noise.cpp
+	src/engine/math/hydrology.cpp
 	src/engine/jobs/thread_pool.cpp
 	src/engine/terrain/chunk_manager.cpp
+	src/engine/render/sky.cpp
 	src/game/game_app.cpp
 	src/game/factories/entity_factory.cpp
 	src/game/ui/menu_screens.cpp

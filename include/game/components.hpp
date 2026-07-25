@@ -50,4 +50,17 @@ namespace game {
         float lifetime    = 3.0f;   // seconds before auto-despawn
         float radius      = 0.25f;  // visual + collision radius
     };
+
+    // Editor-placed spawn point (EnemySpawnSystem also drains these).
+    struct SpawnerComponent {
+        float radius   = 18.0f;
+        float interval = 4.0f;
+        float timer    = 0.0f;
+        int   maxAlive = 4;
+    };
+
+    // Editor-placed landmark proxy (visual only — does not flatten terrain).
+    struct LandmarkProxyComponent {
+        int typeIndex = 0; // maps to LandmarkType / LANDMARKS table
+    };
 }

@@ -4,15 +4,19 @@
 #include "game/ui/hud.hpp"
 #include "game/systems.hpp"
 #include "game/world/world_gen.hpp"
+#include "game/world/landmarks.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/input.hpp"
 #include "engine/networking.hpp"
 #include "engine/math/noise.hpp"
+#include "engine/math/hydrology.hpp"
 #include "engine/terrain/chunk_manager.hpp"
+#include "engine/render/sky.hpp"
 #include "raylib.h"
 #include "rlgl.h"
 #include "imgui.h"
 #include "rlImGui.h"
+#include <algorithm>
 #include <cstring>
 
 namespace Game::GameApp {
@@ -73,6 +77,24 @@ namespace Game::GameApp {
         engine::input::BindKey("Jump",         KEY_SPACE);
 
         game::world::InstallHeightModifier();
+
+        // Keep procedural lakes/rivers off spawn & authored flatten pads.
+        engine::math::ClearHydrologyExclusions();
+        for (size_t i = 0; i < game::world::LANDMARK_COUNT; ++i) {
+            const game::world::Landmark& lm = game::world::LANDMARKS[i];
+            if (lm.flatRadius <= 0.0f) continue;
+
+            float protectR = lm.flatRadius + lm.flatFalloff + 48.0f;
+            if (lm.type == game::world::LandmarkType::Church) {
+                // Cover churchyard flatten + falloff with margin so discs can't flood spawn
+                protectR = std::max(protectR, 420.0f);
+            }
+            engine::math::AddHydrologyExclusion(lm.center.x, lm.center.z, protectR);
+        }
+
+        engine::math::BuildHydrology(engine::math::GetWorldConfig().seed);
+        engine::render::sky::Init();
+        game::world::InitWater();
         engine::terrain::chunks::Init();
 
         std::string steamName = engine::networking::GetSteamPersonaName();
@@ -88,6 +110,9 @@ namespace Game::GameApp {
 
     void Shutdown() {
         engine::terrain::chunks::Shutdown();
+        game::world::ShutdownWater();
+        engine::render::sky::Shutdown();
+        engine::math::ClearHydrology();
         rlImGuiShutdown();
     }
 
@@ -172,13 +197,24 @@ namespace Game::GameApp {
 
     void Draw() {
         if (g_gameplayStarted) {
-            ClearBackground({180, 200, 220, 255});
             auto& cam = registry.cameras.Get(playerEntity).camera;
+            // Only replace empty sky pixels  Edoes not tint terrain (no fullscreen overlay).
+            // Horizon rays never hit a flat water plane, so underwater sky must be murky.
+            const bool underwater = game::world::IsCameraUnderwater(cam);
+            // Above water: HDRI fills the sky; clear matches haze so any gaps blend.
+            ClearBackground(underwater ? Color{10, 38, 62, 255}
+                                       : engine::render::sky::GetHazeColor());
             
-            rlSetClipPlanes(0.1f, 3000.0f);
+            // Far must clear the ±3 km basin (corner-to-corner ~6 km view rays).
+            rlSetClipPlanes(0.1f, 8000.0f);
             BeginMode3D(cam);
+                if (!underwater) {
+                    engine::render::sky::Draw(cam);
+                }
                 // --- RESTORED: Draw terrain heightmap chunks in 3D pass ---
                 engine::terrain::chunks::Draw();
+                engine::terrain::chunks::DrawGrass(cam.position);
+                game::systems::EditorDebugDrawSystem(registry);
                 
                 game::systems::Render3DSystem(registry);
                 game::world::DrawLandmarks(cam);
@@ -189,6 +225,10 @@ namespace Game::GameApp {
                 }
             EndMode3D();
             rlSetClipPlanes(0.01f, 1000.0f);
+
+            if (underwater) {
+                game::world::DrawUnderwaterOverlay();
+            }
         } else {
             ClearBackground({15, 15, 25, 255});
         }
