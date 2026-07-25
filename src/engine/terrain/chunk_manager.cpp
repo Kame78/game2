@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
@@ -372,94 +373,103 @@ static void applyTerrainShader(Model& model) {
 }
 
 // ---------------------------------------------------------------------------
-// Instanced grass — chunk-streamed bake + distance LODs at draw
+// Instanced grass — chunk-streamed bake, single Quaternius draw distance
 // ---------------------------------------------------------------------------
-// Near: full Poly Haven clump mesh. Mid/Far: shared cross-quad impostor.
-// Bake runs with terrain chunks (LOD0 only); lists unload with the chunk.
+// One instance list of Quaternius variants (noise pick). Soft fade at max range.
+// Bake on terrain LOD0 and LOD1 so grass can reach ~900 m. Billboard only if
+// all Quaternius models fail to load.
 // ---------------------------------------------------------------------------
 static bool     g_grassEnabled = true;
 static float    g_grassDensity = 1.0f;
 static float    g_grassMaxSlope = 0.32f;
-static float    g_grassNearDist = 20.0f;
-static float    g_grassMidDist = 45.0f;
-static float    g_grassFarDist = 100.0f;
-static float    g_grassNearDensMul = 1.40f;
-static float    g_grassMidDensMul = 0.55f;
-static float    g_grassFarDensMul = 0.18f;
-// Cluster / meadow / scale knobs — radius ≥ ~0.7× spacing so patches merge.
-static int      g_grassClusterMin = 6;
-static int      g_grassClusterMax = 12;
-static float    g_grassClusterRadius = 2.40f;   // max patch disk radius (m)
-static float    g_grassSeedSpacing = 2.60f;     // hex lattice spacing (m)
+static float    g_grassDrawDist = 50.0f;        // full Quaternius meshes — keep short for FPS
+// Many seeds + fewer clumps fills the floor; mega-clusters looked sparse under the cap.
+static int      g_grassClusterMin = 3;
+static int      g_grassClusterMax = 6;
+static float    g_grassClusterRadius = 1.35f;   // max patch disk radius (m)
+static float    g_grassSeedSpacing = 1.10f;     // hex lattice spacing (m)
 static float    g_grassMeadowStrength = 0.0f;   // OFF by default — was carving large empty bands
 static float    g_grassMeadowScale = 0.022f;    // noise frequency
+// Coverage noise — soft density variation (defaults keep ~90%+ plains seeds).
+static float    g_grassCoverageStrength = 0.25f;
+static float    g_grassCoverageScale = 0.028f;
+static float    g_grassCoverageThreshold = 0.05f;
+static float    g_grassSizeNoiseScale = 0.045f; // spatial size field frequency
 static float    g_grassScaleMin = 0.78f;
 static float    g_grassScaleMax = 1.28f;
 static float    g_grassSink = 0.02f;            // meters into terrain
 static constexpr float kGrassWaterGateMax = 0.12f;
-// Near clustered patches. Cap must not abort lattice early (that caused Z-stripes).
-static constexpr int   kGrassMaxNearPerChunk = 4800;
-static constexpr int   kGrassMaxMidPerChunk  = 220;
-static constexpr int   kGrassMaxFarPerChunk  = 80;
-static constexpr int   kGrassMaxNearDraw = 7500;
-static constexpr int   kGrassMaxMidDraw  = 3200;
-static constexpr int   kGrassMaxFarDraw  = 1600;
-static constexpr int   kGrassChunkLodMax = 0; // bake only on terrain LOD0 chunks
+// Clustered patches. Cap must not abort lattice early (that caused Z-stripes).
+// Cap must fit spacing×clumps or hash-thinning starves the carpet.
+static constexpr int   kGrassMaxNearPerChunk = 14000;
+static constexpr int   kGrassMaxDraw = 24000; // hard cap across visible chunks
+static constexpr int   kGrassChunkLodMax = 1; // bake on terrain LOD0 + LOD1 (~900 m)
 static float    g_grassClumpHeight = 0.323f;
-static float    g_grassImpostorHeight = 0.32f;
-static constexpr float kGrassBaseScale = 3.9f;
-static constexpr float kGrassImpostorScale = 4.2f;
+static constexpr float kGrassBaseScale = 1.05f;   // Quaternius clumps are ~1.2–1.4 m tall
+static constexpr float kGrassFadeMeters = 25.0f; // soft fade into max draw distance
+static constexpr int   kGrassVariantCount = 4;
 static chunks::GrassDrawStats g_grassDrawStats = {};
 
+struct GrassNearInst {
+    Matrix  m{};
+    uint8_t variant = 0;
+};
+
 struct GrassBake {
-    std::vector<Matrix> near; // full clump mesh
-    std::vector<Matrix> mid;  // impostor
-    std::vector<Matrix> far;  // sparse impostor
+    std::vector<GrassNearInst> near; // Quaternius clumps (varianted)
+};
+
+struct GrassVariantMesh {
+    Model  model{};
+    Mesh*  mesh = nullptr;
+    float  height = 1.0f;
+    bool   loaded = false;
 };
 
 static Shader   g_grassShader = {};
 static Material g_grassClumpMaterial = {};
-static Material g_grassImpostorMaterial = {};
-static Model    g_grassClumpModel = {};
-static Model    g_grassImpostorModel = {};
-static Mesh*    g_grassClumpMesh = nullptr;
-static Mesh*    g_grassImpostorMesh = nullptr;
+static GrassVariantMesh g_grassVariants[kGrassVariantCount] = {};
 static Texture  g_grassTexture = {};
 static bool     g_grassOwnsTexture = false;
 static bool     g_grassClumpIsFallback = false;
 static bool     g_grassReady = false;
 static int      g_grassLocTime = -1;
 static int      g_grassLocViewPos = -1;
-static int      g_grassLocFadeStart = -1;
-static int      g_grassLocFadeEnd = -1;
+static int      g_grassLocFadeInStart = -1;
+static int      g_grassLocFadeInEnd = -1;
+static int      g_grassLocFadeOutStart = -1;
+static int      g_grassLocFadeOutEnd = -1;
 static int      g_grassLocSunDir = -1;
 static int      g_grassLocSunIntensity = -1;
 static int      g_grassLocMeshHeight = -1;
 
-static void clampGrassLodDistances() {
-    g_grassNearDist = std::clamp(g_grassNearDist, 6.0f, 80.0f);
-    g_grassMidDist = std::clamp(g_grassMidDist, g_grassNearDist + 4.0f, 200.0f);
-    g_grassFarDist = std::clamp(g_grassFarDist, g_grassMidDist + 8.0f, 400.0f);
+static void clampGrassDrawDistance() {
+    // Up to far edge of terrain LOD1 (~896 m) so slider can cover baked range.
+    g_grassDrawDist = std::clamp(g_grassDrawDist, 40.0f, 500.0f);
 }
 
-// Crossed-quad impostor (bottom-origin). uAtlas=true samples a bottom clump on the albedo.
+// Fallback multi-plane billboard (bottom-origin) — only used if Quaternius fails.
 static Model makeGrassBillboardModel(bool uAtlas) {
-    constexpr float W = 0.22f;
-    constexpr float H = 0.32f;
+    constexpr float W = 0.38f;
+    constexpr float H = 0.34f;
+    constexpr int kPlanes = 3; // 0° / 60° / 120° — denser silhouette than a 2-plane cross
+    const int vertCount = kPlanes * 4;
+    const int triCount = kPlanes * 2;
     Mesh mesh = {};
-    mesh.vertexCount = 8;
-    mesh.triangleCount = 4;
-    mesh.vertices = static_cast<float*>(MemAlloc(8 * 3 * sizeof(float)));
-    mesh.texcoords = static_cast<float*>(MemAlloc(8 * 2 * sizeof(float)));
-    mesh.normals = static_cast<float*>(MemAlloc(8 * 3 * sizeof(float)));
-    mesh.colors = static_cast<unsigned char*>(MemAlloc(8 * 4 * sizeof(unsigned char)));
-    mesh.indices = static_cast<unsigned short*>(MemAlloc(4 * 3 * sizeof(unsigned short)));
+    mesh.vertexCount = vertCount;
+    mesh.triangleCount = triCount;
+    mesh.vertices = static_cast<float*>(MemAlloc(vertCount * 3 * sizeof(float)));
+    mesh.texcoords = static_cast<float*>(MemAlloc(vertCount * 2 * sizeof(float)));
+    mesh.normals = static_cast<float*>(MemAlloc(vertCount * 3 * sizeof(float)));
+    mesh.colors = static_cast<unsigned char*>(MemAlloc(vertCount * 4 * sizeof(unsigned char)));
+    mesh.indices = static_cast<unsigned short*>(MemAlloc(triCount * 3 * sizeof(unsigned short)));
 
-    // Atlas: bottom clumps live at high V after raylib/stbi upload (image top = v~0).
-    const float u0 = uAtlas ? 0.08f : 0.0f;
-    const float u1 = uAtlas ? 0.28f : 1.0f;
-    const float v0 = uAtlas ? 0.98f : 1.0f; // bottom of card → grass roots
-    const float v1 = uAtlas ? 0.62f : 0.0f; // tip
+    // Atlas: bottom clumps at high V after raylib/stbi upload (image top = v~0).
+    // Wider UV window ≈ one clump footprint instead of a thin blade strip.
+    const float u0 = uAtlas ? 0.04f : 0.0f;
+    const float u1 = uAtlas ? 0.46f : 1.0f;
+    const float v0 = uAtlas ? 0.99f : 1.0f; // roots
+    const float v1 = uAtlas ? 0.50f : 0.0f; // tip
 
     auto setV = [&](int i, float x, float y, float z, float u, float v, float nx, float nz) {
         mesh.vertices[i * 3 + 0] = x;
@@ -476,19 +486,30 @@ static Model makeGrassBillboardModel(bool uAtlas) {
         mesh.colors[i * 4 + 3] = 255;
     };
 
-    setV(0, -W, 0.0f, 0.0f, u0, v0, 0.0f, 1.0f);
-    setV(1,  W, 0.0f, 0.0f, u1, v0, 0.0f, 1.0f);
-    setV(2,  W, H,    0.0f, u1, v1, 0.0f, 1.0f);
-    setV(3, -W, H,    0.0f, u0, v1, 0.0f, 1.0f);
-    setV(4, 0.0f, 0.0f, -W, u0, v0, 1.0f, 0.0f);
-    setV(5, 0.0f, 0.0f,  W, u1, v0, 1.0f, 0.0f);
-    setV(6, 0.0f, H,     W, u1, v1, 1.0f, 0.0f);
-    setV(7, 0.0f, H,    -W, u0, v1, 1.0f, 0.0f);
+    for (int p = 0; p < kPlanes; ++p) {
+        const float ang = static_cast<float>(p) * (3.14159265f / 3.0f); // 60°
+        const float ca = std::cos(ang);
+        const float sa = std::sin(ang);
+        // Quad edges along (ca, sa); facing normal ≈ (-sa, ca).
+        const float hx = ca * W;
+        const float hz = sa * W;
+        const float nx = -sa;
+        const float nz = ca;
+        const int i0 = p * 4;
+        setV(i0 + 0, -hx, 0.0f, -hz, u0, v0, nx, nz);
+        setV(i0 + 1,  hx, 0.0f,  hz, u1, v0, nx, nz);
+        setV(i0 + 2,  hx, H,     hz, u1, v1, nx, nz);
+        setV(i0 + 3, -hx, H,    -hz, u0, v1, nx, nz);
+        const int t = p * 6;
+        mesh.indices[t + 0] = static_cast<unsigned short>(i0 + 0);
+        mesh.indices[t + 1] = static_cast<unsigned short>(i0 + 1);
+        mesh.indices[t + 2] = static_cast<unsigned short>(i0 + 2);
+        mesh.indices[t + 3] = static_cast<unsigned short>(i0 + 0);
+        mesh.indices[t + 4] = static_cast<unsigned short>(i0 + 2);
+        mesh.indices[t + 5] = static_cast<unsigned short>(i0 + 3);
+    }
 
-    const unsigned short idx[] = {0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7};
-    std::memcpy(mesh.indices, idx, sizeof(idx));
     UploadMesh(&mesh, false);
-    g_grassImpostorHeight = H;
     return LoadModelFromMesh(mesh);
 }
 
@@ -503,6 +524,19 @@ static float measureMeshHeightY(const Mesh& mesh) {
     }
     const float h = maxY - minY;
     return (h > 0.05f) ? h : 0.323f;
+}
+
+// Shift mesh so the lowest vertex sits on Y=0 (ground pivot for instancing).
+static void snapMeshToGroundPivot(Mesh& mesh) {
+    if (mesh.vertices == nullptr || mesh.vertexCount <= 0) return;
+    float minY = mesh.vertices[1];
+    for (int i = 1; i < mesh.vertexCount; ++i) {
+        minY = std::min(minY, mesh.vertices[i * 3 + 1]);
+    }
+    if (std::fabs(minY) < 1e-5f) return;
+    for (int i = 0; i < mesh.vertexCount; ++i) {
+        mesh.vertices[i * 3 + 1] -= minY;
+    }
 }
 
 static void bindGrassShaderLocs() {
@@ -525,8 +559,10 @@ static void bindGrassShaderLocs() {
 
     g_grassLocTime = GetShaderLocation(g_grassShader, "uTime");
     g_grassLocViewPos = GetShaderLocation(g_grassShader, "viewPos");
-    g_grassLocFadeStart = GetShaderLocation(g_grassShader, "fadeStart");
-    g_grassLocFadeEnd = GetShaderLocation(g_grassShader, "fadeEnd");
+    g_grassLocFadeInStart = GetShaderLocation(g_grassShader, "fadeInStart");
+    g_grassLocFadeInEnd = GetShaderLocation(g_grassShader, "fadeInEnd");
+    g_grassLocFadeOutStart = GetShaderLocation(g_grassShader, "fadeOutStart");
+    g_grassLocFadeOutEnd = GetShaderLocation(g_grassShader, "fadeOutEnd");
     g_grassLocSunDir = GetShaderLocation(g_grassShader, "sunDir");
     g_grassLocSunIntensity = GetShaderLocation(g_grassShader, "sunIntensity");
     g_grassLocMeshHeight = GetShaderLocation(g_grassShader, "meshHeight");
@@ -534,7 +570,7 @@ static void bindGrassShaderLocs() {
 
 static void loadGrassMaterials() {
     if (g_grassReady) return;
-    clampGrassLodDistances();
+    clampGrassDrawDistance();
 
     std::string vs = makeAssetPath("assets/shaders/grass.vs");
     std::string fs = makeAssetPath("assets/shaders/grass.fs");
@@ -552,14 +588,19 @@ static void loadGrassMaterials() {
     }
 
     auto loadSolidGrassTex = [&]() {
-        Image fallback = GenImageColor(4, 4, Color{180, 200, 90, 255});
+        Image fallback = GenImageColor(4, 4, Color{160, 190, 80, 255});
         g_grassTexture = LoadTextureFromImage(fallback);
         UnloadImage(fallback);
         g_grassOwnsTexture = true;
     };
 
-    std::string texPath = makeAssetPath("assets/models/grass/grass_albedo.png");
+    // Prefer Quaternius stylized atlas; fall back to older albedo.
+    std::string texPath = makeAssetPath("assets/models/grass/quaternius/textures/Grass.png");
     Image img = LoadImage(texPath.c_str());
+    if (img.data == nullptr) {
+        texPath = makeAssetPath("assets/models/grass/grass_albedo.png");
+        img = LoadImage(texPath.c_str());
+    }
     bool haveAtlas = img.data != nullptr;
     if (haveAtlas) {
         ImageFormat(&img, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
@@ -569,57 +610,101 @@ static void loadGrassMaterials() {
         GenTextureMipmaps(&g_grassTexture);
         SetTextureFilter(g_grassTexture, TEXTURE_FILTER_BILINEAR);
         g_grassOwnsTexture = true;
+        TraceLog(LOG_INFO, "GRASS: texture %s", texPath.c_str());
     } else {
-        TraceLog(LOG_WARNING, "GRASS: albedo missing (%s), using solid green", texPath.c_str());
+        TraceLog(LOG_WARNING, "GRASS: albedo missing, using solid green");
         loadSolidGrassTex();
     }
 
-    // Always build impostor mesh (mid/far + clump fallback).
-    g_grassImpostorModel = makeGrassBillboardModel(haveAtlas);
-    g_grassImpostorMesh = &g_grassImpostorModel.meshes[0];
+    static const char* kVariantPaths[kGrassVariantCount] = {
+        "assets/models/grass/quaternius/Grass_Common_Short.obj",
+        "assets/models/grass/quaternius/Grass_Common_Tall.obj",
+        "assets/models/grass/quaternius/Grass_Wispy_Short.obj",
+        "assets/models/grass/quaternius/Grass_Wispy_Tall.obj",
+    };
+    static const char* kVariantNames[kGrassVariantCount] = {
+        "Common_Short", "Common_Tall", "Wispy_Short", "Wispy_Tall",
+    };
 
-    std::string modelPath = makeAssetPath("assets/models/grass/grass_medium.obj");
-    g_grassClumpModel = LoadModel(modelPath.c_str());
     g_grassClumpIsFallback = false;
-    if (g_grassClumpModel.meshCount <= 0 || g_grassClumpModel.meshes == nullptr ||
-        g_grassClumpModel.meshes[0].vertexCount <= 0) {
-        TraceLog(LOG_ERROR,
-                 "GRASS: failed to load model '%s' — near LOD uses billboard impostor. "
-                 "Check assets/ next to the exe.",
-                 modelPath.c_str());
-        if (g_grassClumpModel.meshCount > 0) UnloadModel(g_grassClumpModel);
-        g_grassClumpModel = makeGrassBillboardModel(haveAtlas);
-        g_grassClumpIsFallback = true;
-        g_grassClumpHeight = g_grassImpostorHeight;
-    } else {
-        g_grassClumpHeight = measureMeshHeightY(g_grassClumpModel.meshes[0]);
-        TraceLog(LOG_INFO, "GRASS: loaded clump %s (%d verts, %d tris, h=%.3f)",
-                 modelPath.c_str(),
-                 g_grassClumpModel.meshes[0].vertexCount,
-                 g_grassClumpModel.meshes[0].triangleCount,
-                 g_grassClumpHeight);
+    int loaded = 0;
+    float heightSum = 0.0f;
+    for (int i = 0; i < kGrassVariantCount; ++i) {
+        std::string modelPath = makeAssetPath(kVariantPaths[i]);
+        Model model = LoadModel(modelPath.c_str());
+        if (model.meshCount <= 0 || model.meshes == nullptr ||
+            model.meshes[0].vertexCount <= 0) {
+            TraceLog(LOG_WARNING, "GRASS: failed to load variant %s (%s)",
+                     kVariantNames[i], modelPath.c_str());
+            if (model.meshCount > 0) UnloadModel(model);
+            g_grassVariants[i] = {};
+            continue;
+        }
+        // Snap pivot on CPU then push new positions to GPU VBO 0 (positions).
+        snapMeshToGroundPivot(model.meshes[0]);
+        if (model.meshes[0].vboId[0] > 0 && model.meshes[0].vertices != nullptr) {
+            UpdateMeshBuffer(model.meshes[0], 0, model.meshes[0].vertices,
+                             model.meshes[0].vertexCount * 3 * static_cast<int>(sizeof(float)), 0);
+        }
+
+        g_grassVariants[i].model = model;
+        g_grassVariants[i].mesh = &g_grassVariants[i].model.meshes[0];
+        g_grassVariants[i].height = measureMeshHeightY(*g_grassVariants[i].mesh);
+        g_grassVariants[i].loaded = true;
+        heightSum += g_grassVariants[i].height;
+        ++loaded;
+        TraceLog(LOG_INFO, "GRASS: variant %s (%d verts, %d tris, h=%.3f)",
+                 kVariantNames[i],
+                 g_grassVariants[i].mesh->vertexCount,
+                 g_grassVariants[i].mesh->triangleCount,
+                 g_grassVariants[i].height);
     }
-    g_grassClumpMesh = &g_grassClumpModel.meshes[0];
+
+    if (loaded == 0) {
+        TraceLog(LOG_ERROR, "GRASS: no Quaternius variants loaded — using billboard fallback");
+        g_grassVariants[0].model = makeGrassBillboardModel(haveAtlas);
+        g_grassVariants[0].mesh = &g_grassVariants[0].model.meshes[0];
+        g_grassVariants[0].height = 0.34f;
+        g_grassVariants[0].loaded = true;
+        g_grassClumpIsFallback = true;
+        loaded = 1;
+        heightSum = 0.34f;
+        for (int i = 1; i < kGrassVariantCount; ++i) {
+            g_grassVariants[i] = g_grassVariants[0];
+            g_grassVariants[i].loaded = true;
+        }
+    } else {
+        // Fill any missing slots with Common_Short (or first loaded).
+        int donor = 0;
+        for (int i = 0; i < kGrassVariantCount; ++i) {
+            if (g_grassVariants[i].loaded) { donor = i; break; }
+        }
+        for (int i = 0; i < kGrassVariantCount; ++i) {
+            if (!g_grassVariants[i].loaded) {
+                g_grassVariants[i].mesh = g_grassVariants[donor].mesh;
+                g_grassVariants[i].height = g_grassVariants[donor].height;
+                g_grassVariants[i].loaded = true; // shared mesh pointer; model empty
+                TraceLog(LOG_WARNING, "GRASS: variant %d missing — sharing %s",
+                         i, kVariantNames[donor]);
+            }
+        }
+    }
+
+    g_grassClumpHeight = heightSum / static_cast<float>(std::max(loaded, 1));
 
     g_grassClumpMaterial = LoadMaterialDefault();
     g_grassClumpMaterial.shader = g_grassShader;
     g_grassClumpMaterial.maps[MATERIAL_MAP_ALBEDO].texture = g_grassTexture;
     g_grassClumpMaterial.maps[MATERIAL_MAP_ALBEDO].color = WHITE;
 
-    g_grassImpostorMaterial = LoadMaterialDefault();
-    g_grassImpostorMaterial.shader = g_grassShader;
-    g_grassImpostorMaterial.maps[MATERIAL_MAP_ALBEDO].texture = g_grassTexture;
-    g_grassImpostorMaterial.maps[MATERIAL_MAP_ALBEDO].color = WHITE;
-
     g_grassReady = true;
     TraceLog(LOG_INFO,
-             "GRASS: LOD ready near<=%.0fm (clump) mid<=%.0fm far<=%.0fm | caps %d/%d/%d per chunk",
-             g_grassNearDist, g_grassMidDist, g_grassFarDist,
-             kGrassMaxNearPerChunk, kGrassMaxMidPerChunk, kGrassMaxFarPerChunk);
+             "GRASS: Quaternius pack ready (%d variants%s) drawDist=%.0fm (bake LOD0–1)",
+             loaded, g_grassClumpIsFallback ? ", fallback" : "", g_grassDrawDist);
 }
 
 static void unloadGrassMaterials() {
-    if (!g_grassReady && g_grassClumpModel.meshCount == 0 && g_grassShader.id == 0) return;
+    if (!g_grassReady && g_grassShader.id == 0) return;
 
     auto detachMat = [](Material& mat) {
         if (!mat.maps) return;
@@ -629,7 +714,6 @@ static void unloadGrassMaterials() {
         mat = {};
     };
     detachMat(g_grassClumpMaterial);
-    detachMat(g_grassImpostorMaterial);
 
     auto unloadModelSafe = [](Model& model) {
         if (model.meshCount <= 0) return;
@@ -640,10 +724,13 @@ static void unloadGrassMaterials() {
         UnloadModel(model);
         model = {};
     };
-    unloadModelSafe(g_grassClumpModel);
-    unloadModelSafe(g_grassImpostorModel);
-    g_grassClumpMesh = nullptr;
-    g_grassImpostorMesh = nullptr;
+    for (int i = 0; i < kGrassVariantCount; ++i) {
+        // Only unload if this slot owns a distinct model (meshCount > 0).
+        if (g_grassVariants[i].model.meshCount > 0) {
+            unloadModelSafe(g_grassVariants[i].model);
+        }
+        g_grassVariants[i] = {};
+    }
     g_grassClumpIsFallback = false;
 
     if (g_grassOwnsTexture && g_grassTexture.id > 0) UnloadTexture(g_grassTexture);
@@ -654,7 +741,6 @@ static void unloadGrassMaterials() {
     g_grassShader = {};
     g_grassReady = false;
     g_grassClumpHeight = 0.323f;
-    g_grassImpostorHeight = 0.32f;
 }
 
 static Matrix makeGrassTransform(float x, float y, float z, float yaw, float scaleY, float scaleXZ) {
@@ -709,13 +795,47 @@ static float meadowMask(float x, float z, uint64_t seed, float baseFreq) {
     return (sum > 1e-5f) ? (n / sum) : 0.5f;
 }
 
+// Spatial noise → grass mesh variant (biased toward short common for carpet).
+// 0 Common_Short, 1 Common_Tall, 2 Wispy_Short, 3 Wispy_Tall
+static int pickGrassVariant(float x, float z) {
+    const uint64_t ws = engine::math::GetWorldConfig().seed;
+    const float a = meadowMask(x, z, ws ^ 0x67A55EEDULL, 0.032f);
+    const float b = valueNoise2D(x * 0.085f + 3.1f, z * 0.085f - 1.7f, ws ^ 0xB00B1E5ULL);
+    const float t = a * 0.68f + b * 0.32f;
+    if (t < 0.40f) return 0;
+    if (t < 0.62f) return 2;
+    if (t < 0.82f) return 1;
+    return 3;
+}
+
+// Coverage field (independent seed from meadow). strength=0 → always 1 (full carpet).
+static float coverageNoise(float x, float z, uint64_t worldSeed) {
+    if (g_grassCoverageStrength < 1e-4f) return 1.0f;
+    const float raw = meadowMask(x, z, worldSeed ^ 0xC0AEA11CULL, g_grassCoverageScale);
+    return 1.0f - g_grassCoverageStrength + g_grassCoverageStrength * raw;
+}
+
+// Spatial size field remapped later into [scaleMin, scaleMax].
+static float sizeNoise(float x, float z, uint64_t worldSeed) {
+    return meadowMask(x, z, worldSeed ^ 0x51AEB00BULL, g_grassSizeNoiseScale);
+}
+
+// Low-freq vigor for whole-patch radius (shares size family, slower).
+static float clusterVigorNoise(float x, float z, uint64_t worldSeed) {
+    return meadowMask(x, z, worldSeed ^ 0xA1C05555ULL, g_grassSizeNoiseScale * 0.35f);
+}
+
 static void clampGrassClusterKnobs() {
     g_grassClusterMin = std::clamp(g_grassClusterMin, 1, 20);
     g_grassClusterMax = std::clamp(g_grassClusterMax, g_grassClusterMin, 24);
     g_grassClusterRadius = std::clamp(g_grassClusterRadius, 0.25f, 4.0f);
-    g_grassSeedSpacing = std::clamp(g_grassSeedSpacing, 1.2f, 12.0f);
+    g_grassSeedSpacing = std::clamp(g_grassSeedSpacing, 0.70f, 12.0f);
     g_grassMeadowStrength = std::clamp(g_grassMeadowStrength, 0.0f, 1.0f);
     g_grassMeadowScale = std::clamp(g_grassMeadowScale, 0.008f, 0.10f);
+    g_grassCoverageStrength = std::clamp(g_grassCoverageStrength, 0.0f, 1.0f);
+    g_grassCoverageScale = std::clamp(g_grassCoverageScale, 0.008f, 0.12f);
+    g_grassCoverageThreshold = std::clamp(g_grassCoverageThreshold, 0.0f, 0.85f);
+    g_grassSizeNoiseScale = std::clamp(g_grassSizeNoiseScale, 0.008f, 0.15f);
     float sMin = std::clamp(g_grassScaleMin, 0.35f, 2.5f);
     float sMax = std::clamp(g_grassScaleMax, 0.35f, 2.5f);
     if (sMax < sMin) std::swap(sMin, sMax);
@@ -745,7 +865,7 @@ static bool grassSiteOk(float wx, float wz, float maxSlope, float* biomeScaleOut
     return true;
 }
 
-// Ground one clump at (wx,wz). Re-checks water/slope; yaw/scale from hash.
+// Ground one clump at (wx,wz). Re-checks water/slope; yaw from hash, scale from size noise.
 static bool placeGrassClump(float wx, float wz, float maxSlope, float scaleBase,
                             float biomeScale, uint64_t h0, Matrix* out) {
     if (engine::math::WaterGate(wx, wz) > kGrassWaterGateMax) return false;
@@ -759,8 +879,11 @@ static bool placeGrassClump(float wx, float wz, float maxSlope, float scaleBase,
     uint64_t h2 = engine::math::splitmix64(h1);
     const float s0 = g_grassScaleMin;
     const float s1 = g_grassScaleMax;
-    const float scaleMul =
-        (s0 + engine::math::randFloat01(h2) * (s1 - s0)) * biomeScale;
+    const uint64_t worldSeed = engine::math::GetWorldConfig().seed;
+    // Spatial size field + small hash jitter (~±7%) so neighbors aren't identical stamps.
+    const float sn = sizeNoise(wx, wz, worldSeed);
+    const float jitter = 0.93f + engine::math::randFloat01(h2) * 0.14f;
+    const float scaleMul = (s0 + sn * (s1 - s0)) * biomeScale * jitter;
     const float scaleY = scaleBase * scaleMul;
     // Slight XZ variance so clumps aren't perfect cylinders.
     const float xzJitter = 0.92f +
@@ -770,62 +893,38 @@ static bool placeGrassClump(float wx, float wz, float maxSlope, float scaleBase,
     return true;
 }
 
-// Mid/far: single impostors on a coarse grid (cheap).
-static void fillGrassBand(std::vector<Matrix>& out, float originX, float originZ, float size,
-                          float spacing, int maxCount, float scaleBase, uint64_t seedTag) {
-    out.clear();
-    if (spacing < 0.4f || maxCount <= 0) return;
-    const int cells = std::max(1, static_cast<int>(std::floor(size / spacing)));
-    out.reserve(static_cast<size_t>(std::min(cells * cells, maxCount)));
-    const uint64_t seed = engine::math::GetWorldConfig().seed ^ seedTag;
-    const float maxSlope = g_grassMaxSlope;
-
-    for (int iz = 0; iz < cells && static_cast<int>(out.size()) < maxCount; ++iz) {
-        for (int ix = 0; ix < cells && static_cast<int>(out.size()) < maxCount; ++ix) {
-            const int32_t gx = static_cast<int32_t>(std::floor(originX)) + ix * 17 + iz * 3;
-            const int32_t gz = static_cast<int32_t>(std::floor(originZ)) + iz * 17 + ix * 5;
-            uint64_t h0 = engine::math::hash2D(seed, gx, gz);
-            const float jx = engine::math::randFloat01(h0);
-            const float jz = engine::math::randFloat01(engine::math::splitmix64(h0));
-            const float wx = originX + (static_cast<float>(ix) + jx) * (size / static_cast<float>(cells));
-            const float wz = originZ + (static_cast<float>(iz) + jz) * (size / static_cast<float>(cells));
-            float biomeScale = 1.0f;
-            if (!grassSiteOk(wx, wz, maxSlope, &biomeScale)) continue;
-            Matrix m{};
-            if (placeGrassClump(wx, wz, maxSlope, scaleBase, biomeScale, h0, &m)) {
-                out.push_back(m);
-            }
-        }
-    }
-}
-
 struct GrassSeedCand {
     float    x = 0.0f;
     float    z = 0.0f;
     uint64_t h = 0;
     float    biomeScale = 1.0f;
+    float    coverage = 1.0f;
 };
 
-// Near: world hex lattice → filter → uniform subsample under budget → clusters.
+// Hex lattice → filter → uniform subsample under budget → clusters.
 // IMPORTANT: never abort the lattice mid-row when the instance cap fills — that
 // left entire +Z halves of each chunk bare (visible world-aligned stripes).
-static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float originZ,
-                                  float size, float densityMul) {
+static void fillGrassClusters(std::vector<GrassNearInst>& out, float originX, float originZ,
+                              float size, float densityMul, float scaleBase,
+                              int maxPerChunk, int cMin, int cMax, uint64_t seedTag,
+                              bool assignVariant) {
     out.clear();
-    if (densityMul < 0.05f) return;
+    if (densityMul < 0.05f || maxPerChunk <= 0) return;
     clampGrassClusterKnobs();
 
-    const float sp = std::max(1.2f, g_grassSeedSpacing);
+    const float sp = std::max(0.70f, g_grassSeedSpacing);
     const float rowH = sp * 0.8660254f; // √3/2
     const uint64_t worldSeed = engine::math::GetWorldConfig().seed;
-    const uint64_t seed = worldSeed ^ 0x67A55ULL;
+    const uint64_t seed = worldSeed ^ seedTag;
     const float maxSlope = g_grassMaxSlope;
     const float meadowThresh = g_grassMeadowStrength * 0.50f;
-    const int cMin = g_grassClusterMin;
-    const int cMax = g_grassClusterMax;
-    const float rMax = std::max(g_grassClusterRadius, sp * 0.65f);
-    const float rMin = rMax * 0.72f;
-    const float jitter = sp * 0.45f;
+    const float covThresh = g_grassCoverageThreshold;
+    cMin = std::clamp(cMin, 1, 20);
+    cMax = std::clamp(cMax, cMin, 24);
+    // Keep patches overlapping neighboring seeds so the floor reads as carpet.
+    const float rMax = std::max(g_grassClusterRadius, sp * 0.85f);
+    const float rMin = rMax * 0.78f;
+    const float jitter = sp * 0.40f;
 
     const float margin = jitter + 0.5f;
     const int iz0 = static_cast<int>(std::floor((originZ - margin) / rowH)) - 1;
@@ -856,10 +955,13 @@ static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float
                 continue;
             }
 
+            const float cov = coverageNoise(sx, sz, worldSeed);
+            if (cov < covThresh) continue;
+
             float biomeScale = 1.0f;
             if (!grassSiteOk(sx, sz, maxSlope, &biomeScale)) continue;
 
-            cands.push_back({sx, sz, h0, biomeScale});
+            cands.push_back({sx, sz, h0, biomeScale, cov});
         }
     }
 
@@ -867,9 +969,11 @@ static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float
 
     // Pass 2: if clumps would exceed the cap, keep a uniform random subset of seeds
     // (hash-ordered), NOT "first rows until full".
-    const float tDens = std::clamp(densityMul * 0.55f, 0.0f, 1.0f);
-    const int avgClumps = std::max(1, (cMin + cMax + static_cast<int>(tDens * 3.0f)) / 2);
-    const int maxSeeds = std::max(1, kGrassMaxNearPerChunk / avgClumps);
+    // Use full densityMul (not ×0.55) so editor density actually packs the lawn.
+    const float tDens = std::clamp(densityMul, 0.0f, 2.0f);
+    const int avgClumps = std::max(1, (cMin + cMax) / 2);
+    // Budget seeds first so thinning doesn't leave a sparse lattice.
+    const int maxSeeds = std::max(1, maxPerChunk / avgClumps);
 
     if (static_cast<int>(cands.size()) > maxSeeds) {
         // Deterministic partial shuffle by sorting on a hash of position.
@@ -888,30 +992,38 @@ static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float
     }
 
     out.reserve(static_cast<size_t>(std::min(
-        kGrassMaxNearPerChunk, static_cast<int>(cands.size()) * (cMax + 2))));
+        maxPerChunk, static_cast<int>(cands.size()) * (cMax + 2))));
 
     // Pass 3: place clusters for the (possibly thinned) seeds.
     for (const GrassSeedCand& cand : cands) {
-        if (static_cast<int>(out.size()) >= kGrassMaxNearPerChunk) break;
+        if (static_cast<int>(out.size()) >= maxPerChunk) break;
+
+        // Coverage mostly affects radius; keep clump counts high for carpet.
+        const float covMul = 0.70f + 0.30f * std::clamp(cand.coverage, 0.0f, 1.0f);
 
         uint64_t h1 = engine::math::splitmix64(cand.h ^ 0xC1A55ULL);
         const int span = std::max(0, cMax - cMin);
         const int baseN = cMin +
             static_cast<int>(engine::math::randFloat01(h1) * static_cast<float>(span + 1));
-        const int bonus = static_cast<int>(tDens * 3.0f);
-        const int nClumps = std::clamp(baseN + bonus, cMin, cMax + 2);
+        const int bonus = static_cast<int>(std::lround(tDens * 1.5f));
+        const int nClumps = std::clamp(baseN + bonus, cMin, cMax + 3);
 
         uint64_t h2 = engine::math::splitmix64(h1);
-        const float clusterR = rMin + engine::math::randFloat01(h2) * (rMax - rMin);
+        const float vigor = clusterVigorNoise(cand.x, cand.z, worldSeed);
+        float clusterR = rMin + engine::math::randFloat01(h2) * (rMax - rMin);
+        clusterR *= covMul * (0.85f + 0.30f * vigor);
 
         {
             Matrix m{};
-            if (placeGrassClump(cand.x, cand.z, maxSlope, kGrassBaseScale, cand.biomeScale, h2, &m)) {
-                out.push_back(m);
+            if (placeGrassClump(cand.x, cand.z, maxSlope, scaleBase, cand.biomeScale, h2, &m)) {
+                const uint8_t var = assignVariant
+                    ? static_cast<uint8_t>(pickGrassVariant(cand.x, cand.z))
+                    : 0;
+                out.push_back({m, var});
             }
         }
 
-        for (int c = 1; c < nClumps && static_cast<int>(out.size()) < kGrassMaxNearPerChunk; ++c) {
+        for (int c = 1; c < nClumps && static_cast<int>(out.size()) < maxPerChunk; ++c) {
             uint64_t hc = engine::math::splitmix64(h2 + static_cast<uint64_t>(c) * 0x9E37ULL);
             const float ang = engine::math::randFloat01(hc) * 6.2831853f;
             const float r = std::sqrt(engine::math::randFloat01(engine::math::splitmix64(hc))) *
@@ -919,33 +1031,510 @@ static void fillGrassNearClusters(std::vector<Matrix>& out, float originX, float
             const float wx = cand.x + std::cos(ang) * r;
             const float wz = cand.z + std::sin(ang) * r;
             Matrix m{};
-            if (placeGrassClump(wx, wz, maxSlope, kGrassBaseScale, cand.biomeScale, hc, &m)) {
-                out.push_back(m);
+            if (placeGrassClump(wx, wz, maxSlope, scaleBase, cand.biomeScale, hc, &m)) {
+                const uint8_t var = assignVariant
+                    ? static_cast<uint8_t>(pickGrassVariant(wx, wz))
+                    : 0;
+                out.push_back({m, var});
             }
         }
     }
 }
 
-// Deterministic per-chunk grass bake (worker-safe). Near = clusters; mid/far = sparse impostors.
+static void fillGrassNearClusters(std::vector<GrassNearInst>& out, float originX, float originZ,
+                                  float size, float densityMul) {
+    fillGrassClusters(out, originX, originZ, size, densityMul, kGrassBaseScale,
+                      kGrassMaxNearPerChunk, g_grassClusterMin, g_grassClusterMax,
+                      0x67A55ULL, true);
+}
+
+// Deterministic per-chunk grass bake (worker-safe).
+// Single Quaternius instance list (varianted). No mid/far impostors.
 static GrassBake generateGrassCPU(float originX, float originZ, float size, int lod) {
     GrassBake bake;
     if (lod > kGrassChunkLodMax) return bake;
     const float density = std::clamp(g_grassDensity, 0.0f, 2.0f);
     if (density < 0.01f) return bake;
 
-    const float nearD = std::max(0.05f, density * g_grassNearDensMul);
-    const float midD  = std::max(0.05f, density * g_grassMidDensMul);
-    const float farD  = std::max(0.05f, density * g_grassFarDensMul);
+    fillGrassNearClusters(bake.near, originX, originZ, size, density);
+    return bake;
+}
 
-    fillGrassNearClusters(bake.near, originX, originZ, size, nearD);
+// ---------------------------------------------------------------------------
+// Instanced trees / undergrowth — Quaternius, chunk-streamed like grass
+// ---------------------------------------------------------------------------
+static bool     g_treesEnabled = true;
+static float    g_treeDensity = 1.0f;
+static float    g_treeMaxSlope = 0.38f;
+static float    g_treeDrawDist = 220.0f;
+static float    g_treeSeedSpacing = 14.0f;   // hills ~12–18; plains thinned by chance
+static float    g_bushSeedSpacing = 8.0f;
+static float    g_treeScaleMin = 0.85f;
+static float    g_treeScaleMax = 1.25f;
+static float    g_treeSink = 0.04f;
+static constexpr float kNatureWaterGateMax = 0.12f;
+static constexpr int   kNatureMaxTreesPerChunk = 80;
+static constexpr int   kNatureMaxBushesPerChunk = 200;
+static constexpr int   kNatureMaxDraw = 6000;
+static constexpr int   kNatureChunkLodMax = 1;
+static constexpr float kNatureFadeMeters = 40.0f;
+static constexpr float kTreeBaseScale = 1.0f;
+static constexpr float kBushBaseScale = 0.95f;
+static chunks::TreeDrawStats g_treeDrawStats = {};
 
-    // Mid/far stay single-instance grids — do not blow LOD budgets.
-    const float midSpacing = 3.20f / std::sqrt(midD);
-    const float farSpacing = 6.50f / std::sqrt(farD);
-    fillGrassBand(bake.mid, originX, originZ, size, midSpacing, kGrassMaxMidPerChunk,
-                  kGrassImpostorScale, 0x91C3FULL);
-    fillGrassBand(bake.far, originX, originZ, size, farSpacing, kGrassMaxFarPerChunk,
-                  kGrassImpostorScale * 1.15f, 0xC0FFEEULL);
+// 0–4 CommonTree, 5–9 Pine, 10–12 Dead, 13–14 Twisted, 15–21 undergrowth
+static constexpr int kNatureVariantCount = 22;
+
+struct NatureInst {
+    Matrix  m{};
+    uint8_t variant = 0;
+};
+
+struct NatureBake {
+    std::vector<NatureInst> trees;
+    std::vector<NatureInst> bushes;
+};
+
+struct NatureVariant {
+    Model model{};
+    float height = 1.0f;
+    bool  loaded = false;
+};
+
+static Shader g_foliageShader = {};
+static NatureVariant g_natureVariants[kNatureVariantCount] = {};
+static bool g_natureReady = false;
+static int  g_foliageLocViewPos = -1;
+static int  g_foliageLocFadeInStart = -1;
+static int  g_foliageLocFadeInEnd = -1;
+static int  g_foliageLocFadeOutStart = -1;
+static int  g_foliageLocFadeOutEnd = -1;
+static int  g_foliageLocSunDir = -1;
+static int  g_foliageLocSunIntensity = -1;
+
+static void clampTreeKnobs() {
+    g_treeDrawDist = std::clamp(g_treeDrawDist, 60.0f, 500.0f);
+    g_treeDensity = std::clamp(g_treeDensity, 0.0f, 2.0f);
+    g_treeMaxSlope = std::clamp(g_treeMaxSlope, 0.05f, 1.0f);
+    g_treeSeedSpacing = std::clamp(g_treeSeedSpacing, 6.0f, 50.0f);
+    g_bushSeedSpacing = std::clamp(g_bushSeedSpacing, 3.0f, 30.0f);
+    float sMin = std::clamp(g_treeScaleMin, 0.35f, 2.5f);
+    float sMax = std::clamp(g_treeScaleMax, 0.35f, 2.5f);
+    if (sMax < sMin) std::swap(sMin, sMax);
+    g_treeScaleMin = sMin;
+    g_treeScaleMax = sMax;
+    g_treeSink = std::clamp(g_treeSink, 0.0f, 0.25f);
+}
+
+static void bindFoliageShaderLocs() {
+    g_foliageShader.locs[SHADER_LOC_MATRIX_MVP] =
+        GetShaderLocation(g_foliageShader, "mvp");
+    g_foliageShader.locs[SHADER_LOC_MATRIX_MODEL] =
+        GetShaderLocationAttrib(g_foliageShader, "instanceTransform");
+    g_foliageShader.locs[SHADER_LOC_VERTEX_POSITION] =
+        GetShaderLocationAttrib(g_foliageShader, "vertexPosition");
+    g_foliageShader.locs[SHADER_LOC_VERTEX_TEXCOORD01] =
+        GetShaderLocationAttrib(g_foliageShader, "vertexTexCoord");
+    g_foliageShader.locs[SHADER_LOC_VERTEX_NORMAL] =
+        GetShaderLocationAttrib(g_foliageShader, "vertexNormal");
+    g_foliageShader.locs[SHADER_LOC_VERTEX_COLOR] =
+        GetShaderLocationAttrib(g_foliageShader, "vertexColor");
+    g_foliageShader.locs[SHADER_LOC_COLOR_DIFFUSE] =
+        GetShaderLocation(g_foliageShader, "colDiffuse");
+    g_foliageShader.locs[SHADER_LOC_MAP_DIFFUSE] =
+        GetShaderLocation(g_foliageShader, "texture0");
+
+    g_foliageLocViewPos = GetShaderLocation(g_foliageShader, "viewPos");
+    g_foliageLocFadeInStart = GetShaderLocation(g_foliageShader, "fadeInStart");
+    g_foliageLocFadeInEnd = GetShaderLocation(g_foliageShader, "fadeInEnd");
+    g_foliageLocFadeOutStart = GetShaderLocation(g_foliageShader, "fadeOutStart");
+    g_foliageLocFadeOutEnd = GetShaderLocation(g_foliageShader, "fadeOutEnd");
+    g_foliageLocSunDir = GetShaderLocation(g_foliageShader, "sunDir");
+    g_foliageLocSunIntensity = GetShaderLocation(g_foliageShader, "sunIntensity");
+}
+
+static float measureModelHeightY(const Model& model) {
+    float minY = 1e9f;
+    float maxY = -1e9f;
+    bool any = false;
+    for (int mi = 0; mi < model.meshCount; ++mi) {
+        const Mesh& mesh = model.meshes[mi];
+        if (mesh.vertices == nullptr || mesh.vertexCount <= 0) continue;
+        for (int i = 0; i < mesh.vertexCount; ++i) {
+            const float y = mesh.vertices[i * 3 + 1];
+            minY = std::min(minY, y);
+            maxY = std::max(maxY, y);
+            any = true;
+        }
+    }
+    if (!any) return 1.0f;
+    const float h = maxY - minY;
+    return (h > 0.05f) ? h : 1.0f;
+}
+
+static void snapModelToGroundPivot(Model& model) {
+    float minY = 1e9f;
+    bool any = false;
+    for (int mi = 0; mi < model.meshCount; ++mi) {
+        Mesh& mesh = model.meshes[mi];
+        if (mesh.vertices == nullptr || mesh.vertexCount <= 0) continue;
+        for (int i = 0; i < mesh.vertexCount; ++i) {
+            minY = std::min(minY, mesh.vertices[i * 3 + 1]);
+            any = true;
+        }
+    }
+    if (!any || std::fabs(minY) < 1e-5f) return;
+    for (int mi = 0; mi < model.meshCount; ++mi) {
+        Mesh& mesh = model.meshes[mi];
+        if (mesh.vertices == nullptr || mesh.vertexCount <= 0) continue;
+        for (int i = 0; i < mesh.vertexCount; ++i) {
+            mesh.vertices[i * 3 + 1] -= minY;
+        }
+        if (mesh.vboId != nullptr && mesh.vboId[0] > 0) {
+            UpdateMeshBuffer(mesh, 0, mesh.vertices,
+                             mesh.vertexCount * 3 * static_cast<int>(sizeof(float)), 0);
+        }
+    }
+}
+
+static void loadNatureMaterials() {
+    if (g_natureReady) return;
+    clampTreeKnobs();
+
+    std::string vs = makeAssetPath("assets/shaders/foliage.vs");
+    std::string fs = makeAssetPath("assets/shaders/foliage.fs");
+    g_foliageShader = LoadShader(vs.c_str(), fs.c_str());
+    if (g_foliageShader.id == 0) {
+        TraceLog(LOG_ERROR, "TREES: foliage shader failed (%s / %s)", vs.c_str(), fs.c_str());
+        return;
+    }
+    bindFoliageShaderLocs();
+    if (g_foliageShader.locs[SHADER_LOC_MATRIX_MODEL] < 0) {
+        TraceLog(LOG_ERROR, "TREES: instanceTransform attrib missing — trees disabled");
+        UnloadShader(g_foliageShader);
+        g_foliageShader = {};
+        return;
+    }
+
+    static const char* kNaturePaths[kNatureVariantCount] = {
+        "assets/models/nature/quaternius/CommonTree_1.obj",
+        "assets/models/nature/quaternius/CommonTree_2.obj",
+        "assets/models/nature/quaternius/CommonTree_3.obj",
+        "assets/models/nature/quaternius/CommonTree_4.obj",
+        "assets/models/nature/quaternius/CommonTree_5.obj",
+        "assets/models/nature/quaternius/Pine_1.obj",
+        "assets/models/nature/quaternius/Pine_2.obj",
+        "assets/models/nature/quaternius/Pine_3.obj",
+        "assets/models/nature/quaternius/Pine_4.obj",
+        "assets/models/nature/quaternius/Pine_5.obj",
+        "assets/models/nature/quaternius/DeadTree_1.obj",
+        "assets/models/nature/quaternius/DeadTree_2.obj",
+        "assets/models/nature/quaternius/DeadTree_3.obj",
+        "assets/models/nature/quaternius/TwistedTree_1.obj",
+        "assets/models/nature/quaternius/TwistedTree_2.obj",
+        "assets/models/nature/quaternius/Bush_Common.obj",
+        "assets/models/nature/quaternius/Bush_Common_Flowers.obj",
+        "assets/models/nature/quaternius/Clover_1.obj",
+        "assets/models/nature/quaternius/Clover_2.obj",
+        "assets/models/nature/quaternius/Fern_1.obj",
+        "assets/models/nature/quaternius/Plant_1.obj",
+        "assets/models/nature/quaternius/Plant_7.obj",
+    };
+
+    int loaded = 0;
+    for (int i = 0; i < kNatureVariantCount; ++i) {
+        std::string modelPath = makeAssetPath(kNaturePaths[i]);
+        Model model = LoadModel(modelPath.c_str());
+        if (model.meshCount <= 0 || model.meshes == nullptr) {
+            TraceLog(LOG_WARNING, "TREES: failed to load %s", modelPath.c_str());
+            if (model.meshCount > 0) UnloadModel(model);
+            g_natureVariants[i] = {};
+            continue;
+        }
+        snapModelToGroundPivot(model);
+        for (int mi = 0; mi < model.materialCount; ++mi) {
+            model.materials[mi].shader = g_foliageShader;
+            Texture& tex = model.materials[mi].maps[MATERIAL_MAP_ALBEDO].texture;
+            if (tex.id > 0) {
+                GenTextureMipmaps(&tex);
+                SetTextureFilter(tex, TEXTURE_FILTER_BILINEAR);
+            }
+        }
+        g_natureVariants[i].model = model;
+        g_natureVariants[i].height = measureModelHeightY(model);
+        g_natureVariants[i].loaded = true;
+        ++loaded;
+        TraceLog(LOG_INFO, "TREES: variant %d meshes=%d h=%.2f (%s)",
+                 i, model.meshCount, g_natureVariants[i].height, kNaturePaths[i]);
+    }
+
+    // Fill missing slots from a donor in the same family when possible.
+    auto donorFor = [](int i) -> int {
+        if (i < 5) return 0;
+        if (i < 10) return 5;
+        if (i < 13) return 10;
+        if (i < 15) return 13;
+        return 15;
+    };
+    for (int i = 0; i < kNatureVariantCount; ++i) {
+        if (g_natureVariants[i].loaded) continue;
+        const int d = donorFor(i);
+        if (!g_natureVariants[d].loaded) {
+            // Find any loaded
+            for (int j = 0; j < kNatureVariantCount; ++j) {
+                if (g_natureVariants[j].loaded) {
+                    g_natureVariants[i].model = {};
+                    g_natureVariants[i].model.meshCount = 0;
+                    // Share by shallow copy of mesh pointers is unsafe for Unload —
+                    // leave unloaded and skip at draw.
+                    break;
+                }
+            }
+            continue;
+        }
+        // Don't share Model ownership; leave empty (draw skips unloaded).
+        TraceLog(LOG_WARNING, "TREES: variant %d missing", i);
+    }
+
+    g_natureReady = loaded > 0;
+    TraceLog(LOG_INFO, "TREES: ready (%d/%d variants) drawDist=%.0fm",
+             loaded, kNatureVariantCount, g_treeDrawDist);
+}
+
+static void unloadNatureMaterials() {
+    if (!g_natureReady && g_foliageShader.id == 0) return;
+    for (int i = 0; i < kNatureVariantCount; ++i) {
+        if (g_natureVariants[i].model.meshCount > 0) {
+            for (int mi = 0; mi < g_natureVariants[i].model.materialCount; ++mi) {
+                // Shader is shared — detach before UnloadModel frees materials.
+                g_natureVariants[i].model.materials[mi].shader.id = rlGetShaderIdDefault();
+            }
+            UnloadModel(g_natureVariants[i].model);
+        }
+        g_natureVariants[i] = {};
+    }
+    if (g_foliageShader.id > 0) UnloadShader(g_foliageShader);
+    g_foliageShader = {};
+    g_natureReady = false;
+}
+
+static Matrix makeNatureTransform(float x, float y, float z, float yaw, float scale) {
+    Matrix S = MatrixScale(scale, scale, scale);
+    Matrix R = MatrixRotateY(yaw);
+    Matrix T = MatrixTranslate(x, y, z);
+    return MatrixMultiply(MatrixMultiply(S, R), T);
+}
+
+static bool inExclusionPad(float wx, float wz) {
+    const auto& ex = engine::math::GetHydrologyExclusions();
+    for (const auto& e : ex) {
+        const float dx = wx - e.x;
+        const float dz = wz - e.z;
+        const float r = e.radius;
+        if (dx * dx + dz * dz < r * r) return true;
+    }
+    return false;
+}
+
+struct NatureSiteInfo {
+    float plains = 0.0f;
+    float hills = 0.0f;
+    float mountains = 0.0f;
+    float wetlands = 0.0f;
+    float foothill = 0.0f;
+};
+
+static bool natureSiteOk(float wx, float wz, float maxSlope, bool forTree, NatureSiteInfo* out) {
+    if (engine::math::WaterGate(wx, wz) > kNatureWaterGateMax) return false;
+    if (inExclusionPad(wx, wz)) return false;
+
+    const auto w = engine::math::SampleRegion(wx, wz);
+    if (w.water > 0.40f) return false;
+    if (w.mountains > 0.55f) return false; // steep peaks
+    if (engine::math::TerrainSlope(wx, wz) > maxSlope) return false;
+    const float groundY = engine::math::WorldHeight(wx, wz);
+    if (groundY < engine::math::LocalWaterLevel(wx, wz) + 0.35f) return false;
+
+    const float foothill =
+        (w.mountains > 0.12f && w.mountains <= 0.55f) ? w.mountains : 0.0f;
+    const float land = w.plains + w.hills + foothill + w.wetlands * 0.55f;
+    if (land < 0.18f) return false;
+
+    if (forTree) {
+        // Wetlands: bushes/ferns only (very few trees handled by spawn chance).
+        if (w.wetlands > 0.60f && w.plains < 0.20f && w.hills < 0.20f && foothill < 0.10f) {
+            return false;
+        }
+    }
+
+    if (out) {
+        out->plains = w.plains;
+        out->hills = w.hills;
+        out->mountains = w.mountains;
+        out->wetlands = w.wetlands;
+        out->foothill = foothill;
+    }
+    return true;
+}
+
+static int pickTreeVariant(const NatureSiteInfo& site, uint64_t h) {
+    const float rare = engine::math::randFloat01(h);
+    uint64_t h1 = engine::math::splitmix64(h);
+    if (rare < 0.025f) {
+        return 10 + static_cast<int>(engine::math::randFloat01(h1) * 3.0f) % 3;
+    }
+    if (rare < 0.045f) {
+        return 13 + static_cast<int>(engine::math::randFloat01(h1) * 2.0f) % 2;
+    }
+    const float pineBias = std::clamp(site.hills * 0.32f + site.foothill * 0.82f, 0.0f, 0.92f);
+    uint64_t h2 = engine::math::splitmix64(h1);
+    if (engine::math::randFloat01(h2) < pineBias) {
+        return 5 + static_cast<int>(engine::math::randFloat01(engine::math::splitmix64(h2)) * 5.0f) % 5;
+    }
+    return static_cast<int>(engine::math::randFloat01(engine::math::splitmix64(h2 ^ 0xC0FFEE11ULL)) * 5.0f) % 5;
+}
+
+static int pickBushVariant(const NatureSiteInfo& site, uint64_t h) {
+    const float t = engine::math::randFloat01(h);
+    // Wetlands prefer fern/clover/plant; hills/plains prefer bushes.
+    if (site.wetlands > 0.40f) {
+        if (t < 0.35f) return 19; // Fern
+        if (t < 0.55f) return 17; // Clover_1
+        if (t < 0.70f) return 18; // Clover_2
+        if (t < 0.85f) return 20; // Plant_1
+        return 21;                // Plant_7
+    }
+    if (t < 0.42f) return 15; // Bush_Common
+    if (t < 0.58f) return 16; // Bush_Common_Flowers
+    if (t < 0.72f) return 17; // Clover_1
+    if (t < 0.82f) return 18; // Clover_2
+    if (t < 0.92f) return 19; // Fern
+    if (t < 0.97f) return 20; // Plant_1
+    return 21;                // Plant_7
+}
+
+static float treeSpawnChance(const NatureSiteInfo& site) {
+    // Plains sparse (~8–15% seeds), hills moderate (~40–60%), foothills present.
+    float c = site.plains * 0.12f + site.hills * 0.52f + site.foothill * 0.42f;
+    c += site.wetlands * 0.03f; // almost none in wetlands
+    return std::clamp(c * g_treeDensity, 0.0f, 0.90f);
+}
+
+static float bushSpawnChance(const NatureSiteInfo& site) {
+    float c = site.plains * 0.18f + site.hills * 0.48f + site.wetlands * 0.55f +
+              site.foothill * 0.22f;
+    return std::clamp(c * g_treeDensity, 0.0f, 0.92f);
+}
+
+static bool placeNatureInstance(float wx, float wz, float maxSlope, float baseScale,
+                                uint64_t h0, Matrix* out) {
+    if (engine::math::WaterGate(wx, wz) > kNatureWaterGateMax) return false;
+    if (engine::math::TerrainSlope(wx, wz) > maxSlope) return false;
+    const float groundY = engine::math::WorldHeight(wx, wz);
+    if (groundY < engine::math::LocalWaterLevel(wx, wz) + 0.35f) return false;
+    const float wy = groundY - g_treeSink;
+
+    uint64_t h1 = engine::math::splitmix64(h0);
+    const float yaw = engine::math::randFloat01(h1) * 6.2831853f;
+    uint64_t h2 = engine::math::splitmix64(h1);
+    const float sn = meadowMask(wx, wz, engine::math::GetWorldConfig().seed ^ 0x7EEE5ULL, 0.028f);
+    const float jitter = 0.94f + engine::math::randFloat01(h2) * 0.12f;
+    const float scale =
+        baseScale * (g_treeScaleMin + sn * (g_treeScaleMax - g_treeScaleMin)) * jitter;
+    *out = makeNatureTransform(wx, wy, wz, yaw, scale);
+    return true;
+}
+
+static void fillNatureLattice(std::vector<NatureInst>& out, float originX, float originZ,
+                              float size, float spacing, int maxPerChunk, bool forTrees,
+                              uint64_t seedTag) {
+    out.clear();
+    if (maxPerChunk <= 0 || g_treeDensity < 0.01f) return;
+    clampTreeKnobs();
+
+    const float sp = std::max(forTrees ? 6.0f : 3.0f, spacing);
+    const float rowH = sp * 0.8660254f;
+    const uint64_t worldSeed = engine::math::GetWorldConfig().seed;
+    const uint64_t seed = worldSeed ^ seedTag;
+    const float maxSlope = g_treeMaxSlope;
+    const float jitter = sp * 0.35f;
+    const float margin = jitter + 0.5f;
+    const float baseScale = forTrees ? kTreeBaseScale : kBushBaseScale;
+
+    const int iz0 = static_cast<int>(std::floor((originZ - margin) / rowH)) - 1;
+    const int iz1 = static_cast<int>(std::floor((originZ + size + margin) / rowH)) + 1;
+    const int ix0 = static_cast<int>(std::floor((originX - margin) / sp)) - 1;
+    const int ix1 = static_cast<int>(std::floor((originX + size + margin) / sp)) + 1;
+
+    struct Cand {
+        float x, z;
+        uint64_t h;
+        NatureSiteInfo site;
+    };
+    std::vector<Cand> cands;
+    cands.reserve(static_cast<size_t>((iz1 - iz0 + 1) * (ix1 - ix0 + 1)));
+
+    for (int iz = iz0; iz <= iz1; ++iz) {
+        const float rowOff = (iz & 1) ? (sp * 0.5f) : 0.0f;
+        for (int ix = ix0; ix <= ix1; ++ix) {
+            uint64_t h0 = engine::math::hash2D(seed, ix, iz);
+            const float jx = (engine::math::randFloat01(h0) - 0.5f) * 2.0f * jitter;
+            const float jz =
+                (engine::math::randFloat01(engine::math::splitmix64(h0)) - 0.5f) * 2.0f * jitter;
+            const float sx = static_cast<float>(ix) * sp + rowOff + jx;
+            const float sz = static_cast<float>(iz) * rowH + jz;
+            if (sx < originX || sx >= originX + size || sz < originZ || sz >= originZ + size) {
+                continue;
+            }
+
+            NatureSiteInfo site{};
+            if (!natureSiteOk(sx, sz, maxSlope, forTrees, &site)) continue;
+
+            const float chance = forTrees ? treeSpawnChance(site) : bushSpawnChance(site);
+            if (engine::math::randFloat01(engine::math::splitmix64(h0 ^ 0x51A11ULL)) > chance) {
+                continue;
+            }
+
+            cands.push_back({sx, sz, h0, site});
+        }
+    }
+
+    if (cands.empty()) return;
+
+    if (static_cast<int>(cands.size()) > maxPerChunk) {
+        std::sort(cands.begin(), cands.end(), [seed](const Cand& a, const Cand& b) {
+            const uint64_t ha = engine::math::hash2D(
+                seed ^ 0xA11CEULL,
+                static_cast<int32_t>(std::floor(a.x * 10.0f)),
+                static_cast<int32_t>(std::floor(a.z * 10.0f)));
+            const uint64_t hb = engine::math::hash2D(
+                seed ^ 0xA11CEULL,
+                static_cast<int32_t>(std::floor(b.x * 10.0f)),
+                static_cast<int32_t>(std::floor(b.z * 10.0f)));
+            return ha < hb;
+        });
+        cands.resize(static_cast<size_t>(maxPerChunk));
+    }
+
+    out.reserve(cands.size());
+    for (const Cand& cand : cands) {
+        Matrix m{};
+        if (!placeNatureInstance(cand.x, cand.z, maxSlope, baseScale, cand.h, &m)) continue;
+        const int var = forTrees ? pickTreeVariant(cand.site, cand.h ^ 0x7EEEULL)
+                                 : pickBushVariant(cand.site, cand.h ^ 0xB055ULL);
+        out.push_back({m, static_cast<uint8_t>(std::clamp(var, 0, kNatureVariantCount - 1))});
+    }
+}
+
+static NatureBake generateNatureCPU(float originX, float originZ, float size, int lod) {
+    NatureBake bake;
+    if (lod > kNatureChunkLodMax) return bake;
+    if (g_treeDensity < 0.01f) return bake;
+
+    fillNatureLattice(bake.trees, originX, originZ, size, g_treeSeedSpacing,
+                      kNatureMaxTreesPerChunk, true, 0x7EEE0001ULL);
+    fillNatureLattice(bake.bushes, originX, originZ, size, g_bushSeedSpacing,
+                      kNatureMaxBushesPerChunk, false, 0xB0550002ULL);
     return bake;
 }
 
@@ -1001,7 +1590,41 @@ struct ChunkSlot {
     Vector3    aabbMin = {0, 0, 0};
     Vector3    aabbMax = {0, 0, 0};
     GrassBake  grass;
+    NatureBake nature;
+    // Pre-bucketed matrices per Quaternius variant — drawn directly (no per-frame gather).
+    std::vector<Matrix> grassDraw[kGrassVariantCount];
+    std::vector<Matrix> natureDraw[kNatureVariantCount];
 };
+
+static void buildGrassDrawLists(ChunkSlot& slot) {
+    for (int v = 0; v < kGrassVariantCount; ++v) {
+        slot.grassDraw[v].clear();
+    }
+    for (const GrassNearInst& inst : slot.grass.near) {
+        const int v = std::clamp(static_cast<int>(inst.variant), 0, kGrassVariantCount - 1);
+        slot.grassDraw[v].push_back(inst.m);
+    }
+    for (int v = 0; v < kGrassVariantCount; ++v) {
+        slot.grassDraw[v].shrink_to_fit();
+    }
+}
+
+static void buildNatureDrawLists(ChunkSlot& slot) {
+    for (int v = 0; v < kNatureVariantCount; ++v) {
+        slot.natureDraw[v].clear();
+    }
+    auto bucket = [&](const std::vector<NatureInst>& list) {
+        for (const NatureInst& inst : list) {
+            const int v = std::clamp(static_cast<int>(inst.variant), 0, kNatureVariantCount - 1);
+            slot.natureDraw[v].push_back(inst.m);
+        }
+    };
+    bucket(slot.nature.trees);
+    bucket(slot.nature.bushes);
+    for (int v = 0; v < kNatureVariantCount; ++v) {
+        slot.natureDraw[v].shrink_to_fit();
+    }
+}
 
 static std::unordered_map<uint64_t, std::unique_ptr<ChunkSlot>> g_chunks;
 
@@ -1011,6 +1634,7 @@ struct PendingUpload {
     int        lod;
     MeshCPU    mesh;
     GrassBake  grass;
+    NatureBake nature;
 };
 static std::mutex                 g_pendingMutex;
 static std::vector<PendingUpload> g_pendingUploads;
@@ -1019,7 +1643,10 @@ static std::vector<PendingUpload> g_pendingUploads;
 static std::unordered_set<uint64_t> g_inFlight;
 
 // GPU upload budget per frame (smooth streaming across many chunks).
-static constexpr int GPU_UPLOAD_BUDGET_PER_FRAME = 16;
+static constexpr int GPU_UPLOAD_BUDGET_PER_FRAME = 12;
+// Don't enqueue the entire LOAD_RADIUS ring at once — that stalls startup for minutes.
+static constexpr int MAX_CHUNK_GEN_IN_FLIGHT = 20;
+static constexpr int MAX_CHUNK_GEN_SUBMIT_PER_FRAME = 8;
 
 // LOD switch hysteresis: avoid thrashing meshes at ring boundaries.
 static int stableLOD(int dist, int currentLod, bool hasChunk) {
@@ -1085,9 +1712,10 @@ static void generateChunkAsync(ChunkCoord coord, int lod) {
 
     MeshCPU cpu = generateMeshCPU(originX, originZ, S, S, R, R);
     GrassBake grass = generateGrassCPU(originX, originZ, S, lod);
+    NatureBake nature = generateNatureCPU(originX, originZ, S, lod);
 
     std::lock_guard<std::mutex> lock(g_pendingMutex);
-    g_pendingUploads.push_back({coord, lod, std::move(cpu), std::move(grass)});
+    g_pendingUploads.push_back({coord, lod, std::move(cpu), std::move(grass), std::move(nature)});
 }
 
 // Blocking version used during Init() to prewarm spawn area at LOD 0.
@@ -1108,6 +1736,9 @@ static void generateChunkBlocking(ChunkCoord coord) {
     slot->aabbMin     = cpu.aabbMin;
     slot->aabbMax     = cpu.aabbMax;
     slot->grass       = generateGrassCPU(originX, originZ, S, 0);
+    slot->nature      = generateNatureCPU(originX, originZ, S, 0);
+    buildGrassDrawLists(*slot);
+    buildNatureDrawLists(*slot);
     g_chunks[packCoord(coord.x, coord.z)] = std::move(slot);
 }
 
@@ -1116,9 +1747,10 @@ namespace chunks {
 void Init() {
     loadTerrainMaterials();
     loadGrassMaterials();
+    loadNatureMaterials();
 
-    // Prewarm spawn area synchronously at LOD 0 so first frame has immediate geometry.
-    const int PREWARM = 2;  // 5x5 = 25 chunks around spawn
+    // Prewarm a small spawn patch synchronously (full grass). Distant rings stream in.
+    const int PREWARM = 1;  // 3x3 = 9 chunks — was 5x5 with heavy grass (very slow)
     for (int dz = -PREWARM; dz <= PREWARM; ++dz) {
         for (int dx = -PREWARM; dx <= PREWARM; ++dx) {
             generateChunkBlocking({dx, dz});
@@ -1174,7 +1806,14 @@ void Update(Vector3 playerPos) {
         return a.dist < b.dist;
     });
 
+    // Throttle: only keep a small in-flight window so we don't queue 4000+ jobs
+    // (that made "loading into VRAM" feel endless while RAM/CPU thrashed).
+    const int inFlight = static_cast<int>(g_inFlight.size());
+    const int room = std::max(0, MAX_CHUNK_GEN_IN_FLIGHT - inFlight);
+    const int submitCap = std::min(room, MAX_CHUNK_GEN_SUBMIT_PER_FRAME);
+    int submitted = 0;
     for (const auto& task : tasks) {
+        if (submitted >= submitCap) break;
         uint64_t k = packCoord(task.coord.x, task.coord.z);
         g_inFlight.insert(k);
         ChunkCoord c = task.coord;
@@ -1182,6 +1821,7 @@ void Update(Vector3 playerPos) {
         engine::jobs::GetGlobalPool().Submit([c, targetLOD] {
             generateChunkAsync(c, targetLOD);
         });
+        ++submitted;
     }
 
     // 2. Unload chunks outside UNLOAD_RADIUS (hysteresis buffer prevents edge popping).
@@ -1235,6 +1875,9 @@ void Update(Vector3 playerPos) {
             it->second->aabbMin     = up.mesh.aabbMin;
             it->second->aabbMax     = up.mesh.aabbMax;
             it->second->grass       = std::move(up.grass);
+            it->second->nature      = std::move(up.nature);
+            buildGrassDrawLists(*it->second);
+            buildNatureDrawLists(*it->second);
         } else {
             // Brand new chunk slot
             auto slot = std::make_unique<ChunkSlot>();
@@ -1245,6 +1888,9 @@ void Update(Vector3 playerPos) {
             slot->aabbMin     = up.mesh.aabbMin;
             slot->aabbMax     = up.mesh.aabbMax;
             slot->grass       = std::move(up.grass);
+            slot->nature      = std::move(up.nature);
+            buildGrassDrawLists(*slot);
+            buildNatureDrawLists(*slot);
             g_chunks[k] = std::move(slot);
         }
     }
@@ -1273,7 +1919,10 @@ void Draw() {
     rlEnableBackfaceCulling();
 }
 
-static void pushGrassBandUniforms(Vector3 viewPos, float fadeStart, float fadeEnd, float meshH) {
+static void pushGrassBandUniforms(Vector3 viewPos,
+                                  float fadeInStart, float fadeInEnd,
+                                  float fadeOutStart, float fadeOutEnd,
+                                  float meshH) {
     const float t = static_cast<float>(GetTime());
     Vector3 sun = Vector3Normalize(g_sunDir);
     if (g_grassLocTime >= 0) {
@@ -1282,11 +1931,17 @@ static void pushGrassBandUniforms(Vector3 viewPos, float fadeStart, float fadeEn
     if (g_grassLocViewPos >= 0) {
         SetShaderValue(g_grassShader, g_grassLocViewPos, &viewPos, SHADER_UNIFORM_VEC3);
     }
-    if (g_grassLocFadeStart >= 0) {
-        SetShaderValue(g_grassShader, g_grassLocFadeStart, &fadeStart, SHADER_UNIFORM_FLOAT);
+    if (g_grassLocFadeInStart >= 0) {
+        SetShaderValue(g_grassShader, g_grassLocFadeInStart, &fadeInStart, SHADER_UNIFORM_FLOAT);
     }
-    if (g_grassLocFadeEnd >= 0) {
-        SetShaderValue(g_grassShader, g_grassLocFadeEnd, &fadeEnd, SHADER_UNIFORM_FLOAT);
+    if (g_grassLocFadeInEnd >= 0) {
+        SetShaderValue(g_grassShader, g_grassLocFadeInEnd, &fadeInEnd, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_grassLocFadeOutStart >= 0) {
+        SetShaderValue(g_grassShader, g_grassLocFadeOutStart, &fadeOutStart, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_grassLocFadeOutEnd >= 0) {
+        SetShaderValue(g_grassShader, g_grassLocFadeOutEnd, &fadeOutEnd, SHADER_UNIFORM_FLOAT);
     }
     if (g_grassLocSunDir >= 0) {
         SetShaderValue(g_grassShader, g_grassLocSunDir, &sun, SHADER_UNIFORM_VEC3);
@@ -1306,123 +1961,218 @@ void DrawGrass(Vector3 viewPos) {
     for (const auto& [key, slot] : g_chunks) {
         (void)key;
         if (slot->lod > kGrassChunkLodMax) continue;
-        g_grassDrawStats.bakedNear += slot->grass.near.size();
-        g_grassDrawStats.bakedMid  += slot->grass.mid.size();
-        g_grassDrawStats.bakedFar  += slot->grass.far.size();
+        g_grassDrawStats.baked += slot->grass.near.size();
     }
 
     if (!g_grassEnabled || !g_grassReady) return;
-    if (g_grassClumpMesh == nullptr || g_grassClumpMesh->vaoId == 0) return;
-    if (g_grassImpostorMesh == nullptr || g_grassImpostorMesh->vaoId == 0) return;
+    bool anyVariant = false;
+    for (int i = 0; i < kGrassVariantCount; ++i) {
+        if (g_grassVariants[i].mesh && g_grassVariants[i].mesh->vaoId != 0) {
+            anyVariant = true;
+            break;
+        }
+    }
+    if (!anyVariant) return;
 
-    clampGrassLodDistances();
-    const float nearEnd = g_grassNearDist;
-    const float midEnd = g_grassMidDist;
-    const float farEnd = g_grassFarDist;
-    const float nearEndSq = nearEnd * nearEnd;
-    const float midEndSq = midEnd * midEnd;
-    const float farEndSq = farEnd * farEnd;
-
-    static std::vector<Matrix> nearBatch;
-    static std::vector<Matrix> midBatch;
-    static std::vector<Matrix> farBatch;
-    nearBatch.clear();
-    midBatch.clear();
-    farBatch.clear();
-    nearBatch.reserve(static_cast<size_t>(kGrassMaxNearDraw));
-    midBatch.reserve(static_cast<size_t>(kGrassMaxMidDraw));
-    farBatch.reserve(static_cast<size_t>(kGrassMaxFarDraw));
-
-    const float S = engine::math::WorldConfig::CHUNK_SIZE;
-    const float chunkCull = farEnd + S * 0.75f;
+    clampGrassDrawDistance();
+    const float drawEnd = g_grassDrawDist;
+    const float fadeOutStart = std::max(2.0f, drawEnd - kGrassFadeMeters);
+    const float chunkCull = drawEnd + engine::math::WorldConfig::CHUNK_SIZE * 0.75f;
     const float chunkCullSq = chunkCull * chunkCull;
     constexpr float padY = 2.0f;
+    const float S = engine::math::WorldConfig::CHUNK_SIZE;
+
+    // Collect visible chunks (frustum + distance), closest first — draw lists are pre-baked.
+    struct VisChunk {
+        ChunkSlot* slot = nullptr;
+        float      distSq = 0.0f;
+    };
+    static std::vector<VisChunk> vis;
+    vis.clear();
+    vis.reserve(64);
 
     for (auto& [key, slot] : g_chunks) {
         (void)key;
         if (slot->lod > kGrassChunkLodMax) continue;
-        const GrassBake& g = slot->grass;
-        if (g.near.empty() && g.mid.empty() && g.far.empty()) continue;
+        bool any = false;
+        for (int v = 0; v < kGrassVariantCount; ++v) {
+            if (!slot->grassDraw[v].empty()) { any = true; break; }
+        }
+        if (!any) continue;
 
         const float cx = (static_cast<float>(slot->coord.x) + 0.5f) * S;
         const float cz = (static_cast<float>(slot->coord.z) + 0.5f) * S;
         const float cdx = cx - viewPos.x;
         const float cdz = cz - viewPos.z;
-        if (cdx * cdx + cdz * cdz > chunkCullSq) continue;
+        const float d2 = cdx * cdx + cdz * cdz;
+        if (d2 > chunkCullSq) continue;
 
         Vector3 mn = slot->aabbMin;
         Vector3 mx = slot->aabbMax;
         mx.y += padY;
         if (!aabbInFrustum(mn, mx)) continue;
 
-        if (static_cast<int>(nearBatch.size()) < kGrassMaxNearDraw) {
-            for (const Matrix& m : g.near) {
-                if (static_cast<int>(nearBatch.size()) >= kGrassMaxNearDraw) break;
-                const Vector3 o = grassOrigin(m);
-                const float dx = o.x - viewPos.x;
-                const float dz = o.z - viewPos.z;
-                if (dx * dx + dz * dz < nearEndSq) nearBatch.push_back(m);
-            }
-        }
-
-        if (static_cast<int>(midBatch.size()) < kGrassMaxMidDraw) {
-            for (const Matrix& m : g.mid) {
-                if (static_cast<int>(midBatch.size()) >= kGrassMaxMidDraw) break;
-                const Vector3 o = grassOrigin(m);
-                const float dx = o.x - viewPos.x;
-                const float dz = o.z - viewPos.z;
-                const float d2 = dx * dx + dz * dz;
-                if (d2 >= nearEndSq && d2 < midEndSq) midBatch.push_back(m);
-            }
-        }
-
-        if (static_cast<int>(farBatch.size()) < kGrassMaxFarDraw) {
-            for (const Matrix& m : g.far) {
-                if (static_cast<int>(farBatch.size()) >= kGrassMaxFarDraw) break;
-                const Vector3 o = grassOrigin(m);
-                const float dx = o.x - viewPos.x;
-                const float dz = o.z - viewPos.z;
-                const float d2 = dx * dx + dz * dz;
-                if (d2 >= midEndSq && d2 < farEndSq) farBatch.push_back(m);
-            }
-        }
+        vis.push_back({slot.get(), d2});
     }
 
-    g_grassDrawStats.drawNear = nearBatch.size();
-    g_grassDrawStats.drawMid  = midBatch.size();
-    g_grassDrawStats.drawFar  = farBatch.size();
-    const size_t clumpTris =
-        (g_grassClumpMesh && g_grassClumpMesh->triangleCount > 0)
-            ? static_cast<size_t>(g_grassClumpMesh->triangleCount) : 195u;
-    const size_t impostorTris =
-        (g_grassImpostorMesh && g_grassImpostorMesh->triangleCount > 0)
-            ? static_cast<size_t>(g_grassImpostorMesh->triangleCount) : 4u;
-    g_grassDrawStats.approxTris =
-        g_grassDrawStats.drawNear * clumpTris +
-        (g_grassDrawStats.drawMid + g_grassDrawStats.drawFar) * impostorTris;
-
-    if (nearBatch.empty() && midBatch.empty() && farBatch.empty()) return;
+    std::sort(vis.begin(), vis.end(), [](const VisChunk& a, const VisChunk& b) {
+        return a.distSq < b.distSq;
+    });
 
     rlDisableBackfaceCulling();
 
-    if (!nearBatch.empty()) {
-        pushGrassBandUniforms(viewPos, farEnd * 2.0f, farEnd * 2.0f + 1.0f, g_grassClumpHeight);
-        DrawMeshInstanced(*g_grassClumpMesh, g_grassClumpMaterial,
-                          nearBatch.data(), static_cast<int>(nearBatch.size()));
+    size_t drawn = 0;
+    size_t tris = 0;
+    for (const VisChunk& vc : vis) {
+        if (static_cast<int>(drawn) >= kGrassMaxDraw) break;
+        ChunkSlot& slot = *vc.slot;
+        for (int v = 0; v < kGrassVariantCount; ++v) {
+            std::vector<Matrix>& list = slot.grassDraw[v];
+            if (list.empty()) continue;
+            Mesh* mesh = g_grassVariants[v].mesh;
+            if (!mesh || mesh->vaoId == 0) continue;
+
+            int count = static_cast<int>(list.size());
+            const int room = kGrassMaxDraw - static_cast<int>(drawn);
+            if (room <= 0) break;
+            if (count > room) count = room;
+
+            const float meshH = g_grassVariants[v].height > 0.05f
+                ? g_grassVariants[v].height : g_grassClumpHeight;
+            pushGrassBandUniforms(viewPos, -1.0f, -1.0f, fadeOutStart, drawEnd, meshH);
+            DrawMeshInstanced(*mesh, g_grassClumpMaterial, list.data(), count);
+
+            drawn += static_cast<size_t>(count);
+            tris += static_cast<size_t>(count) *
+                static_cast<size_t>(mesh->triangleCount > 0 ? mesh->triangleCount : 80);
+        }
     }
 
-    if (!midBatch.empty()) {
-        pushGrassBandUniforms(viewPos, midEnd * 0.92f, farEnd, g_grassImpostorHeight);
-        DrawMeshInstanced(*g_grassImpostorMesh, g_grassImpostorMaterial,
-                          midBatch.data(), static_cast<int>(midBatch.size()));
+    g_grassDrawStats.drawn = drawn;
+    g_grassDrawStats.approxTris = tris;
+
+    rlEnableBackfaceCulling();
+}
+
+static void pushFoliageUniforms(Vector3 viewPos,
+                                float fadeInStart, float fadeInEnd,
+                                float fadeOutStart, float fadeOutEnd) {
+    Vector3 sun = Vector3Normalize(g_sunDir);
+    if (g_foliageLocViewPos >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocViewPos, &viewPos, SHADER_UNIFORM_VEC3);
+    }
+    if (g_foliageLocFadeInStart >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocFadeInStart, &fadeInStart, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_foliageLocFadeInEnd >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocFadeInEnd, &fadeInEnd, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_foliageLocFadeOutStart >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocFadeOutStart, &fadeOutStart, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_foliageLocFadeOutEnd >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocFadeOutEnd, &fadeOutEnd, SHADER_UNIFORM_FLOAT);
+    }
+    if (g_foliageLocSunDir >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocSunDir, &sun, SHADER_UNIFORM_VEC3);
+    }
+    if (g_foliageLocSunIntensity >= 0) {
+        SetShaderValue(g_foliageShader, g_foliageLocSunIntensity, &g_sunIntensity, SHADER_UNIFORM_FLOAT);
+    }
+}
+
+void DrawTrees(Vector3 viewPos) {
+    g_treeDrawStats = {};
+
+    for (const auto& [key, slot] : g_chunks) {
+        (void)key;
+        if (slot->lod > kNatureChunkLodMax) continue;
+        g_treeDrawStats.bakedTrees += slot->nature.trees.size();
+        g_treeDrawStats.bakedBushes += slot->nature.bushes.size();
     }
 
-    if (!farBatch.empty()) {
-        pushGrassBandUniforms(viewPos, midEnd, farEnd, g_grassImpostorHeight);
-        DrawMeshInstanced(*g_grassImpostorMesh, g_grassImpostorMaterial,
-                          farBatch.data(), static_cast<int>(farBatch.size()));
+    if (!g_treesEnabled || !g_natureReady) return;
+
+    clampTreeKnobs();
+    const float drawEnd = g_treeDrawDist;
+    const float fadeOutStart = std::max(2.0f, drawEnd - kNatureFadeMeters);
+    const float chunkCull = drawEnd + engine::math::WorldConfig::CHUNK_SIZE * 0.75f;
+    const float chunkCullSq = chunkCull * chunkCull;
+    constexpr float padY = 18.0f;
+    const float S = engine::math::WorldConfig::CHUNK_SIZE;
+
+    struct VisChunk {
+        ChunkSlot* slot = nullptr;
+        float      distSq = 0.0f;
+    };
+    static std::vector<VisChunk> vis;
+    vis.clear();
+    vis.reserve(64);
+
+    for (auto& [key, slot] : g_chunks) {
+        (void)key;
+        if (slot->lod > kNatureChunkLodMax) continue;
+        bool any = false;
+        for (int v = 0; v < kNatureVariantCount; ++v) {
+            if (!slot->natureDraw[v].empty()) { any = true; break; }
+        }
+        if (!any) continue;
+
+        const float cx = (static_cast<float>(slot->coord.x) + 0.5f) * S;
+        const float cz = (static_cast<float>(slot->coord.z) + 0.5f) * S;
+        const float cdx = cx - viewPos.x;
+        const float cdz = cz - viewPos.z;
+        const float d2 = cdx * cdx + cdz * cdz;
+        if (d2 > chunkCullSq) continue;
+
+        Vector3 mn = slot->aabbMin;
+        Vector3 mx = slot->aabbMax;
+        mx.y += padY;
+        if (!aabbInFrustum(mn, mx)) continue;
+
+        vis.push_back({slot.get(), d2});
     }
 
+    std::sort(vis.begin(), vis.end(), [](const VisChunk& a, const VisChunk& b) {
+        return a.distSq < b.distSq;
+    });
+
+    rlDisableBackfaceCulling();
+    pushFoliageUniforms(viewPos, -1.0f, -1.0f, fadeOutStart, drawEnd);
+
+    size_t drawn = 0;
+    size_t tris = 0;
+    for (const VisChunk& vc : vis) {
+        if (static_cast<int>(drawn) >= kNatureMaxDraw) break;
+        ChunkSlot& slot = *vc.slot;
+        for (int v = 0; v < kNatureVariantCount; ++v) {
+            std::vector<Matrix>& list = slot.natureDraw[v];
+            if (list.empty()) continue;
+            NatureVariant& nv = g_natureVariants[v];
+            if (!nv.loaded || nv.model.meshCount <= 0) continue;
+
+            int count = static_cast<int>(list.size());
+            const int room = kNatureMaxDraw - static_cast<int>(drawn);
+            if (room <= 0) break;
+            if (count > room) count = room;
+
+            for (int mi = 0; mi < nv.model.meshCount; ++mi) {
+                Mesh& mesh = nv.model.meshes[mi];
+                if (mesh.vaoId == 0) continue;
+                const int matIdx = (nv.model.meshMaterial != nullptr)
+                    ? nv.model.meshMaterial[mi] : 0;
+                Material& mat = nv.model.materials[std::clamp(matIdx, 0, nv.model.materialCount - 1)];
+                mat.shader = g_foliageShader;
+                DrawMeshInstanced(mesh, mat, list.data(), count);
+                tris += static_cast<size_t>(count) *
+                    static_cast<size_t>(mesh.triangleCount > 0 ? mesh.triangleCount : 100);
+            }
+            drawn += static_cast<size_t>(count);
+        }
+    }
+
+    g_treeDrawStats.drawn = drawn;
+    g_treeDrawStats.approxTris = tris;
     rlEnableBackfaceCulling();
 }
 
@@ -1437,6 +2187,7 @@ void Shutdown() {
     g_chunks.clear();
     g_inFlight.clear();
     unloadGrassMaterials();
+    unloadNatureMaterials();
     unloadTerrainMaterials();
 }
 
@@ -1451,12 +2202,31 @@ size_t GrassInstanceCount() {
     size_t n = 0;
     for (const auto& [key, slot] : g_chunks) {
         (void)key;
-        n += slot->grass.near.size() + slot->grass.mid.size() + slot->grass.far.size();
+        n += slot->grass.near.size();
+    }
+    return n;
+}
+
+size_t TreeInstanceCount() {
+    size_t n = 0;
+    for (const auto& [key, slot] : g_chunks) {
+        (void)key;
+        n += slot->nature.trees.size();
+    }
+    return n;
+}
+
+size_t BushInstanceCount() {
+    size_t n = 0;
+    for (const auto& [key, slot] : g_chunks) {
+        (void)key;
+        n += slot->nature.bushes.size();
     }
     return n;
 }
 
 const GrassDrawStats& GetGrassDrawStats() { return g_grassDrawStats; }
+const TreeDrawStats& GetTreeDrawStats() { return g_treeDrawStats; }
 
 void ReloadAround(Vector3 center, int radiusChunks) {
     if (radiusChunks < 0) radiusChunks = 0;
@@ -1539,33 +2309,19 @@ float GetGrassDensity() { return g_grassDensity; }
 void SetGrassMaxSlope(float slope) { g_grassMaxSlope = std::clamp(slope, 0.05f, 1.0f); }
 float GetGrassMaxSlope() { return g_grassMaxSlope; }
 
-void SetGrassNearDistance(float meters) {
-    g_grassNearDist = meters;
-    clampGrassLodDistances();
+void SetGrassDrawDistance(float meters) {
+    g_grassDrawDist = meters;
+    clampGrassDrawDistance();
 }
-float GetGrassNearDistance() { return g_grassNearDist; }
+float GetGrassDrawDistance() { return g_grassDrawDist; }
 
-void SetGrassMidDistance(float meters) {
-    g_grassMidDist = meters;
-    clampGrassLodDistances();
-}
-float GetGrassMidDistance() { return g_grassMidDist; }
-
-void SetGrassFarDistance(float meters) {
-    g_grassFarDist = meters;
-    clampGrassLodDistances();
-}
-float GetGrassFarDistance() { return g_grassFarDist; }
-
-void SetGrassDrawDistance(float meters) { SetGrassFarDistance(meters); }
-float GetGrassDrawDistance() { return g_grassFarDist; }
-
-void SetGrassNearDensity(float mul) { g_grassNearDensMul = std::clamp(mul, 0.05f, 3.0f); }
-float GetGrassNearDensity() { return g_grassNearDensMul; }
-void SetGrassMidDensity(float mul) { g_grassMidDensMul = std::clamp(mul, 0.05f, 2.0f); }
-float GetGrassMidDensity() { return g_grassMidDensMul; }
-void SetGrassFarDensity(float mul) { g_grassFarDensMul = std::clamp(mul, 0.02f, 1.0f); }
-float GetGrassFarDensity() { return g_grassFarDensMul; }
+// Deprecated stubs — all map to the single draw distance.
+void SetGrassNearDistance(float meters) { SetGrassDrawDistance(meters); }
+float GetGrassNearDistance() { return g_grassDrawDist; }
+void SetGrassMidDistance(float meters) { SetGrassDrawDistance(meters); }
+float GetGrassMidDistance() { return g_grassDrawDist; }
+void SetGrassFarDistance(float meters) { SetGrassDrawDistance(meters); }
+float GetGrassFarDistance() { return g_grassDrawDist; }
 
 void SetGrassClusterMin(int n) {
     g_grassClusterMin = n;
@@ -1602,6 +2358,30 @@ void SetGrassMeadowScale(float scale) {
 }
 float GetGrassMeadowScale() { return g_grassMeadowScale; }
 
+void SetGrassCoverageStrength(float strength) {
+    g_grassCoverageStrength = strength;
+    clampGrassClusterKnobs();
+}
+float GetGrassCoverageStrength() { return g_grassCoverageStrength; }
+
+void SetGrassCoverageScale(float scale) {
+    g_grassCoverageScale = scale;
+    clampGrassClusterKnobs();
+}
+float GetGrassCoverageScale() { return g_grassCoverageScale; }
+
+void SetGrassCoverageThreshold(float threshold) {
+    g_grassCoverageThreshold = threshold;
+    clampGrassClusterKnobs();
+}
+float GetGrassCoverageThreshold() { return g_grassCoverageThreshold; }
+
+void SetGrassSizeNoiseScale(float scale) {
+    g_grassSizeNoiseScale = scale;
+    clampGrassClusterKnobs();
+}
+float GetGrassSizeNoiseScale() { return g_grassSizeNoiseScale; }
+
 void SetGrassScaleMin(float mul) {
     g_grassScaleMin = mul;
     clampGrassClusterKnobs();
@@ -1618,6 +2398,57 @@ void SetGrassSinkCm(float cm) {
     clampGrassClusterKnobs();
 }
 float GetGrassSinkCm() { return g_grassSink * 100.0f; }
+
+void SetTreesEnabled(bool enabled) { g_treesEnabled = enabled; }
+bool GetTreesEnabled() { return g_treesEnabled; }
+
+void SetTreeDensity(float density) {
+    g_treeDensity = density;
+    clampTreeKnobs();
+}
+float GetTreeDensity() { return g_treeDensity; }
+
+void SetTreeMaxSlope(float slope) {
+    g_treeMaxSlope = slope;
+    clampTreeKnobs();
+}
+float GetTreeMaxSlope() { return g_treeMaxSlope; }
+
+void SetTreeDrawDistance(float meters) {
+    g_treeDrawDist = meters;
+    clampTreeKnobs();
+}
+float GetTreeDrawDistance() { return g_treeDrawDist; }
+
+void SetTreeSeedSpacing(float meters) {
+    g_treeSeedSpacing = meters;
+    clampTreeKnobs();
+}
+float GetTreeSeedSpacing() { return g_treeSeedSpacing; }
+
+void SetBushSeedSpacing(float meters) {
+    g_bushSeedSpacing = meters;
+    clampTreeKnobs();
+}
+float GetBushSeedSpacing() { return g_bushSeedSpacing; }
+
+void SetTreeScaleMin(float mul) {
+    g_treeScaleMin = mul;
+    clampTreeKnobs();
+}
+float GetTreeScaleMin() { return g_treeScaleMin; }
+
+void SetTreeScaleMax(float mul) {
+    g_treeScaleMax = mul;
+    clampTreeKnobs();
+}
+float GetTreeScaleMax() { return g_treeScaleMax; }
+
+void SetTreeSinkCm(float cm) {
+    g_treeSink = cm * 0.01f;
+    clampTreeKnobs();
+}
+float GetTreeSinkCm() { return g_treeSink * 100.0f; }
 
 }  // namespace chunks
 }  // namespace engine::terrain

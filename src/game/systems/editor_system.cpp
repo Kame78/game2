@@ -171,16 +171,39 @@ std::string buildEditorDump(engine::ecs::Registry& reg) {
         append("seed_spacing_m: %.3f\n", GetGrassSeedSpacing());
         append("meadow_strength: %.3f\n", GetGrassMeadowStrength());
         append("meadow_scale: %.4f\n", GetGrassMeadowScale());
+        append("coverage_strength: %.3f\n", GetGrassCoverageStrength());
+        append("coverage_scale: %.4f\n", GetGrassCoverageScale());
+        append("coverage_threshold: %.3f\n", GetGrassCoverageThreshold());
+        append("size_noise_scale: %.4f\n", GetGrassSizeNoiseScale());
         append("scale_min/max: %.3f / %.3f\n", GetGrassScaleMin(), GetGrassScaleMax());
         append("ground_sink_cm: %.2f\n", GetGrassSinkCm());
-        append("lod_near/mid/far_m: %.1f / %.1f / %.1f\n",
-               GetGrassNearDistance(), GetGrassMidDistance(), GetGrassFarDistance());
-        append("density_mul_near/mid/far: %.3f / %.3f / %.3f\n",
-               GetGrassNearDensity(), GetGrassMidDensity(), GetGrassFarDensity());
-        append("baked_N/M/F: %zu / %zu / %zu\n", gs.bakedNear, gs.bakedMid, gs.bakedFar);
-        append("drawn_N/M/F: %zu / %zu / %zu\n", gs.drawNear, gs.drawMid, gs.drawFar);
+        append("draw_distance_m: %.1f\n", GetGrassDrawDistance());
+        append("baked: %zu\n", gs.baked);
+        append("drawn: %zu\n", gs.drawn);
         append("approx_tris: %zu\n", gs.approxTris);
         append("total_baked_instances: %zu\n", GrassInstanceCount());
+    }
+    s += "\n";
+
+    // --- Trees ---
+    append("--- Trees ---\n");
+    {
+        using namespace engine::terrain::chunks;
+        const auto& ts = GetTreeDrawStats();
+        append("enabled: %s\n", GetTreesEnabled() ? "yes" : "no");
+        append("master_density: %.3f\n", GetTreeDensity());
+        append("max_slope: %.3f\n", GetTreeMaxSlope());
+        append("tree_seed_spacing_m: %.3f\n", GetTreeSeedSpacing());
+        append("bush_seed_spacing_m: %.3f\n", GetBushSeedSpacing());
+        append("scale_min/max: %.3f / %.3f\n", GetTreeScaleMin(), GetTreeScaleMax());
+        append("ground_sink_cm: %.2f\n", GetTreeSinkCm());
+        append("draw_distance_m: %.1f\n", GetTreeDrawDistance());
+        append("baked_trees: %zu\n", ts.bakedTrees);
+        append("baked_bushes: %zu\n", ts.bakedBushes);
+        append("drawn: %zu\n", ts.drawn);
+        append("approx_tris: %zu\n", ts.approxTris);
+        append("total_baked_trees: %zu\n", TreeInstanceCount());
+        append("total_baked_bushes: %zu\n", BushInstanceCount());
     }
     s += "\n";
 
@@ -796,12 +819,12 @@ void EditorUISystem(engine::ecs::Registry& reg) {
             engine::terrain::chunks::SetGrassClusterRadius(cRad);
         }
         float seedSp = engine::terrain::chunks::GetGrassSeedSpacing();
-        if (ImGui::SliderFloat("Seed spacing", &seedSp, 1.5f, 10.0f, "%.2f m")) {
+        if (ImGui::SliderFloat("Seed spacing", &seedSp, 0.70f, 10.0f, "%.2f m")) {
             engine::terrain::chunks::SetGrassSeedSpacing(seedSp);
         }
         ImGui::TextDisabled("World hex lattice; seeds thinned uniformly under budget (no Z-row cutoff).");
 
-        ImGui::SeparatorText("Meadow / scale (rebuild)");
+        ImGui::SeparatorText("Meadow / coverage / scale (rebuild)");
         float mStr = engine::terrain::chunks::GetGrassMeadowStrength();
         float mScl = engine::terrain::chunks::GetGrassMeadowScale();
         if (ImGui::SliderFloat("Meadow strength", &mStr, 0.0f, 1.0f, "%.2f")) {
@@ -810,6 +833,23 @@ void EditorUISystem(engine::ecs::Registry& reg) {
         ImGui::TextDisabled("Default 0 = full plains cover. Raise only for intentional clearings.");
         if (ImGui::SliderFloat("Meadow scale", &mScl, 0.01f, 0.08f, "%.3f")) {
             engine::terrain::chunks::SetGrassMeadowScale(mScl);
+        }
+        float covStr = engine::terrain::chunks::GetGrassCoverageStrength();
+        float covScl = engine::terrain::chunks::GetGrassCoverageScale();
+        float covThr = engine::terrain::chunks::GetGrassCoverageThreshold();
+        if (ImGui::SliderFloat("Coverage strength", &covStr, 0.0f, 1.0f, "%.2f")) {
+            engine::terrain::chunks::SetGrassCoverageStrength(covStr);
+        }
+        if (ImGui::SliderFloat("Coverage scale", &covScl, 0.01f, 0.10f, "%.3f")) {
+            engine::terrain::chunks::SetGrassCoverageScale(covScl);
+        }
+        if (ImGui::SliderFloat("Coverage threshold", &covThr, 0.0f, 0.60f, "%.2f")) {
+            engine::terrain::chunks::SetGrassCoverageThreshold(covThr);
+        }
+        ImGui::TextDisabled("Defaults keep ~90%%+ plains seeds; coverage modulates clumps/radius.");
+        float sizeScl = engine::terrain::chunks::GetGrassSizeNoiseScale();
+        if (ImGui::SliderFloat("Size noise scale", &sizeScl, 0.01f, 0.12f, "%.3f")) {
+            engine::terrain::chunks::SetGrassSizeNoiseScale(sizeScl);
         }
         float sMin = engine::terrain::chunks::GetGrassScaleMin();
         float sMax = engine::terrain::chunks::GetGrassScaleMax();
@@ -824,38 +864,19 @@ void EditorUISystem(engine::ecs::Registry& reg) {
             engine::terrain::chunks::SetGrassSinkCm(sinkCm);
         }
 
-        ImGui::SeparatorText("Distance LODs (live)");
-        float nearD = engine::terrain::chunks::GetGrassNearDistance();
-        float midD = engine::terrain::chunks::GetGrassMidDistance();
-        float farD = engine::terrain::chunks::GetGrassFarDistance();
-        if (ImGui::SliderFloat("Near (full mesh)", &nearD, 6.0f, 60.0f, "%.0f m")) {
-            engine::terrain::chunks::SetGrassNearDistance(nearD);
+        ImGui::SeparatorText("Draw distance (live)");
+        float drawD = engine::terrain::chunks::GetGrassDrawDistance();
+        if (ImGui::SliderFloat("Draw distance", &drawD, 40.0f, 500.0f, "%.0f m")) {
+            engine::terrain::chunks::SetGrassDrawDistance(drawD);
         }
-        if (ImGui::SliderFloat("Mid (impostor)", &midD, 20.0f, 120.0f, "%.0f m")) {
-            engine::terrain::chunks::SetGrassMidDistance(midD);
-        }
-        if (ImGui::SliderFloat("Far (sparse)", &farD, 40.0f, 300.0f, "%.0f m")) {
-            engine::terrain::chunks::SetGrassFarDistance(farD);
-        }
-
-        float nMul = engine::terrain::chunks::GetGrassNearDensity();
-        float mMul = engine::terrain::chunks::GetGrassMidDensity();
-        float fMul = engine::terrain::chunks::GetGrassFarDensity();
-        if (ImGui::SliderFloat("Near density mul", &nMul, 0.2f, 3.0f, "%.2f")) {
-            engine::terrain::chunks::SetGrassNearDensity(nMul);
-        }
-        if (ImGui::SliderFloat("Mid density mul", &mMul, 0.1f, 2.0f, "%.2f")) {
-            engine::terrain::chunks::SetGrassMidDensity(mMul);
-        }
-        if (ImGui::SliderFloat("Far density mul", &fMul, 0.05f, 1.0f, "%.2f")) {
-            engine::terrain::chunks::SetGrassFarDensity(fMul);
-        }
+        ImGui::TextDisabled("Default 50 m. Chunk lists are pre-baked (no per-frame gather).");
+        ImGui::TextDisabled("Quaternius meshes only; soft fade ~35 m near max. Baked on terrain LOD0–1.");
 
         ImGui::SeparatorText("Live stats");
         const auto& gs = engine::terrain::chunks::GetGrassDrawStats();
-        ImGui::Text("Baked  N/M/F: %zu / %zu / %zu", gs.bakedNear, gs.bakedMid, gs.bakedFar);
-        ImGui::Text("Drawn  N/M/F: %zu / %zu / %zu", gs.drawNear, gs.drawMid, gs.drawFar);
-        ImGui::Text("Approx tris:  %zu", gs.approxTris);
+        ImGui::Text("Baked: %zu", gs.baked);
+        ImGui::Text("Drawn: %zu", gs.drawn);
+        ImGui::Text("Approx tris: %zu", gs.approxTris);
         ImGui::TextDisabled("Total baked: %zu", engine::terrain::chunks::GrassInstanceCount());
 
         static int rebuildR = 4;
@@ -865,8 +886,75 @@ void EditorUISystem(engine::ecs::Registry& reg) {
             Vector3 c = reg.transforms.Has(pe) ? reg.transforms.Get(pe).position : Vector3{0, 0, 0};
             engine::terrain::chunks::ReloadAround(c, rebuildR);
         }
-        ImGui::TextDisabled("Rebuild after cluster/meadow/scale/sink/density edits.");
-        ImGui::TextDisabled("LOD distances + enable apply live.");
+        ImGui::TextDisabled("Rebuild after cluster/coverage/scale/sink/density edits.");
+        ImGui::TextDisabled("Draw distance + enable apply live.");
+    }
+
+    if (ImGui::CollapsingHeader("12. Trees")) {
+        bool en = engine::terrain::chunks::GetTreesEnabled();
+        if (ImGui::Checkbox("Enable trees", &en)) {
+            engine::terrain::chunks::SetTreesEnabled(en);
+        }
+
+        float dens = engine::terrain::chunks::GetTreeDensity();
+        float slope = engine::terrain::chunks::GetTreeMaxSlope();
+        if (ImGui::SliderFloat("Master density", &dens, 0.0f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetTreeDensity(dens);
+        }
+        if (ImGui::SliderFloat("Max slope", &slope, 0.05f, 0.80f, "%.2f")) {
+            engine::terrain::chunks::SetTreeMaxSlope(slope);
+        }
+
+        ImGui::SeparatorText("Placement (rebuild)");
+        float treeSp = engine::terrain::chunks::GetTreeSeedSpacing();
+        float bushSp = engine::terrain::chunks::GetBushSeedSpacing();
+        if (ImGui::SliderFloat("Tree seed spacing", &treeSp, 8.0f, 40.0f, "%.1f m")) {
+            engine::terrain::chunks::SetTreeSeedSpacing(treeSp);
+        }
+        if (ImGui::SliderFloat("Bush seed spacing", &bushSp, 4.0f, 20.0f, "%.1f m")) {
+            engine::terrain::chunks::SetBushSeedSpacing(bushSp);
+        }
+        ImGui::TextDisabled("Plains sparse via spawn chance; hills/foothills denser. Pines prefer hills/foothills.");
+
+        float sMin = engine::terrain::chunks::GetTreeScaleMin();
+        float sMax = engine::terrain::chunks::GetTreeScaleMax();
+        if (ImGui::SliderFloat("Scale min", &sMin, 0.4f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetTreeScaleMin(sMin);
+        }
+        if (ImGui::SliderFloat("Scale max", &sMax, 0.4f, 2.0f, "%.2f")) {
+            engine::terrain::chunks::SetTreeScaleMax(sMax);
+        }
+        float sinkCm = engine::terrain::chunks::GetTreeSinkCm();
+        if (ImGui::SliderFloat("Ground sink", &sinkCm, 0.0f, 20.0f, "%.1f cm")) {
+            engine::terrain::chunks::SetTreeSinkCm(sinkCm);
+        }
+
+        ImGui::SeparatorText("Draw distance (live)");
+        float drawD = engine::terrain::chunks::GetTreeDrawDistance();
+        if (ImGui::SliderFloat("Draw distance", &drawD, 60.0f, 500.0f, "%.0f m")) {
+            engine::terrain::chunks::SetTreeDrawDistance(drawD);
+        }
+        ImGui::TextDisabled("Default 220 m. Soft fade near max. Baked on terrain LOD0–1.");
+
+        ImGui::SeparatorText("Live stats");
+        const auto& ts = engine::terrain::chunks::GetTreeDrawStats();
+        ImGui::Text("Baked trees: %zu", ts.bakedTrees);
+        ImGui::Text("Baked bushes: %zu", ts.bakedBushes);
+        ImGui::Text("Drawn: %zu", ts.drawn);
+        ImGui::Text("Approx tris: %zu", ts.approxTris);
+        ImGui::TextDisabled("Totals: trees %zu / bushes %zu",
+                            engine::terrain::chunks::TreeInstanceCount(),
+                            engine::terrain::chunks::BushInstanceCount());
+
+        static int treeRebuildR = 4;
+        ImGui::SliderInt("Rebuild radius##trees", &treeRebuildR, 1, 8);
+        if (ImGui::Button("Rebuild trees")) {
+            auto pe = playerEntity(reg);
+            Vector3 c = reg.transforms.Has(pe) ? reg.transforms.Get(pe).position : Vector3{0, 0, 0};
+            engine::terrain::chunks::ReloadAround(c, treeRebuildR);
+        }
+        ImGui::TextDisabled("Rebuild after density/spacing/slope/scale/sink edits.");
+        ImGui::TextDisabled("Draw distance + enable apply live.");
     }
 
     ImGui::End();

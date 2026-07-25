@@ -21,8 +21,11 @@ namespace chunks {
     // Call inside BeginMode3D / EndMode3D.
     void Draw();
 
-    // Instanced grass with distance LODs (baked on LOD0 chunks). Call after Draw().
+    // Instanced Quaternius grass (baked on terrain LOD0–1). Call after Draw().
     void DrawGrass(Vector3 viewPos);
+
+    // Instanced Quaternius trees / undergrowth (baked on terrain LOD0–1). Call after DrawGrass().
+    void DrawTrees(Vector3 viewPos);
 
     // Optional debug overlays (chunk AABB wires). Call inside BeginMode3D after Draw().
     void DrawDebug();
@@ -37,18 +40,25 @@ namespace chunks {
     size_t LoadedChunkCount();
     size_t PendingUploadCount();
     size_t GrassInstanceCount();
+    size_t TreeInstanceCount();
+    size_t BushInstanceCount();
 
-    // Live grass counters (updated each DrawGrass). Baked = loaded LOD0 lists; draw = last frame.
+    // Live grass counters (updated each DrawGrass). Baked = loaded LOD0–1 lists; draw = last frame.
     struct GrassDrawStats {
-        size_t bakedNear = 0;
-        size_t bakedMid  = 0;
-        size_t bakedFar  = 0;
-        size_t drawNear  = 0;
-        size_t drawMid   = 0;
-        size_t drawFar   = 0;
-        size_t approxTris = 0; // drawNear*clumpTris + (drawMid+drawFar)*impostorTris
+        size_t baked = 0;
+        size_t drawn = 0;
+        size_t approxTris = 0; // sum of drawn instance triangle counts
     };
     const GrassDrawStats& GetGrassDrawStats();
+
+    // Live tree/undergrowth counters (updated each DrawTrees).
+    struct TreeDrawStats {
+        size_t bakedTrees = 0;
+        size_t bakedBushes = 0;
+        size_t drawn = 0;
+        size_t approxTris = 0;
+    };
+    const TreeDrawStats& GetTreeDrawStats();
 
     void SetShowChunkBounds(bool show);
     bool GetShowChunkBounds();
@@ -68,7 +78,7 @@ namespace chunks {
     float GetHazeEnd();
     float GetHazeStrength();
 
-    // Grass — bake knobs need ReloadAround; LOD distances + enable are live.
+    // Grass — bake knobs need ReloadAround; draw distance + enable are live.
     void SetGrassEnabled(bool enabled);
     bool GetGrassEnabled();
     void SetGrassDensity(float density);       // master 0..2 (1 = default)
@@ -76,25 +86,19 @@ namespace chunks {
     void SetGrassMaxSlope(float slope);        // TerrainSlope threshold
     float GetGrassMaxSlope();
 
-    // Distance LOD bands (meters). near < mid < far. Live (no rebuild).
+    // Single draw distance (meters). Soft fade near the end. Live (no rebuild).
+    void SetGrassDrawDistance(float meters);
+    float GetGrassDrawDistance();
+
+    // Deprecated stubs — all set/get the single draw distance.
     void SetGrassNearDistance(float meters);
     float GetGrassNearDistance();
     void SetGrassMidDistance(float meters);
     float GetGrassMidDistance();
     void SetGrassFarDistance(float meters);
     float GetGrassFarDistance();
-    void SetGrassDrawDistance(float meters); // alias for far
-    float GetGrassDrawDistance();
 
-    // Per-band density multipliers (relative to master density). Rebuild to apply.
-    void SetGrassNearDensity(float mul);
-    float GetGrassNearDensity();
-    void SetGrassMidDensity(float mul);
-    float GetGrassMidDensity();
-    void SetGrassFarDensity(float mul);
-    float GetGrassFarDensity();
-
-    // Cluster placement (near bake). Rebuild to apply.
+    // Cluster placement. Rebuild to apply.
     void SetGrassClusterMin(int n);
     int  GetGrassClusterMin();
     void SetGrassClusterMax(int n);
@@ -110,6 +114,18 @@ namespace chunks {
     void SetGrassMeadowScale(float scale);       // noise frequency (~0.01–0.08)
     float GetGrassMeadowScale();
 
+    // Coverage noise (soft density variation). Rebuild to apply.
+    void SetGrassCoverageStrength(float strength);   // 0=ignore noise, 1=full
+    float GetGrassCoverageStrength();
+    void SetGrassCoverageScale(float scale);         // noise frequency
+    float GetGrassCoverageScale();
+    void SetGrassCoverageThreshold(float threshold); // drop seeds below this (after strength)
+    float GetGrassCoverageThreshold();
+
+    // Size noise frequency (remaps into scale min/max). Rebuild to apply.
+    void SetGrassSizeNoiseScale(float scale);
+    float GetGrassSizeNoiseScale();
+
     // Instance scale multipliers (× base clump scale). Rebuild to apply.
     void SetGrassScaleMin(float mul);
     float GetGrassScaleMin();
@@ -119,6 +135,26 @@ namespace chunks {
     // Ground sink in centimeters. Rebuild to apply.
     void SetGrassSinkCm(float cm);
     float GetGrassSinkCm();
+
+    // Trees / undergrowth — bake knobs need ReloadAround; draw distance + enable are live.
+    void SetTreesEnabled(bool enabled);
+    bool GetTreesEnabled();
+    void SetTreeDensity(float density);       // master 0..2 (1 = default)
+    float GetTreeDensity();
+    void SetTreeMaxSlope(float slope);
+    float GetTreeMaxSlope();
+    void SetTreeDrawDistance(float meters);
+    float GetTreeDrawDistance();
+    void SetTreeSeedSpacing(float meters);    // hex lattice spacing for trees
+    float GetTreeSeedSpacing();
+    void SetBushSeedSpacing(float meters);
+    float GetBushSeedSpacing();
+    void SetTreeScaleMin(float mul);
+    float GetTreeScaleMin();
+    void SetTreeScaleMax(float mul);
+    float GetTreeScaleMax();
+    void SetTreeSinkCm(float cm);
+    float GetTreeSinkCm();
 }
 
 }  // namespace engine::terrain

@@ -214,6 +214,7 @@ namespace Game::GameApp {
                 // --- RESTORED: Draw terrain heightmap chunks in 3D pass ---
                 engine::terrain::chunks::Draw();
                 engine::terrain::chunks::DrawGrass(cam.position);
+                engine::terrain::chunks::DrawTrees(cam.position);
                 game::systems::EditorDebugDrawSystem(registry);
                 
                 game::systems::Render3DSystem(registry);

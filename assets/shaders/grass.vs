@@ -1,6 +1,7 @@
 #version 330
 
 // Instanced grass clumps — mvp is view*projection (DrawMeshInstanced).
+// Soft LOD band: fade in over [fadeInStart,fadeInEnd], fade out over [fadeOutStart,fadeOutEnd].
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec3 vertexNormal;
@@ -10,8 +11,10 @@ in mat4 instanceTransform;
 uniform mat4 mvp;
 uniform float uTime;
 uniform vec3  viewPos;
-uniform float fadeStart;
-uniform float fadeEnd;
+uniform float fadeInStart;
+uniform float fadeInEnd;
+uniform float fadeOutStart;
+uniform float fadeOutEnd;
 uniform float meshHeight;
 
 out vec2  fragTexCoord;
@@ -36,7 +39,14 @@ void main() {
 
     vec4 worldPos = instanceTransform * vec4(local, 1.0);
     float dist = length(worldPos.xz - viewPos.xz);
-    fragFade = 1.0 - smoothstep(fadeStart, fadeEnd, dist);
+
+    float fadeIn = 1.0;
+    if (fadeInEnd > fadeInStart + 1e-4) {
+        fadeIn = smoothstep(fadeInStart, fadeInEnd, dist);
+    }
+    float fadeOut = 1.0 - smoothstep(fadeOutStart, fadeOutEnd, dist);
+    fragFade = fadeIn * fadeOut;
+
     fragTexCoord = vertexTexCoord;
     fragTip = tip;
     fragOrigin = origin;
