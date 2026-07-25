@@ -1,3 +1,0 @@
-F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/raylib-populate.dir
-F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/ALL_BUILD.dir
-F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/ZERO_CHECK.dir

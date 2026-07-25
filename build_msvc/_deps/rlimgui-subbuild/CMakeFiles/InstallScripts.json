@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"F:/game2/build_msvc/_deps/rlimgui-subbuild/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
