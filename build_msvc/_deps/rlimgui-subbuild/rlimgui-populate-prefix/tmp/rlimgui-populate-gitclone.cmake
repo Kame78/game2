@@ -3,11 +3,11 @@
 
 cmake_minimum_required(VERSION ${CMAKE_VERSION}) # this file comes with cmake
 
-if(EXISTS "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt" AND EXISTS "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt" AND
-  "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt" IS_NEWER_THAN "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt")
+if(EXISTS "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt" AND EXISTS "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt" AND
+  "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt" IS_NEWER_THAN "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt")
   message(VERBOSE
     "Avoiding repeated git clone, stamp file is up to date: "
-    "'C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt'"
+    "'F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt'"
   )
   return()
 endif()
@@ -22,12 +22,12 @@ else()
 endif()
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -E rm -rf "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-src"
+  COMMAND ${CMAKE_COMMAND} -E rm -rf "F:/game2/build_msvc/_deps/rlimgui-src"
   RESULT_VARIABLE error_code
   ${maybe_show_command}
 )
 if(error_code)
-  message(FATAL_ERROR "Failed to remove directory: 'C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-src'")
+  message(FATAL_ERROR "Failed to remove directory: 'F:/game2/build_msvc/_deps/rlimgui-src'")
 endif()
 
 # try the clone 3 times in case there is an odd git clone issue
@@ -37,7 +37,7 @@ while(error_code AND number_of_tries LESS 3)
   execute_process(
     COMMAND "C:/msys64/ucrt64/bin/git.exe"
             clone --no-checkout --depth 1 --no-single-branch --config "advice.detachedHead=false" "https://github.com/raylib-extras/rlImGui.git" "rlimgui-src"
-    WORKING_DIRECTORY "C:/Users/Cameron/game2/build_msvc/_deps"
+    WORKING_DIRECTORY "F:/game2/build_msvc/_deps"
     RESULT_VARIABLE error_code
     ${maybe_show_command}
   )
@@ -53,7 +53,7 @@ endif()
 execute_process(
   COMMAND "C:/msys64/ucrt64/bin/git.exe"
           checkout "main" --
-  WORKING_DIRECTORY "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-src"
+  WORKING_DIRECTORY "F:/game2/build_msvc/_deps/rlimgui-src"
   RESULT_VARIABLE error_code
   ${maybe_show_command}
 )
@@ -66,22 +66,22 @@ if(init_submodules)
   execute_process(
     COMMAND "C:/msys64/ucrt64/bin/git.exe" 
             submodule update --recursive --init 
-    WORKING_DIRECTORY "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-src"
+    WORKING_DIRECTORY "F:/game2/build_msvc/_deps/rlimgui-src"
     RESULT_VARIABLE error_code
     ${maybe_show_command}
   )
 endif()
 if(error_code)
-  message(FATAL_ERROR "Failed to update submodules in: 'C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-src'")
+  message(FATAL_ERROR "Failed to update submodules in: 'F:/game2/build_msvc/_deps/rlimgui-src'")
 endif()
 
 # Complete success, update the script-last-run stamp file:
 #
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -E copy "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt" "C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitinfo.txt" "F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt"
   RESULT_VARIABLE error_code
   ${maybe_show_command}
 )
 if(error_code)
-  message(FATAL_ERROR "Failed to copy script-last-run stamp file: 'C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt'")
+  message(FATAL_ERROR "Failed to copy script-last-run stamp file: 'F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/rlimgui-populate-gitclone-lastrun.txt'")
 endif()

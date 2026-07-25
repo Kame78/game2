@@ -1,9 +1,8 @@
 # CMake generation dependency list for this directory.
-C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/4.3.2/CMakeSystem.cmake
-C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeLists.txt
-C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CMakeDetermineSystem.cmake
 C:/msys64/ucrt64/share/cmake/Modules/CMakeGenericSystem.cmake
 C:/msys64/ucrt64/share/cmake/Modules/CMakeInitializeConfigs.cmake
+C:/msys64/ucrt64/share/cmake/Modules/CMakeSystem.cmake.in
 C:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInformation.cmake
 C:/msys64/ucrt64/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake
 C:/msys64/ucrt64/share/cmake/Modules/ExternalProject.cmake
@@ -18,3 +17,6 @@ C:/msys64/ucrt64/share/cmake/Modules/ExternalProject/shared_internal_commands.cm
 C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows-Initialize.cmake
 C:/msys64/ucrt64/share/cmake/Modules/Platform/Windows.cmake
 C:/msys64/ucrt64/share/cmake/Modules/Platform/WindowsPaths.cmake
+F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/4.3.2/CMakeSystem.cmake
+F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeLists.txt
+F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake

@@ -1,8 +1,8 @@
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-MKDIR.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-MKDIR.RULE
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-mkdir
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-mkdir
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -10,15 +10,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-DOWNLOAD.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-DOWNLOAD.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps
+cd F:\game2\build_msvc\_deps
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitclone.cmake
+C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitclone.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-download
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-download
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -26,13 +26,13 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-UPDATE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-UPDATE.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src
+cd F:\game2\build_msvc\_deps\rlimgui-src
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitupdate.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitupdate.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -40,11 +40,11 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-PATCH.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-PATCH.RULE
 setlocal
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-patch
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-patch
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -52,15 +52,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-CONFIGURE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-CONFIGURE.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-configure
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-configure
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -68,15 +68,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-BUILD.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-BUILD.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-build
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-build
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -84,15 +84,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-INSTALL.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-INSTALL.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-install
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-install
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -100,15 +100,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\ABC4799FAE04CED1E5FAB87C0206510E\RLIMGUI-POPULATE-TEST.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\1AAA7859213173EF64FA15AF2A03EE33\RLIMGUI-POPULATE-TEST.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-test
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-test
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -116,13 +116,13 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\7CB6D6A465CAB67E7FDB590223925DB8\RLIMGUI-POPULATE-COMPLETE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\CD535A47C1BD71F3E18CE51341829577\RLIMGUI-POPULATE-COMPLETE.RULE
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -E make_directory C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug
+C:\msys64\ucrt64\bin\cmake.exe -E make_directory F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug/rlimgui-populate-complete
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug/rlimgui-populate-complete
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-done
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-done
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -130,7 +130,7 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\0F92215FAD38402E7AEB364EADAADD13\RLIMGUI-POPULATE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKEFILES\19D1DE07A2D00CFED1540788A49A53C3\RLIMGUI-POPULATE.RULE
 setlocal
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -138,9 +138,9 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKELISTS.TXT
+^F:\GAME2\BUILD_MSVC\_DEPS\RLIMGUI-SUBBUILD\CMAKELISTS.TXT
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild -BC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild --check-stamp-file C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/generate.stamp
+C:\msys64\ucrt64\bin\cmake.exe -SF:/game2/build_msvc/_deps/rlimgui-subbuild -BF:/game2/build_msvc/_deps/rlimgui-subbuild --check-stamp-file F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

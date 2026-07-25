@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\raylib-subbuild\CMakeFiles\29d330d1bc8027d0cf4b599c101a6da7\generate.stamp.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\raylib-subbuild\CMakeFiles\00275c360e21f08e77453f0c53a0dee3\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{984D44CC-0E57-3A56-87A9-DCED9B45D281}</UniqueIdentifier>
+      <UniqueIdentifier>{A0F8C797-C1A8-3D91-8AC7-9F87B81779DF}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

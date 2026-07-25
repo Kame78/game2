@@ -1,88 +1,94 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\Cameron\game2\src\main.cpp">
+    <ClCompile Include="F:\game2\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\core\app.cpp">
+    <ClCompile Include="F:\game2\src\core\app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\core\window.cpp">
+    <ClCompile Include="F:\game2\src\core\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\engine\input.cpp">
+    <ClCompile Include="F:\game2\src\engine\input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\engine\networking.cpp">
+    <ClCompile Include="F:\game2\src\engine\networking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\engine\math\noise.cpp">
+    <ClCompile Include="F:\game2\src\engine\math\noise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\engine\jobs\thread_pool.cpp">
+    <ClCompile Include="F:\game2\src\engine\math\hydrology.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\engine\terrain\chunk_manager.cpp">
+    <ClCompile Include="F:\game2\src\engine\jobs\thread_pool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\game_app.cpp">
+    <ClCompile Include="F:\game2\src\engine\terrain\chunk_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\factories\entity_factory.cpp">
+    <ClCompile Include="F:\game2\src\engine\render\sky.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\menu_screens.cpp">
+    <ClCompile Include="F:\game2\src\game\game_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\ui\hud.cpp">
+    <ClCompile Include="F:\game2\src\game\factories\entity_factory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\player_system.cpp">
+    <ClCompile Include="F:\game2\src\game\ui\menu_screens.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\combat_system.cpp">
+    <ClCompile Include="F:\game2\src\game\ui\hud.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\enemy_system.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\player_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\spawner_system.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\combat_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\render_system.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\enemy_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\network_system.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\spawner_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\systems\editor_system.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\render_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\src\game\world\world_gen.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\network_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src\rlImGui.cpp">
+    <ClCompile Include="F:\game2\src\game\systems\editor_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui.cpp">
+    <ClCompile Include="F:\game2\src\game\world\world_gen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_draw.cpp">
+    <ClCompile Include="F:\game2\build_msvc\_deps\rlimgui-src\rlImGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_tables.cpp">
+    <ClCompile Include="F:\game2\build_msvc\_deps\imgui-src\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Cameron\game2\build_msvc\_deps\imgui-src\imgui_widgets.cpp">
+    <ClCompile Include="F:\game2\build_msvc\_deps\imgui-src\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\game2\build_msvc\_deps\imgui-src\imgui_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="F:\game2\build_msvc\_deps\imgui-src\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\CMakeLists.txt" />
+    <CustomBuild Include="F:\game2\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{A92AAD9C-B6A9-3D14-804E-34CFC5F58F70}</UniqueIdentifier>
+      <UniqueIdentifier>{425D26E3-8435-3001-8084-6D095AC3A076}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

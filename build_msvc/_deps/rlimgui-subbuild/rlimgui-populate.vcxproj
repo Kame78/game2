@@ -10,7 +10,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3A2EFEB2-E701-375E-A441-CFF5710C658C}</ProjectGuid>
+    <ProjectGuid>{0CA436A4-7061-3A4A-9817-818A4C8DBDC5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -46,13 +46,13 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-mkdir.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-mkdir.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating directories for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-mkdirs.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-mkdir
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-mkdir
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -61,21 +61,21 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-download.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-download.rule">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing download step (git clone) for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps
+cd F:\game2\build_msvc\_deps
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitclone.cmake
+C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitclone.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-download
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-download
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -83,20 +83,20 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-gitinfo.txt;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-gitinfo.txt;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-update.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-update.rule">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Performing update step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-src
+cd F:\game2\build_msvc\_deps\rlimgui-src
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitupdate.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/tmp/rlimgui-populate-gitupdate.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -104,19 +104,19 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-gitupdate.cmake;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-update-info.txt;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-gitupdate.cmake;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-update-info.txt;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-patch.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-patch.rule">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No patch step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-patch
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-patch
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -124,24 +124,24 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-patch-info.txt;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\rlimgui-populate-patch-info.txt;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-configure.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-configure.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No configure step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-configure
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-configure
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -149,23 +149,23 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-cfgcmd.txt;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-cfgcmd.txt;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-build.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-build.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No build step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-build
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-build
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -173,23 +173,23 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-install.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-install.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No install step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-install
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-install
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -197,23 +197,23 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\abc4799fae04ced1e5fab87c0206510e\rlimgui-populate-test.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\1aaa7859213173ef64fa15af2a03ee33\rlimgui-populate-test.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">No test step for 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-build
+cd F:\game2\build_msvc\_deps\rlimgui-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-test
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-test
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -221,21 +221,21 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-test</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-test</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\7cb6d6a465cab67e7fdb590223925db8\rlimgui-populate-complete.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\cd535a47c1bd71f3e18ce51341829577\rlimgui-populate-complete.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Completed 'rlimgui-populate'</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-C:\msys64\ucrt64\bin\cmake.exe -E make_directory C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug
+C:\msys64\ucrt64\bin\cmake.exe -E make_directory F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug/rlimgui-populate-complete
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/Debug/rlimgui-populate-complete
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-done
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/rlimgui-subbuild/rlimgui-populate-prefix/src/rlimgui-populate-stamp/Debug/rlimgui-populate-done
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -243,14 +243,14 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-test;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\Debug\rlimgui-populate-complete</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-install;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-mkdir;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-download;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-update;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-patch;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-configure;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-build;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\src\rlimgui-populate-stamp\Debug\rlimgui-populate-test;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\Debug\rlimgui-populate-complete</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\0f92215fad38402e7aeb364eadaadd13\rlimgui-populate.rule">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\19d1de07a2d00cfed1540788a49a53c3\rlimgui-populate.rule">
       <BuildInParallel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BuildInParallel>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
@@ -260,18 +260,18 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\Debug\rlimgui-populate-complete;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\rlimgui-populate</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\Debug\rlimgui-populate-complete;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\rlimgui-populate</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeLists.txt">
+    <CustomBuild Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild -BC:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild --check-stamp-file C:/Users/Cameron/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/generate.stamp
+C:\msys64\ucrt64\bin\cmake.exe -SF:/game2/build_msvc/_deps/rlimgui-subbuild -BF:/game2/build_msvc/_deps/rlimgui-subbuild --check-stamp-file F:/game2/build_msvc/_deps/rlimgui-subbuild/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -279,19 +279,19 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\4.3.2\CMakeSystem.cmake;C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-mkdirs.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeGenericSystem.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeInitializeConfigs.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeSystemSpecificInformation.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeSystemSpecificInitialize.cmake;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject.cmake;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\PatchInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\RepositoryInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\UpdateInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\cfgcmd.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\gitclone.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\gitupdate.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\mkdirs.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\shared_internal_commands.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\Windows-Initialize.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\Windows.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\WindowsPaths.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\msys64\ucrt64\share\cmake\Modules\CMakeDetermineSystem.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeGenericSystem.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeInitializeConfigs.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeSystem.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\CMakeSystemSpecificInformation.cmake;C:\msys64\ucrt64\share\cmake\Modules\CMakeSystemSpecificInitialize.cmake;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject.cmake;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\PatchInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\RepositoryInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\UpdateInfo.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\cfgcmd.txt.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\gitclone.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\gitupdate.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\mkdirs.cmake.in;C:\msys64\ucrt64\share\cmake\Modules\ExternalProject\shared_internal_commands.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\Windows-Initialize.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\Windows.cmake;C:\msys64\ucrt64\share\cmake\Modules\Platform\WindowsPaths.cmake;F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\4.3.2\CMakeSystem.cmake;F:\game2\build_msvc\_deps\rlimgui-subbuild\rlimgui-populate-prefix\tmp\rlimgui-populate-mkdirs.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\rlimgui-populate">
+    <None Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\CMakeFiles\rlimgui-populate">
     </None>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="C:\Users\Cameron\game2\build_msvc\_deps\rlimgui-subbuild\ZERO_CHECK.vcxproj">
-      <Project>{224C1A77-35F1-315A-95FB-911E84BC0ECF}</Project>
+    <ProjectReference Include="F:\game2\build_msvc\_deps\rlimgui-subbuild\ZERO_CHECK.vcxproj">
+      <Project>{7B2722EA-E376-3065-9A8C-E31713CECBC0}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

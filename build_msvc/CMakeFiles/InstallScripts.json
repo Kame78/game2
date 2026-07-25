@@ -1,11 +1,11 @@
 {
 	"InstallScripts" : 
 	[
-		"C:/Users/Cameron/game2/build_msvc/cmake_install.cmake",
-		"C:/Users/Cameron/game2/build_msvc/_deps/raylib-build/cmake_install.cmake",
-		"C:/Users/Cameron/game2/build_msvc/_deps/raylib-build/raylib/cmake_install.cmake",
-		"C:/Users/Cameron/game2/build_msvc/_deps/raylib-build/raylib/external/glfw/cmake_install.cmake",
-		"C:/Users/Cameron/game2/build_msvc/_deps/raylib-build/raylib/external/glfw/src/cmake_install.cmake"
+		"F:/game2/build_msvc/cmake_install.cmake",
+		"F:/game2/build_msvc/_deps/raylib-build/cmake_install.cmake",
+		"F:/game2/build_msvc/_deps/raylib-build/raylib/cmake_install.cmake",
+		"F:/game2/build_msvc/_deps/raylib-build/raylib/external/glfw/cmake_install.cmake",
+		"F:/game2/build_msvc/_deps/raylib-build/raylib/external/glfw/src/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

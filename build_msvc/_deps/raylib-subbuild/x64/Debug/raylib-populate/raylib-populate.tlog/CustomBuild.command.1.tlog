@@ -1,8 +1,8 @@
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-MKDIR.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-MKDIR.RULE
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-mkdirs.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcfgdir=/Debug -P F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-mkdirs.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-mkdir
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-mkdir
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -10,15 +10,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-DOWNLOAD.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-DOWNLOAD.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps
+cd F:\game2\build_msvc\_deps
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-gitclone.cmake
+C:\msys64\ucrt64\bin\cmake.exe -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-gitclone.cmake
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-download
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-download
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -26,13 +26,13 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-UPDATE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-UPDATE.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\raylib-src
+cd F:\game2\build_msvc\_deps\raylib-src
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-gitupdate.cmake
+C:\msys64\ucrt64\bin\cmake.exe -Dcan_fetch=YES -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/tmp/raylib-populate-gitupdate.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -40,11 +40,11 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-PATCH.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-PATCH.RULE
 setlocal
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-patch
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-patch
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -52,15 +52,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-CONFIGURE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-CONFIGURE.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\raylib-build
+cd F:\game2\build_msvc\_deps\raylib-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-configure
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-configure
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -68,15 +68,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-BUILD.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-BUILD.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\raylib-build
+cd F:\game2\build_msvc\_deps\raylib-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-build
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-build
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -84,15 +84,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-INSTALL.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-INSTALL.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\raylib-build
+cd F:\game2\build_msvc\_deps\raylib-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-install
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-install
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -100,15 +100,15 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\57BE82344BE0C83929CD3DA6AF555CCF\RAYLIB-POPULATE-TEST.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\FDF783581341BCC15DB89FA57CD4144B\RAYLIB-POPULATE-TEST.RULE
 setlocal
-cd C:\Users\Cameron\game2\build_msvc\_deps\raylib-build
+cd F:\game2\build_msvc\_deps\raylib-build
 if %errorlevel% neq 0 goto :cmEnd
-C:
+F:
 if %errorlevel% neq 0 goto :cmEnd
 C:\msys64\ucrt64\bin\cmake.exe -E echo_append
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-test
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-test
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -116,13 +116,13 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\CE362298F96145044FD693D22FE94574\RAYLIB-POPULATE-COMPLETE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\8173E6BDA436A52EE833362985A1E0BC\RAYLIB-POPULATE-COMPLETE.RULE
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -E make_directory C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/Debug
+C:\msys64\ucrt64\bin\cmake.exe -E make_directory F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/Debug
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/Debug/raylib-populate-complete
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/Debug/raylib-populate-complete
 if %errorlevel% neq 0 goto :cmEnd
-C:\msys64\ucrt64\bin\cmake.exe -E touch C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-done
+C:\msys64\ucrt64\bin\cmake.exe -E touch F:/game2/build_msvc/_deps/raylib-subbuild/raylib-populate-prefix/src/raylib-populate-stamp/Debug/raylib-populate-done
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -130,7 +130,7 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\29D330D1BC8027D0CF4B599C101A6DA7\RAYLIB-POPULATE.RULE
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKEFILES\00275C360E21F08E77453F0C53A0DEE3\RAYLIB-POPULATE.RULE
 setlocal
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
@@ -138,9 +138,9 @@ endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKELISTS.TXT
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SUBBUILD\CMAKELISTS.TXT
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild -BC:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild --check-stamp-file C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/generate.stamp
+C:\msys64\ucrt64\bin\cmake.exe -SF:/game2/build_msvc/_deps/raylib-subbuild -BF:/game2/build_msvc/_deps/raylib-subbuild --check-stamp-file F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

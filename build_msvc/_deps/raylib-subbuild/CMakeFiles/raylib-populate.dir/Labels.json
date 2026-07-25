@@ -2,37 +2,37 @@
 	"sources" : 
 	[
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/raylib-populate"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/raylib-populate"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/29d330d1bc8027d0cf4b599c101a6da7/raylib-populate.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/00275c360e21f08e77453f0c53a0dee3/raylib-populate.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/ce362298f96145044fd693d22fe94574/raylib-populate-complete.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/8173e6bda436a52ee833362985a1e0bc/raylib-populate-complete.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-build.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-build.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-configure.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-configure.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-download.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-download.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-install.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-install.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-mkdir.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-mkdir.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-patch.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-patch.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-test.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-test.rule"
 		},
 		{
-			"file" : "C:/Users/Cameron/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/57be82344be0c83929cd3da6af555ccf/raylib-populate-update.rule"
+			"file" : "F:/game2/build_msvc/_deps/raylib-subbuild/CMakeFiles/fdf783581341bcc15db89fa57cd4144b/raylib-populate-update.rule"
 		}
 	],
 	"target" : 

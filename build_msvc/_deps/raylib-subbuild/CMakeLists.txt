@@ -28,8 +28,8 @@ set_property(GLOBAL PROPERTY _CMAKE_FindGit_GIT_EXECUTABLE_VERSION
 include(ExternalProject)
 ExternalProject_Add(raylib-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/raysan5/raylib.git" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR" "GIT_TAG" "5.5" "GIT_SHALLOW" "TRUE"
-                    SOURCE_DIR          "C:/Users/Cameron/game2/build_msvc/_deps/raylib-src"
-                    BINARY_DIR          "C:/Users/Cameron/game2/build_msvc/_deps/raylib-build"
+                    SOURCE_DIR          "F:/game2/build_msvc/_deps/raylib-src"
+                    BINARY_DIR          "F:/game2/build_msvc/_deps/raylib-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

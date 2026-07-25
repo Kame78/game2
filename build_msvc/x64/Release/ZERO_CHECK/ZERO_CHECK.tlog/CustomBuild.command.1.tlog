@@ -1,6 +1,6 @@
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\CMAKEFILES\0AD29D130113246F2F0EC52774B2BA86\GENERATE.STAMP.RULE
+^F:\GAME2\BUILD_MSVC\CMAKEFILES\8F0A4C54EA55B70BEA297E160F6884CD\GENERATE.STAMP.RULE
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2 -BC:/Users/Cameron/game2/build_msvc --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Cameron/game2/build_msvc/game.sln
+C:\msys64\ucrt64\bin\cmake.exe -SF:/game2 -BF:/game2/build_msvc --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file F:/game2/build_msvc/game.sln
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone

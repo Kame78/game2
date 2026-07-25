@@ -1,6 +1,6 @@
-^C:\USERS\CAMERON\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SRC\SRC\CMAKELISTS.TXT
+^F:\GAME2\BUILD_MSVC\_DEPS\RAYLIB-SRC\SRC\CMAKELISTS.TXT
 setlocal
-C:\msys64\ucrt64\bin\cmake.exe -SC:/Users/Cameron/game2 -BC:/Users/Cameron/game2/build_msvc --check-stamp-file C:/Users/Cameron/game2/build_msvc/_deps/raylib-build/raylib/CMakeFiles/generate.stamp
+C:\msys64\ucrt64\bin\cmake.exe -SF:/game2 -BF:/game2/build_msvc --check-stamp-file F:/game2/build_msvc/_deps/raylib-build/raylib/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
