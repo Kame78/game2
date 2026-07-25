@@ -44,6 +44,7 @@ add_executable(game
 	src/engine/terrain/chunk_manager.cpp
 	src/engine/render/sky.cpp
 	src/game/game_app.cpp
+	src/game/enemy_model.cpp
 	src/game/factories/entity_factory.cpp
 	src/game/ui/menu_screens.cpp
 	src/game/ui/hud.cpp

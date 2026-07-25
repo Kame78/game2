@@ -1,5 +1,6 @@
 #include "game/systems.hpp"
 #include "game/factories/entity_factory.hpp"
+#include "game/enemy_model.hpp"
 #include "game/world/world_gen.hpp"
 #include "game/world/landmarks.hpp"
 #include "engine/input.hpp"
@@ -483,7 +484,8 @@ void EditorInputSystem(engine::ecs::Registry& reg) {
         if (engine::input::IsCursorLocked() && !ImGui::GetIO().WantCaptureMouse) {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && g_placeMode != 0) {
                 Vector3 hit = cameraLookHit(reg);
-                hit.y = engine::math::WorldHeight(hit.x, hit.z) + 1.0f;
+                hit.y = engine::math::WorldHeight(hit.x, hit.z) +
+                        (game::enemy_model::IsReady() ? game::enemy_model::GetTargetHeight() : 2.55f) * 0.5f;
                 if (g_placeMode == 1) {
                     factories::EntityFactory::CreateEnemy(reg, hit, g_editorNetId++);
                 } else if (g_placeMode == 2) {
@@ -770,7 +772,8 @@ void EditorUISystem(engine::ecs::Registry& reg) {
             auto pe = playerEntity(reg);
             if (reg.transforms.Has(pe)) {
                 Vector3 p = reg.transforms.Get(pe).position;
-                p.y = engine::math::WorldHeight(p.x, p.z) + 1.0f;
+                float halfH = (game::enemy_model::IsReady() ? game::enemy_model::GetTargetHeight() : 2.55f) * 0.5f;
+                p.y = engine::math::WorldHeight(p.x, p.z) + halfH;
                 if (g_placeMode == 1) factories::EntityFactory::CreateEnemy(reg, p, g_editorNetId++);
                 else if (g_placeMode == 2) factories::EntityFactory::CreateSpawner(reg, p);
                 else if (g_placeMode == 3)

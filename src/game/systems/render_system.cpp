@@ -1,4 +1,5 @@
 #include "game/systems.hpp"
+#include "game/enemy_model.hpp"
 #include "raymath.h"
 
 namespace game::systems {
@@ -11,8 +12,34 @@ namespace game::systems {
             auto& render = reg.renderables.data[i];
             auto& t      = reg.transforms.Get(e);
 
-            DrawCube(t.position, render.width, render.height, render.depth, render.color);
-            DrawCubeWires(t.position, render.width, render.height, render.depth, BLACK);
+            // Enemies use the shared Quaternius zombie; spawners/landmarks stay cubes.
+            if (reg.enemyAIs.Has(e) && game::enemy_model::IsReady()) {
+                auto& ai = reg.enemyAIs.Get(e);
+
+                // Anim frame advanced in EnemyAISystem (root-motion); only pose + draw here.
+                if (ai.animIndex < 0) {
+                    ai.animIndex = game::enemy_model::GetAnimIndex(game::enemy_model::AnimClip::Idle);
+                    ai.animClip  = static_cast<int>(game::enemy_model::AnimClip::Idle);
+                }
+                game::enemy_model::ApplyAnimation(ai.animIndex, ai.animFrame);
+
+                const float s = game::enemy_model::GetUniformScale();
+                // Transform is cube-center (ground + half height); model pivot is at feet.
+                Vector3 feet = {
+                    t.position.x,
+                    t.position.y - render.height * 0.5f,
+                    t.position.z
+                };
+                DrawModelEx(game::enemy_model::GetModel(),
+                            feet,
+                            Vector3{0.0f, 1.0f, 0.0f},
+                            t.rotation.y,
+                            Vector3{s, s, s},
+                            WHITE);
+            } else {
+                DrawCube(t.position, render.width, render.height, render.depth, render.color);
+                DrawCubeWires(t.position, render.width, render.height, render.depth, BLACK);
+            }
         }
 
         // Render projectiles as glowing spheres

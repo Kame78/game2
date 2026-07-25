@@ -1,5 +1,6 @@
 #include "game/game_app.hpp"
 #include "game/factories/entity_factory.hpp"
+#include "game/enemy_model.hpp"
 #include "game/ui/menu_screens.hpp"
 #include "game/ui/hud.hpp"
 #include "game/systems.hpp"
@@ -96,6 +97,7 @@ namespace Game::GameApp {
         engine::render::sky::Init();
         game::world::InitWater();
         engine::terrain::chunks::Init();
+        game::enemy_model::Init();
 
         std::string steamName = engine::networking::GetSteamPersonaName();
         if (!steamName.empty()) {
@@ -109,6 +111,7 @@ namespace Game::GameApp {
     }
 
     void Shutdown() {
+        game::enemy_model::Shutdown();
         engine::terrain::chunks::Shutdown();
         game::world::ShutdownWater();
         engine::render::sky::Shutdown();

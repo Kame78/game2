@@ -1,4 +1,5 @@
 #include "game/factories/entity_factory.hpp"
+#include "game/enemy_model.hpp"
 
 // --- NEW: Generalized EntityFactory implementation ---
 namespace game::factories {
@@ -35,11 +36,15 @@ namespace game::factories {
         game::TransformComponent t;
         t.position = spawnPos;
         
+        const float bodyH = game::enemy_model::IsReady()
+            ? game::enemy_model::GetTargetHeight()
+            : 2.55f;
+
         game::RenderComponent r;
         r.color = RED;
-        r.width = 1.0f;
-        r.height = 2.0f;
-        r.depth = 1.0f;
+        r.width = 0.9f;
+        r.height = bodyH;
+        r.depth = 0.9f;
         
         game::HealthComponent hp;
         hp.current = 100.0f;
@@ -47,6 +52,7 @@ namespace game::factories {
         
         game::EnemyAIComponent ai;
         ai.netId = netId;
+        ai.speed = 1.0f; // root-motion multiplier
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);

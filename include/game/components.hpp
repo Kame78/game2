@@ -34,12 +34,21 @@ namespace game {
     };
 
     struct EnemyAIComponent {
-        float speed          = 3.0f;
+        // Optional root-motion multiplier (1.0 = authored/synthetic stride).
+        float speed          = 1.0f;
         float attackRange    = 1.8f;
         float attackDamage   = 8.0f;
         float attackCooldown = 1.0f;
         float attackTimer    = 0.0f;
         uint32_t netId       = 0;  // network ID for multiplayer sync
+
+        // Per-enemy animation state (advanced in AI; posed at draw time).
+        int   animClip   = -1;     // game::enemy_model::AnimClip (-1 = unset)
+        int   animIndex  = -1;     // resolved ModelAnimation index
+        int   animFrame  = 0;
+        float animTimer  = 0.0f;
+        float animPlaybackRate = 1.0f;
+        bool  attackAnim = false;  // play Bite through once after a hit
     };
 
     struct ProjectileComponent {
