@@ -1,4 +1,5 @@
 #include "game/ui/menu_screens.hpp"
+#include "game/spells.hpp"
 #include "engine/networking.hpp"
 #include <cstdio>
 
@@ -56,7 +57,7 @@ namespace game::ui {
         return MenuEvent::None;
     }
 
-    MenuEvent drawMainMenu(const char* usernameBuf) {
+    MenuEvent drawMainMenu(const char* usernameBuf, uint8_t& selectedElement) {
         int W = GetScreenWidth(), H = GetScreenHeight();
         DrawRectangle(0, 0, W, H, Color{0, 0, 0, 160});
 
@@ -65,13 +66,74 @@ namespace game::ui {
         const char* sub = TextFormat("Playing as: %s", usernameBuf);
         DrawText(sub, W/2 - MeasureText(sub, 18)/2, 145, 18, LIGHTGRAY);
 
+        // --- Spell class picker ---
+        {
+            const char* classTitle = "CHOOSE YOUR CLASS";
+            DrawText(classTitle, W/2 - MeasureText(classTitle, 22)/2, 178, 22, LIGHTGRAY);
+
+            struct ClassBtn { uint8_t id; const char* label; Color idle; Color hov; Color accent; };
+            ClassBtn classes[5] = {
+                {0, "FIRE",   Color{60, 30, 20, 230}, Color{100, 50, 30, 240}, Color{255, 160, 60, 255}},
+                {1, "WATER",  Color{20, 35, 60, 230}, Color{30, 55, 100, 240}, Color{120, 200, 255, 255}},
+                {2, "NECRO",  Color{40, 15, 50, 230}, Color{70, 25, 90, 240}, Color{180, 80, 220, 255}},
+                {3, "PRIEST", Color{50, 45, 20, 230}, Color{90, 80, 30, 240}, Color{255, 230, 120, 255}},
+                {4, "RANGER", Color{25, 50, 25, 230}, Color{40, 90, 40, 240}, Color{100, 220, 100, 255}},
+            };
+            Color selectedIdle[5] = {
+                Color{140, 50, 15, 255}, Color{20, 70, 140, 255},
+                Color{90, 30, 120, 255}, Color{120, 100, 30, 255},
+                Color{40, 110, 45, 255},
+            };
+            Color selectedHov[5] = {
+                Color{180, 70, 20, 255}, Color{30, 100, 180, 255},
+                Color{120, 45, 160, 255}, Color{160, 140, 40, 255},
+                Color{55, 150, 60, 255},
+            };
+            const char* hints[5] = {
+                "Fire mage — blasts, walls, and infernos",
+                "Water mage — jets, storms, and maelstrom",
+                "Necromancer — drain, pets, and the dead",
+                "Priest — heals, sprites, and battle angels",
+                "Ranger — dash, teleport, and double jump",
+            };
+
+            int cw = 110, ch = 40, gap = 10;
+            // Row 1: 3 buttons, Row 2: 2 centered
+            int row1W = cw * 3 + gap * 2;
+            int row2W = cw * 2 + gap;
+            int cy0 = 208;
+
+            for (int i = 0; i < 5; i++) {
+                int bx, by;
+                if (i < 3) {
+                    bx = W/2 - row1W / 2 + i * (cw + gap);
+                    by = cy0;
+                } else {
+                    bx = W/2 - row2W / 2 + (i - 3) * (cw + gap);
+                    by = cy0 + ch + gap;
+                }
+                bool sel = (selectedElement == classes[i].id);
+                Color idle = sel ? selectedIdle[i] : classes[i].idle;
+                Color hov  = sel ? selectedHov[i]  : classes[i].hov;
+                if (button(classes[i].label, bx, by, cw, ch, idle, hov)) {
+                    selectedElement = classes[i].id;
+                }
+                if (sel) DrawRectangleLines(bx - 2, by - 2, cw + 4, ch + 4, classes[i].accent);
+            }
+
+            int hintY = cy0 + 2 * (ch + gap) + 6;
+            int sel = selectedElement;
+            if (sel < 0 || sel > 4) sel = 0;
+            DrawText(hints[sel], W/2 - MeasureText(hints[sel], 15)/2, hintY, 15, classes[sel].accent);
+        }
+
         Color footerColor = engine::networking::GetLocalSteamId() != 0 ? GREEN : GRAY;
         const char* steamStatus = engine::networking::GetLocalSteamId() != 0
             ? "Steam: Connected"
             : "Steam: Offline (multiplayer unavailable)";
         DrawText(steamStatus, 12, H - 24, 16, footerColor);
 
-        int bw = 300, bh = 56, gap = 16, by = H/2 - 60, bx = W/2 - bw/2;
+        int bw = 300, bh = 52, gap = 12, by = H/2 + 95, bx = W/2 - bw/2;
         if (button("Single Player", bx, by, bw, bh)) {
             return MenuEvent::StartSinglePlayer;
         }
@@ -132,7 +194,8 @@ namespace game::ui {
         return MenuEvent::None;
     }
 
-    MenuEvent drawLobby(bool isSinglePlayer, const char* usernameBuf, bool localReady, bool remoteReady) {
+    MenuEvent drawLobby(bool isSinglePlayer, const char* usernameBuf, bool localReady, bool remoteReady,
+                        uint8_t selectedElement) {
         int W = GetScreenWidth(), H = GetScreenHeight();
         DrawRectangle(0, 0, W, H, Color{0, 0, 0, 180});
 
@@ -140,12 +203,16 @@ namespace game::ui {
         DrawText(title, W/2 - MeasureText(title, 44)/2, 60, 44, WHITE);
 
         int panelX = W/2 - 250, panelY = 140, panelW = 500;
-        DrawRectangle(panelX, panelY, panelW, 200, Color{30, 30, 50, 220});
-        DrawRectangleLines(panelX, panelY, panelW, 200, WHITE);
+        DrawRectangle(panelX, panelY, panelW, 220, Color{30, 30, 50, 220});
+        DrawRectangleLines(panelX, panelY, panelW, 220, WHITE);
 
         const char* localLabel = TextFormat("  %s  (You)%s", usernameBuf, localReady ? "  [READY]" : "");
         Color localColor = localReady ? GREEN : WHITE;
         DrawText(localLabel, panelX + 16, panelY + 20, 22, localColor);
+
+        const char* className = game::ElementName((game::SpellElement)selectedElement);
+        Color classCol = game::ElementColor((game::SpellElement)selectedElement);
+        DrawText(TextFormat("  Class: %s", className), panelX + 16, panelY + 50, 18, classCol);
 
         if (!isSinglePlayer) {
             bool hasPeer = engine::networking::HasRemotePeer();
@@ -158,10 +225,10 @@ namespace game::ui {
                 remoteLabel = "  Waiting for player...";
                 remoteColor = GRAY;
             }
-            DrawText(remoteLabel, panelX + 16, panelY + 60, 22, remoteColor);
+            DrawText(remoteLabel, panelX + 16, panelY + 85, 22, remoteColor);
 
             if (!hasPeer) {
-                if (button("Invite Friend (F3)", panelX + 16, panelY + 100, 220, 36)) {
+                if (button("Invite Friend (F3)", panelX + 16, panelY + 125, 220, 36)) {
                     engine::networking::OpenInviteOverlay();
                 }
             }
@@ -172,9 +239,9 @@ namespace game::ui {
             : (engine::networking::IsHost()
                 ? "Host: Press Ready to start when all players are in."
                 : "Wait for the host to start the game.");
-        DrawText(modeInfo, W/2 - MeasureText(modeInfo, 16)/2, panelY + 160, 16, LIGHTGRAY);
+        DrawText(modeInfo, W/2 - MeasureText(modeInfo, 16)/2, panelY + 180, 16, LIGHTGRAY);
 
-        int btnY = panelY + 220 + 30;
+        int btnY = panelY + 240;
         Color readyBg  = localReady ? Color{20, 80, 20, 230} : Color{50, 50, 70, 230};
         Color readyHov = localReady ? Color{30, 110, 30, 240} : Color{80, 80, 110, 240};
         const char* readyLabel = localReady ? "READY!" : "Ready Up";

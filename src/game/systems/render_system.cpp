@@ -1,19 +1,24 @@
 #include "game/systems.hpp"
 #include "game/enemy_model.hpp"
+#include "game/character_visual.hpp"
 #include "raymath.h"
 
 namespace game::systems {
 
     void Render3DSystem(engine::ecs::Registry& reg) {
+        float t = (float)GetTime();
         for (size_t i = 0; i < reg.renderables.data.size(); i++) {
             engine::ecs::Entity e = {reg.renderables.indexToEntity[i]};
             if (!reg.transforms.Has(e)) continue;
 
             auto& render = reg.renderables.data[i];
-            auto& t      = reg.transforms.Get(e);
+            auto& tr     = reg.transforms.Get(e);
 
-            // Enemies use the shared Quaternius zombie; spawners/landmarks stay cubes.
-            if (reg.enemyAIs.Has(e) && game::enemy_model::IsReady()) {
+            // Base enemies (Box visual) use the shared Quaternius zombie mesh.
+            // Elites / summons / spell visuals use procedural CharacterVisual.
+            if (reg.enemyAIs.Has(e) &&
+                render.visual == game::CharacterVisual::Box &&
+                game::enemy_model::IsReady()) {
                 auto& ai = reg.enemyAIs.Get(e);
 
                 // Anim frame advanced in EnemyAISystem (root-motion); only pose + draw here.
@@ -26,31 +31,27 @@ namespace game::systems {
                 const float s = game::enemy_model::GetUniformScale();
                 // Transform is cube-center (ground + half height); model pivot is at feet.
                 Vector3 feet = {
-                    t.position.x,
-                    t.position.y - render.height * 0.5f,
-                    t.position.z
+                    tr.position.x,
+                    tr.position.y - render.height * 0.5f,
+                    tr.position.z
                 };
                 DrawModelEx(game::enemy_model::GetModel(),
                             feet,
                             Vector3{0.0f, 1.0f, 0.0f},
-                            t.rotation.y,
+                            tr.rotation.y,
                             Vector3{s, s, s},
                             WHITE);
             } else {
-                DrawCube(t.position, render.width, render.height, render.depth, render.color);
-                DrawCubeWires(t.position, render.width, render.height, render.depth, BLACK);
+                float anim = t;
+                if (reg.summons.Has(e)) {
+                    anim = reg.summons.Get(e).age;
+                }
+                game::DrawCharacterVisual(render.visual, tr.position,
+                                          render.width, render.height, render.depth,
+                                          render.color, render.facingYaw, anim);
             }
         }
-
-        // Render projectiles as glowing spheres
-        for (size_t i = 0; i < reg.projectiles.data.size(); i++) {
-            engine::ecs::Entity e = {reg.projectiles.indexToEntity[i]};
-            if (!reg.transforms.Has(e)) continue;
-            auto& t = reg.transforms.Get(e);
-            auto& p = reg.projectiles.data[i];
-            DrawSphere(t.position, p.radius, ORANGE);
-            DrawSphereWires(t.position, p.radius + 0.05f, 6, 6, RED);
-        }
+        // Projectiles / spell VFX are drawn by SpellVfxRenderSystem.
     }
 
     void HealthBarSystem(engine::ecs::Registry& reg) {

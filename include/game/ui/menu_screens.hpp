@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include <cstdint>
 
 // --- NEW: Encapsulated Menu Screens & Events Header ---
 namespace game::ui {
@@ -23,8 +24,10 @@ namespace game::ui {
     void handleTextInput(char* buf, int& len, int max);
 
     MenuEvent drawEnterUsername(const char* usernameBuf);
-    MenuEvent drawMainMenu(const char* usernameBuf);
+    // selectedElement: SpellElement index (Fire/Water/Necro/Priest). Mutated by class picker.
+    MenuEvent drawMainMenu(const char* usernameBuf, uint8_t& selectedElement);
     MenuEvent drawLobbyBrowser(float refreshCooldown);
-    MenuEvent drawLobby(bool isSinglePlayer, const char* usernameBuf, bool localReady, bool remoteReady);
+    MenuEvent drawLobby(bool isSinglePlayer, const char* usernameBuf, bool localReady, bool remoteReady,
+                        uint8_t selectedElement);
 
 }

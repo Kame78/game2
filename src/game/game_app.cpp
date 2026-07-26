@@ -4,6 +4,7 @@
 #include "game/ui/menu_screens.hpp"
 #include "game/ui/hud.hpp"
 #include "game/systems.hpp"
+#include "game/spells.hpp"
 #include "game/world/world_gen.hpp"
 #include "game/world/landmarks.hpp"
 #include "engine/ecs/registry.hpp"
@@ -41,11 +42,20 @@ namespace Game::GameApp {
     static bool  g_localReady      = false;
     static bool  g_remoteReady     = false;
     static bool  g_isSinglePlayer  = false;
+    static uint8_t g_selectedSpellClass = 0; // 0 Fire, 1 Water
+
+    static void applySpellClassToPlayer() {
+        if (!g_gameplayStarted || !registry.spellCasters.Has(playerEntity)) return;
+        auto& caster = registry.spellCasters.Get(playerEntity);
+        caster.selectedElement = g_selectedSpellClass;
+        caster.selectedSlot = 0;
+    }
 
     static void spawnPlayerEntity() {
         float spawnGround = engine::math::WorldHeight(0.0f, 0.0f);
         Vector3 spawnPos = {0.0f, spawnGround + 2.0f, 0.0f};
-        playerEntity = game::factories::EntityFactory::CreatePlayer(registry, spawnPos);
+        auto spellClass = (game::SpellElement)(g_selectedSpellClass % (uint8_t)game::SpellElement::Count);
+        playerEntity = game::factories::EntityFactory::CreatePlayer(registry, spawnPos, spellClass);
         g_gameplayStarted = true;
     }
 
@@ -57,6 +67,7 @@ namespace Game::GameApp {
             float spawnGround = engine::math::WorldHeight(0.0f, 0.0f);
             t.position = {0.0f, spawnGround + 2.0f, 0.0f};
             hp.current = hp.max;
+            applySpellClassToPlayer();
         }
         engine::input::LockCursor();
         g_state = State::InGame;
@@ -98,6 +109,7 @@ namespace Game::GameApp {
         game::world::InitWater();
         engine::terrain::chunks::Init();
         game::enemy_model::Init();
+        game::systems::WeaponViewmodelInit();
 
         std::string steamName = engine::networking::GetSteamPersonaName();
         if (!steamName.empty()) {
@@ -111,6 +123,7 @@ namespace Game::GameApp {
     }
 
     void Shutdown() {
+        game::systems::WeaponViewmodelShutdown();
         game::enemy_model::Shutdown();
         engine::terrain::chunks::Shutdown();
         game::world::ShutdownWater();
@@ -145,6 +158,7 @@ namespace Game::GameApp {
         }
 
         game::systems::CombatSystem(registry);
+        game::systems::SpellSystem(registry);
         game::systems::ProjectileSystem(registry);
         game::systems::NetworkSyncSystem(registry);
 
@@ -221,6 +235,7 @@ namespace Game::GameApp {
                 game::systems::EditorDebugDrawSystem(registry);
                 
                 game::systems::Render3DSystem(registry);
+                game::systems::SpellVfxRenderSystem(registry);
                 game::world::DrawLandmarks(cam);
                 game::systems::SwordViewmodelSystem(registry);
                 engine::networking::PlayerState remote;
@@ -247,7 +262,7 @@ namespace Game::GameApp {
                 }
                 break;
             case State::MainMenu: {
-                auto evt = game::ui::drawMainMenu(g_usernameBuf);
+                auto evt = game::ui::drawMainMenu(g_usernameBuf, g_selectedSpellClass);
                 if (evt == game::ui::MenuEvent::StartSinglePlayer) {
                     g_isSinglePlayer = true; g_localReady = false; g_remoteReady = false; g_state = State::Lobby;
                 } else if (evt == game::ui::MenuEvent::CreateLobby) {
@@ -267,7 +282,8 @@ namespace Game::GameApp {
                 break;
             }
             case State::Lobby: {
-                auto evt = game::ui::drawLobby(g_isSinglePlayer, g_usernameBuf, g_localReady, g_remoteReady);
+                auto evt = game::ui::drawLobby(g_isSinglePlayer, g_usernameBuf, g_localReady, g_remoteReady,
+                                               g_selectedSpellClass);
                 if (evt == game::ui::MenuEvent::ToggleReady) {
                     g_localReady = !g_localReady;
                 } else if (evt == game::ui::MenuEvent::LeaveLobby) {

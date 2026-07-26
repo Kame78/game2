@@ -1,5 +1,6 @@
 #include "game/systems.hpp"
 #include "game/factories/entity_factory.hpp"
+#include "game/character_visual.hpp"
 #include "engine/networking.hpp"
 #include "raymath.h"
 #include <vector>
@@ -75,8 +76,8 @@ namespace game::systems {
 
     void DrawRemotePlayer(const engine::networking::PlayerState& remote) {
         Vector3 pos = {remote.x, remote.y - 1.0f, remote.z};
-        DrawCube(pos, 1.0f, 2.0f, 1.0f, PURPLE);
-        DrawCubeWires(pos, 1.0f, 2.0f, 1.0f, BLACK);
+        game::DrawCharacterVisual(game::CharacterVisual::Humanoid, pos,
+                                  1.0f, 2.0f, 1.0f, PURPLE, remote.yaw, (float)GetTime());
     }
 
     void SpawnRemoteFireballs(engine::ecs::Registry& reg) {
