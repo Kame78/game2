@@ -1,5 +1,6 @@
 #include "game/systems.hpp"
 #include "game/enemy_model.hpp"
+#include "game/dungeon/dungeon.hpp"
 #include "engine/math/noise.hpp"
 #include "raymath.h"
 #include <cmath>
@@ -59,7 +60,7 @@ namespace {
     }
 
     void snapEnemyToGround(game::TransformComponent& t, float halfH) {
-        float groundY = engine::math::WorldHeight(t.position.x, t.position.z);
+        float groundY = game::dungeon::GroundY(t.position.x, t.position.z);
         t.position.y = groundY + halfH;
     }
 
@@ -167,7 +168,7 @@ namespace {
                 }
 
                 const bool inAttackRange = dist <= ai.attackRange;
-                ai.animPlaybackRate = 1.0f;
+                ai.animPlaybackRate = ai.animRateScale;
                 const float sizeMul = enemySizeMul(reg, enemy);
 
                 if (!inAttackRange) {

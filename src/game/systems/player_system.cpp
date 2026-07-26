@@ -1,5 +1,6 @@
 #include "game/systems.hpp"
 #include "game/spells.hpp"
+#include "game/dungeon/dungeon.hpp"
 #include "engine/input.hpp"
 #include "engine/math/noise.hpp"
 #include "raymath.h"
@@ -147,7 +148,7 @@ namespace game::systems {
 
             // --- Terrain floor collision (sample world height under player) ---
             if (!input.noClip) {
-                float groundY = engine::math::WorldHeight(transform.position.x, transform.position.z);
+                float groundY = game::dungeon::GroundY(transform.position.x, transform.position.z);
                 float eyeY    = groundY + EYE_HEIGHT;
                 if (transform.position.y < eyeY) {
                     transform.position.y = eyeY;

@@ -59,6 +59,9 @@ namespace game {
         int   animFrame  = 0;
         float animTimer  = 0.0f;
         float animPlaybackRate = 1.0f;
+        // Persistent clip-speed scale (haste effects). Root motion advances with
+        // playback, so scaling this speeds up travel without foot slip.
+        float animRateScale = 1.0f;
         bool  attackAnim = false;  // play Bite through once after a hit
     };
 

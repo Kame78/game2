@@ -1,0 +1,29 @@
+{
+  "id": "crypt_proto",
+  "name": "Sunken Crypt",
+  // Stages run back to back with no full heal between them: attrition is the
+  // pacing pressure. Later stages roll more modifiers and hit harder.
+  "stages": [
+    {
+      "name": "Upper Halls",
+      "enemyCountMul": 1.0,
+      "healthMul": 1.0,
+      "modifierRolls": 1,
+      "extraBranches": 0
+    },
+    {
+      "name": "Flooded Ossuary",
+      "enemyCountMul": 1.25,
+      "healthMul": 1.2,
+      "modifierRolls": 2,
+      "extraBranches": 1
+    },
+    {
+      "name": "Black Sanctum",
+      "enemyCountMul": 1.5,
+      "healthMul": 1.45,
+      "modifierRolls": 3,
+      "extraBranches": 1
+    }
+  ]
+}

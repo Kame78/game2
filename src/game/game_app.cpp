@@ -7,6 +7,7 @@
 #include "game/spells.hpp"
 #include "game/world/world_gen.hpp"
 #include "game/world/landmarks.hpp"
+#include "game/dungeon/dungeon.hpp"
 #include "engine/ecs/registry.hpp"
 #include "engine/input.hpp"
 #include "engine/networking.hpp"
@@ -147,20 +148,37 @@ namespace Game::GameApp {
         game::systems::EditorInputSystem(registry);
         game::systems::PlayerMovementSystem(registry);
 
-        if (registry.transforms.Has(playerEntity)) {
+        const bool inDungeon = game::dungeon::IsActive();
+
+        // Overworld streaming pauses while inside an instance.
+        if (!inDungeon && registry.transforms.Has(playerEntity)) {
             engine::terrain::chunks::Update(registry.transforms.Get(playerEntity).position);
         }
 
         bool isNetworked = engine::networking::GetLobbyState() == engine::networking::LobbyState::InLobby;
         if (!isNetworked || engine::networking::IsHost()) {
             game::systems::EnemyAISystem(registry);
-            game::systems::EnemySpawnSystem(registry);
+            // Dungeon encounters spawn per room instead of the overworld ring.
+            if (!inDungeon) game::systems::EnemySpawnSystem(registry);
         }
 
         game::systems::CombatSystem(registry);
         game::systems::SpellSystem(registry);
         game::systems::ProjectileSystem(registry);
         game::systems::NetworkSyncSystem(registry);
+
+        if (registry.transforms.Has(playerEntity)) {
+            const Vector3 playerPos = registry.transforms.Get(playerEntity).position;
+            if (!inDungeon && IsKeyPressed(KEY_E)) {
+                const int idx = game::dungeon::FindNearbyEntrance(playerPos, 7.0f);
+                if (idx >= 0) {
+                    game::dungeon::Enter(registry, playerEntity, game::dungeon::GetEntrances()[idx]);
+                }
+            } else if (inDungeon && IsKeyPressed(KEY_F8)) {
+                game::dungeon::Exit(registry, playerEntity);
+            }
+        }
+        game::dungeon::Update(registry, playerEntity);
 
         if (registry.transforms.Has(playerEntity) && registry.cameras.Has(playerEntity)) {
             auto& t = registry.transforms.Get(playerEntity);
@@ -213,7 +231,20 @@ namespace Game::GameApp {
     }
 
     void Draw() {
-        if (g_gameplayStarted) {
+        if (g_gameplayStarted && game::dungeon::IsActive()) {
+            auto& cam = registry.cameras.Get(playerEntity).camera;
+            ClearBackground(Color{6, 5, 10, 255});
+
+            rlSetClipPlanes(0.1f, 4000.0f);
+            BeginMode3D(cam);
+                game::dungeon::Draw();
+                game::systems::EditorDebugDrawSystem(registry);
+                game::systems::Render3DSystem(registry);
+                game::systems::SpellVfxRenderSystem(registry);
+                game::systems::SwordViewmodelSystem(registry);
+            EndMode3D();
+            rlSetClipPlanes(0.01f, 1000.0f);
+        } else if (g_gameplayStarted) {
             auto& cam = registry.cameras.Get(playerEntity).camera;
             // Only replace empty sky pixels  Edoes not tint terrain (no fullscreen overlay).
             // Horizon rays never hit a flat water plane, so underwater sky must be murky.
@@ -237,6 +268,7 @@ namespace Game::GameApp {
                 game::systems::Render3DSystem(registry);
                 game::systems::SpellVfxRenderSystem(registry);
                 game::world::DrawLandmarks(cam);
+                game::dungeon::DrawEntrances(cam);
                 game::systems::SwordViewmodelSystem(registry);
                 engine::networking::PlayerState remote;
                 if (engine::networking::GetRemoteState(remote)) {
@@ -293,6 +325,10 @@ namespace Game::GameApp {
             }
             case State::InGame:
                 game::ui::DrawInGameHUD(registry, playerEntity);
+                game::dungeon::DrawHUD();
+                if (registry.transforms.Has(playerEntity)) {
+                    game::dungeon::DrawEntrancePrompt(registry.transforms.Get(playerEntity).position);
+                }
                 break;
         }
 

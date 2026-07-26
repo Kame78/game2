@@ -38,6 +38,7 @@ add_executable(game
 	src/core/window.cpp
 	src/engine/input.cpp
 	src/engine/networking.cpp
+	src/engine/data/json.cpp
 	src/engine/math/noise.cpp
 	src/engine/math/hydrology.cpp
 	src/engine/jobs/thread_pool.cpp
@@ -58,6 +59,9 @@ add_executable(game
 	src/game/systems/network_system.cpp
 	src/game/systems/editor_system.cpp
 	src/game/world/world_gen.cpp
+	src/game/dungeon/dungeon_gen.cpp
+	src/game/dungeon/dungeon_data.cpp
+	src/game/dungeon/dungeon_session.cpp
 	${rlimgui_SOURCE_DIR}/rlImGui.cpp
 	${imgui_SOURCE_DIR}/imgui.cpp
 	${imgui_SOURCE_DIR}/imgui_draw.cpp
