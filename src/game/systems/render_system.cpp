@@ -14,11 +14,9 @@ namespace game::systems {
             auto& render = reg.renderables.data[i];
             auto& tr     = reg.transforms.Get(e);
 
-            // Base enemies (Box visual) use the shared Quaternius zombie mesh.
-            // Elites / summons / spell visuals use procedural CharacterVisual.
-            if (reg.enemyAIs.Has(e) &&
-                render.visual == game::CharacterVisual::Box &&
-                game::enemy_model::IsReady()) {
+            // All combat enemies (EnemyAI) use the shared Quaternius zombie mesh.
+            // Spell summons keep procedural CharacterVisual silhouettes.
+            if (reg.enemyAIs.Has(e) && game::enemy_model::IsReady()) {
                 auto& ai = reg.enemyAIs.Get(e);
 
                 // Anim frame advanced in EnemyAISystem (root-motion); only pose + draw here.
@@ -28,7 +26,9 @@ namespace game::systems {
                 }
                 game::enemy_model::ApplyAnimation(ai.animIndex, ai.animFrame);
 
-                const float s = game::enemy_model::GetUniformScale();
+                const float targetH = game::enemy_model::GetTargetHeight();
+                const float sizeMul = (targetH > 1e-4f) ? (render.height / targetH) : 1.0f;
+                const float s = game::enemy_model::GetUniformScale() * sizeMul;
                 // Transform is cube-center (ground + half height); model pivot is at feet.
                 Vector3 feet = {
                     tr.position.x,

@@ -1,6 +1,5 @@
 #include "game/systems.hpp"
 #include "game/enemy_model.hpp"
-#include "game/character_visual.hpp"
 #include "engine/math/noise.hpp"
 #include "raymath.h"
 #include <cmath>
@@ -11,14 +10,39 @@ namespace {
     constexpr float kNewTargetHeight = 2.55f;
     // Run only when speed multiplier is intentionally raised.
     constexpr float kRunSpeedGate = 1.35f;
-    constexpr float kEnemyRadius   = 0.50f;
+    // Separation radius at base zombie width (0.9 m) — scales with RenderComponent.width.
+    constexpr float kBaseEnemyRadius = 0.50f;
+    constexpr float kBaseEnemyWidth  = 0.9f;
     constexpr int   kSeparateIters = 3;
 
-    float enemyHalfHeight() {
+    float enemyHalfHeight(engine::ecs::Registry& reg, engine::ecs::Entity e) {
+        if (reg.renderables.Has(e)) {
+            return reg.renderables.Get(e).height * 0.5f;
+        }
         if (game::enemy_model::IsReady()) {
             return game::enemy_model::GetTargetHeight() * 0.5f;
         }
         return kNewTargetHeight * 0.5f;
+    }
+
+    float enemySepRadius(engine::ecs::Registry& reg, engine::ecs::Entity e) {
+        if (reg.renderables.Has(e)) {
+            const float w = reg.renderables.Get(e).width;
+            if (w > 1e-4f) {
+                return kBaseEnemyRadius * (w / kBaseEnemyWidth);
+            }
+        }
+        return kBaseEnemyRadius;
+    }
+
+    float enemySizeMul(engine::ecs::Registry& reg, engine::ecs::Entity e) {
+        const float targetH = game::enemy_model::IsReady()
+            ? game::enemy_model::GetTargetHeight()
+            : kNewTargetHeight;
+        if (reg.renderables.Has(e) && targetH > 1e-4f) {
+            return reg.renderables.Get(e).height / targetH;
+        }
+        return 1.0f;
     }
 
     void setEnemyClip(game::EnemyAIComponent& ai, game::enemy_model::AnimClip clip) {
@@ -39,19 +63,7 @@ namespace {
         t.position.y = groundY + halfH;
     }
 
-    float enemyHalfHeightFor(engine::ecs::Registry& reg, engine::ecs::Entity e) {
-        if (reg.renderables.Has(e)) {
-            const auto& r = reg.renderables.Get(e);
-            if (r.visual != game::CharacterVisual::Box) {
-                return r.height * 0.5f;
-            }
-        }
-        return enemyHalfHeight();
-    }
-
     void separateEnemies(engine::ecs::Registry& reg) {
-        const float minDist = kEnemyRadius * 2.0f;
-        const float minDist2 = minDist * minDist;
         auto& ais = reg.enemyAIs;
 
         for (int iter = 0; iter < kSeparateIters; ++iter) {
@@ -59,11 +71,15 @@ namespace {
                 engine::ecs::Entity ei = {ais.indexToEntity[i]};
                 if (!reg.transforms.Has(ei)) continue;
                 auto& ti = reg.transforms.Get(ei);
+                const float ri = enemySepRadius(reg, ei);
 
                 for (size_t j = i + 1; j < ais.data.size(); ++j) {
                     engine::ecs::Entity ej = {ais.indexToEntity[j]};
                     if (!reg.transforms.Has(ej)) continue;
                     auto& tj = reg.transforms.Get(ej);
+                    const float rj = enemySepRadius(reg, ej);
+                    const float minDist = ri + rj;
+                    const float minDist2 = minDist * minDist;
 
                     float dx = tj.position.x - ti.position.x;
                     float dz = tj.position.z - ti.position.z;
@@ -93,7 +109,7 @@ namespace {
         for (size_t i = 0; i < ais.data.size(); ++i) {
             engine::ecs::Entity e = {ais.indexToEntity[i]};
             if (!reg.transforms.Has(e)) continue;
-            snapEnemyToGround(reg.transforms.Get(e), enemyHalfHeightFor(reg, e));
+            snapEnemyToGround(reg.transforms.Get(e), enemyHalfHeight(reg, e));
         }
     }
 
@@ -128,12 +144,15 @@ namespace {
             }
         }
 
+        const bool zombieReady = game::enemy_model::IsReady();
+
         for (size_t i = 0; i < reg.enemyAIs.data.size(); ++i) {
             engine::ecs::Entity enemy = {reg.enemyAIs.indexToEntity[i]};
             if (!reg.transforms.Has(enemy) || !reg.healths.Has(enemy)) continue;
 
             auto& ai = reg.enemyAIs.data[i];
             auto& t  = reg.transforms.Get(enemy);
+            const float halfH = enemyHalfHeight(reg, enemy);
 
             Vector3 toPlayer = {
                 playerPos.x - t.position.x,
@@ -142,18 +161,14 @@ namespace {
             };
             float dist = Vector3Length(toPlayer);
 
-            const bool useZombieModel =
-                game::enemy_model::IsReady() &&
-                (!reg.renderables.Has(enemy) ||
-                 reg.renderables.Get(enemy).visual == game::CharacterVisual::Box);
-
-            if (useZombieModel) {
+            if (zombieReady) {
                 if (dist > 0.01f) {
                     t.rotation.y = atan2f(toPlayer.x, toPlayer.z) * RAD2DEG;
                 }
 
                 const bool inAttackRange = dist <= ai.attackRange;
                 ai.animPlaybackRate = 1.0f;
+                const float sizeMul = enemySizeMul(reg, enemy);
 
                 if (!inAttackRange) {
                     ai.attackAnim = false;
@@ -168,11 +183,12 @@ namespace {
                         ai.animIndex, dt, ai.animPlaybackRate,
                         ai.animFrame, ai.animTimer, motion);
 
-                    // speed = root-motion multiplier (default 1).
-                    motion.x *= ai.speed;
-                    motion.y *= ai.speed;
+                    // speed = root-motion multiplier; sizeMul keeps stride proportional
+                    // to visual scale so large zombies don't skate.
+                    motion.x *= ai.speed * sizeMul;
+                    motion.y *= ai.speed * sizeMul;
                     applyModelMotionXZ(t, motion, t.rotation.y);
-                    snapEnemyToGround(t, enemyHalfHeight());
+                    snapEnemyToGround(t, halfH);
                 } else {
                     ai.attackTimer -= dt;
                     if (ai.attackTimer <= 0.0f) {
@@ -200,15 +216,10 @@ namespace {
                         ai.animClip == static_cast<int>(game::enemy_model::AnimClip::Attack)) {
                         ai.attackAnim = false;
                     }
-                    snapEnemyToGround(t, enemyHalfHeight());
+                    snapEnemyToGround(t, halfH);
                 }
             } else {
-                // Procedural elite / summon-style enemies (Evan): simple chase + facingYaw.
-                float halfH = 1.0f;
-                if (reg.renderables.Has(enemy)) {
-                    halfH = reg.renderables.Get(enemy).height * 0.5f;
-                }
-
+                // Fallback if zombie mesh failed to load: simple chase.
                 if (dist > ai.attackRange) {
                     Vector3 dir = Vector3Normalize(toPlayer);
                     t.position.x += dir.x * ai.speed * dt;
@@ -216,12 +227,9 @@ namespace {
                     if (reg.renderables.Has(enemy)) {
                         reg.renderables.Get(enemy).facingYaw = atan2f(dir.x, dir.z);
                     }
-
-                    float groundY = engine::math::WorldHeight(t.position.x, t.position.z);
-                    t.position.y = groundY + halfH;
+                    snapEnemyToGround(t, halfH);
                 } else {
-                    float groundY = engine::math::WorldHeight(t.position.x, t.position.z);
-                    t.position.y = groundY + halfH;
+                    snapEnemyToGround(t, halfH);
                     if (dist > 0.01f && reg.renderables.Has(enemy)) {
                         Vector3 dir = Vector3Normalize(toPlayer);
                         reg.renderables.Get(enemy).facingYaw = atan2f(dir.x, dir.z);

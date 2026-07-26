@@ -5,6 +5,33 @@
 // --- NEW: Generalized EntityFactory implementation ---
 namespace game::factories {
 
+namespace {
+    constexpr float kFeetToMeters = 0.3048f;
+    // Legacy capsule height used for giant+ combat stat ratios (pre-zombie merge).
+    constexpr float kLegacyBaseHeight = 2.0f;
+    constexpr float kZombieHeight = 2.55f;
+    constexpr float kZombieWidth  = 0.9f;
+    constexpr float kBaseAttackRange = 1.8f;
+    constexpr float kBaseDamage = 8.0f;
+    constexpr float kBaseHP = 100.0f;
+
+    float zombieBodyHeight() {
+        return game::enemy_model::IsReady()
+            ? game::enemy_model::GetTargetHeight()
+            : kZombieHeight;
+    }
+
+    void setZombieRender(game::RenderComponent& r, float height, float width,
+                         Color color) {
+        r.color = color;
+        r.width = width;
+        r.height = height;
+        r.depth = width;
+        // Box marks the shared Quaternius zombie mesh path (all EnemyAI tiers).
+        r.visual = game::CharacterVisual::Box;
+    }
+}
+
     engine::ecs::Entity EntityFactory::CreatePlayer(engine::ecs::Registry& reg, Vector3 spawnPos,
                                                     game::SpellElement spellClass) {
         engine::ecs::Entity playerEntity = engine::ecs::CreateEntity(reg);
@@ -39,29 +66,23 @@ namespace game::factories {
 
     engine::ecs::Entity EntityFactory::CreateEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId) {
         engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
-        
+
         game::TransformComponent t;
         t.position = spawnPos;
-        
-        const float bodyH = game::enemy_model::IsReady()
-            ? game::enemy_model::GetTargetHeight()
-            : 2.55f;
+
+        const float bodyH = zombieBodyHeight();
 
         game::RenderComponent r;
-        r.color = RED;
-        // Box visual → shared zombie mesh path in render/AI.
-        r.width = 0.9f;
-        r.height = bodyH;
-        r.depth = 0.9f;
-        r.visual = game::CharacterVisual::Box;
-        
+        setZombieRender(r, bodyH, kZombieWidth, RED);
+
         game::HealthComponent hp;
-        hp.current = 100.0f;
-        hp.max = 100.0f;
-        
+        hp.current = kBaseHP;
+        hp.max = kBaseHP;
+
         game::EnemyAIComponent ai;
         ai.netId = netId;
         ai.speed = 1.0f; // root-motion multiplier
+        ai.attackRange = kBaseAttackRange;
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);
@@ -72,24 +93,28 @@ namespace game::factories {
     }
 
     engine::ecs::Entity EntityFactory::CreateEliteEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId) {
+        // ~2x prior capsule (4 m tall, 2 m wide).
+        constexpr float kHeight = 4.0f;
+        constexpr float kWidth  = 2.0f;
+        constexpr float kSizeMul = kHeight / kLegacyBaseHeight; // 2x
+
         engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
 
         game::TransformComponent t;
         t.position = spawnPos;
 
         game::RenderComponent r;
-        r.color = Color{180, 40, 40, 255};
-        r.width = 2.0f;
-        r.height = 4.0f;
-        r.depth = 2.0f;
-        r.visual = game::CharacterVisual::Elite;
+        setZombieRender(r, kHeight, kWidth, Color{180, 40, 40, 255});
 
         game::HealthComponent hp;
-        hp.current = 200.0f;
-        hp.max = 200.0f;
+        hp.current = kBaseHP * 2.0f;
+        hp.max = hp.current;
 
         game::EnemyAIComponent ai;
         ai.netId = netId;
+        ai.speed = 1.0f;
+        ai.attackDamage = kBaseDamage * kSizeMul;
+        ai.attackRange = kBaseAttackRange * kSizeMul;
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);
@@ -100,11 +125,10 @@ namespace game::factories {
     }
 
     engine::ecs::Entity EntityFactory::CreateGiantEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId) {
-        // Base enemy is 2.0 units (~6.56 ft). 25 ft → 25 * 0.3048 m.
-        constexpr float kFeetToMeters = 0.3048f;
-        constexpr float kBaseHeight   = 2.0f;
-        constexpr float kHeight       = 25.0f * kFeetToMeters; // 7.62 m
-        constexpr float kScale        = kHeight / kBaseHeight;  // ~3.81×
+        // 25 ft body; combat stats scale with height vs legacy 2 m capsule.
+        constexpr float kHeight = 25.0f * kFeetToMeters; // 7.62 m
+        constexpr float kScale  = kHeight / kLegacyBaseHeight;  // ~3.81x
+        const float width = kZombieWidth * (kHeight / kZombieHeight);
 
         engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
 
@@ -112,21 +136,18 @@ namespace game::factories {
         t.position = spawnPos;
 
         game::RenderComponent r;
-        r.color = Color{90, 25, 25, 255};
-        r.width = 1.0f * kScale;
-        r.height = kHeight;
-        r.depth = 1.0f * kScale;
-        r.visual = game::CharacterVisual::Elite;
+        setZombieRender(r, kHeight, width, Color{90, 25, 25, 255});
 
         game::HealthComponent hp;
-        hp.max = 100.0f * kScale;
+        hp.max = kBaseHP * kScale;
         hp.current = hp.max;
 
         game::EnemyAIComponent ai;
         ai.netId = netId;
-        ai.attackDamage = 8.0f * kScale;
-        ai.attackRange = 1.8f * kScale;
-        ai.speed = 2.4f; // slower than base (3.0) — big frame
+        ai.attackDamage = kBaseDamage * kScale;
+        ai.attackRange = kBaseAttackRange * kScale;
+        // Root-motion multiplier (stride also x height ratio in AI).
+        ai.speed = 0.85f;
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);
@@ -137,13 +158,12 @@ namespace game::factories {
     }
 
     engine::ecs::Entity EntityFactory::CreateColossalEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId) {
-        // 100 ft body; combat stats = 3× the 25 ft giant.
-        constexpr float kFeetToMeters = 0.3048f;
-        constexpr float kBaseHeight   = 2.0f;
-        constexpr float kHeight       = 100.0f * kFeetToMeters; // 30.48 m
-        constexpr float kSizeScale    = kHeight / kBaseHeight;
-        constexpr float kGiantScale   = (25.0f * kFeetToMeters) / kBaseHeight;
-        constexpr float kStatMul      = 3.0f; // vs 25 ft giant
+        // 100 ft body; combat stats = 3x the 25 ft giant.
+        constexpr float kHeight     = 100.0f * kFeetToMeters; // 30.48 m
+        constexpr float kSizeScale  = kHeight / kLegacyBaseHeight;
+        constexpr float kGiantScale = (25.0f * kFeetToMeters) / kLegacyBaseHeight;
+        constexpr float kStatMul    = 3.0f; // vs 25 ft giant
+        const float width = kZombieWidth * (kHeight / kZombieHeight);
 
         engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
 
@@ -151,21 +171,17 @@ namespace game::factories {
         t.position = spawnPos;
 
         game::RenderComponent r;
-        r.color = Color{55, 15, 20, 255};
-        r.width = 1.0f * kSizeScale;
-        r.height = kHeight;
-        r.depth = 1.0f * kSizeScale;
-        r.visual = game::CharacterVisual::Elite;
+        setZombieRender(r, kHeight, width, Color{55, 15, 20, 255});
 
         game::HealthComponent hp;
-        hp.max = 100.0f * kGiantScale * kStatMul;
+        hp.max = kBaseHP * kGiantScale * kStatMul;
         hp.current = hp.max;
 
         game::EnemyAIComponent ai;
         ai.netId = netId;
-        ai.attackDamage = 8.0f * kGiantScale * kStatMul;
-        ai.attackRange = 1.8f * kSizeScale; // reach matches 100 ft frame
-        ai.speed = 1.8f;
+        ai.attackDamage = kBaseDamage * kGiantScale * kStatMul;
+        ai.attackRange = kBaseAttackRange * kSizeScale;
+        ai.speed = 0.70f;
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);
@@ -176,14 +192,13 @@ namespace game::factories {
     }
 
     engine::ecs::Entity EntityFactory::CreateTitanEnemy(engine::ecs::Registry& reg, Vector3 spawnPos, uint32_t netId) {
-        // 250 ft body; combat stats = 2.5× the 100 ft colossal (height ratio).
-        constexpr float kFeetToMeters = 0.3048f;
-        constexpr float kBaseHeight   = 2.0f;
+        // 250 ft body; combat stats = 2.5x the 100 ft colossal (height ratio).
         constexpr float kHeight       = 250.0f * kFeetToMeters; // 76.2 m
-        constexpr float kSizeScale    = kHeight / kBaseHeight;
-        constexpr float kGiantScale   = (25.0f * kFeetToMeters) / kBaseHeight;
+        constexpr float kSizeScale    = kHeight / kLegacyBaseHeight;
+        constexpr float kGiantScale   = (25.0f * kFeetToMeters) / kLegacyBaseHeight;
         constexpr float kColossalStat = 3.0f;   // vs 25 ft giant
-        constexpr float kStatMul      = kColossalStat * (250.0f / 100.0f); // 7.5× giant
+        constexpr float kStatMul      = kColossalStat * (250.0f / 100.0f); // 7.5x giant
+        const float width = kZombieWidth * (kHeight / kZombieHeight);
 
         engine::ecs::Entity enemy = engine::ecs::CreateEntity(reg);
 
@@ -191,21 +206,17 @@ namespace game::factories {
         t.position = spawnPos;
 
         game::RenderComponent r;
-        r.color = Color{35, 8, 12, 255};
-        r.width = 1.0f * kSizeScale;
-        r.height = kHeight;
-        r.depth = 1.0f * kSizeScale;
-        r.visual = game::CharacterVisual::Elite;
+        setZombieRender(r, kHeight, width, Color{35, 8, 12, 255});
 
         game::HealthComponent hp;
-        hp.max = 100.0f * kGiantScale * kStatMul;
+        hp.max = kBaseHP * kGiantScale * kStatMul;
         hp.current = hp.max;
 
         game::EnemyAIComponent ai;
         ai.netId = netId;
-        ai.attackDamage = 8.0f * kGiantScale * kStatMul;
-        ai.attackRange = 1.8f * kSizeScale;
-        ai.speed = 1.2f;
+        ai.attackDamage = kBaseDamage * kGiantScale * kStatMul;
+        ai.attackRange = kBaseAttackRange * kSizeScale;
+        ai.speed = 0.55f;
 
         reg.transforms.Insert(enemy, t);
         reg.renderables.Insert(enemy, r);

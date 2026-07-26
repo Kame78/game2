@@ -53,7 +53,7 @@ namespace game {
         uint32_t netId       = 0;  // network ID for multiplayer sync
 
         // Per-enemy animation state (advanced in AI; posed at draw time).
-        // Used by zombie mesh enemies; procedural elites ignore these.
+        // Used by all EnemyAI zombie-mesh tiers (normal / elite / giant+).
         int   animClip   = -1;     // game::enemy_model::AnimClip (-1 = unset)
         int   animIndex  = -1;     // resolved ModelAnimation index
         int   animFrame  = 0;
