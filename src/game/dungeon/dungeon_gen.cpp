@@ -28,34 +28,139 @@ namespace {
     }
 
     // Boss rooms need headroom for large tiers; extract/haven stay compact.
-    void applyFootprint(Room& r) {
-        switch (r.type) {
-            case RoomType::Boss:      r.halfW = r.halfD = 20.0f; break;
-            case RoomType::Entrance:  r.halfW = r.halfD = 12.0f; break;
-            case RoomType::Extract:   r.halfW = r.halfD = 12.0f; break;
-            case RoomType::SafeHaven: r.halfW = r.halfD = 12.0f; break;
-            case RoomType::Treasure:  r.halfW = r.halfD = 11.0f; break;
-            case RoomType::Secret:    r.halfW = r.halfD = 10.0f; break;
-            case RoomType::Vault:     r.halfW = r.halfD = 11.0f; break;
-            default:                  r.halfW = r.halfD = 14.0f; break;
+    SizeTier pickSizeTier(RoomType type, Rng& rng, const GenProfile& profile) {
+        switch (type) {
+            case RoomType::Boss:
+                return SizeTier::Large;
+            case RoomType::Combat:
+            case RoomType::Elite:
+                return (rng.next01() < profile.largeCombatChance) ? SizeTier::Large
+                                                                   : SizeTier::Medium;
+            case RoomType::Entrance:
+            case RoomType::Extract:
+            case RoomType::SafeHaven:
+                return (rng.next01() < 0.55f) ? SizeTier::Small : SizeTier::Medium;
+            case RoomType::Treasure:
+            case RoomType::Secret:
+            case RoomType::Vault:
+                return (rng.next01() < 0.65f) ? SizeTier::Small : SizeTier::Medium;
+            default:
+                return SizeTier::Medium;
         }
     }
 
-    Transition makeLink(const Room& a, const Room& b, float cell) {
+    float spanForTier(SizeTier tier, RoomType type, Rng& rng, const GenProfile& profile) {
+        float lo = profile.mediumSpanMin;
+        float hi = profile.mediumSpanMax;
+        if (type == RoomType::Boss) {
+            lo = profile.bossSpanMin;
+            hi = profile.bossSpanMax;
+        } else if (tier == SizeTier::Small) {
+            lo = profile.smallSpanMin;
+            hi = profile.smallSpanMax;
+        } else if (tier == SizeTier::Large) {
+            lo = profile.largeSpanMin;
+            hi = profile.largeSpanMax;
+        }
+        return lo + rng.next01() * std::max(0.0f, hi - lo);
+    }
+
+    void applyFootprint(Room& r, Rng& rng, const GenProfile& profile) {
+        r.size = pickSizeTier(r.type, rng, profile);
+        const float span = spanForTier(r.size, r.type, rng, profile);
+        // Slight aspect variation so halls don't all read as perfect squares.
+        const float aspect = 0.85f + rng.next01() * 0.3f;
+        r.halfW = (span * 0.5f) * aspect;
+        r.halfD = (span * 0.5f) / aspect;
+        // Long combat halls bias one axis.
+        if ((r.type == RoomType::Combat || r.type == RoomType::Elite) && rng.next01() < 0.3f) {
+            if (rng.next01() < 0.5f) r.halfW *= 1.25f;
+            else                     r.halfD *= 1.25f;
+        }
+        // Keep corridor gaps positive against GenProfile.cell.
+        const float maxHalf = profile.cell * 0.5f - 8.0f;
+        r.halfW = std::min(r.halfW, maxHalf);
+        r.halfD = std::min(r.halfD, maxHalf);
+        r.shape = RoomShape::Rect;
+        r.shapeVariant = 0;
+    }
+
+    FloorStyle pickFloor(RoomType type, Rng& rng) {
+        switch (type) {
+            case RoomType::SafeHaven:
+            case RoomType::Secret:
+                return (rng.next01() < 0.65f) ? FloorStyle::Mosaic : FloorStyle::Checker;
+            case RoomType::Elite:
+            case RoomType::Boss:
+                return (rng.next01() < 0.7f) ? FloorStyle::BloodRing : FloorStyle::Cracked;
+            case RoomType::Combat:
+                if (rng.next01() < 0.45f) return FloorStyle::Cracked;
+                if (rng.next01() < 0.35f) return FloorStyle::Flooded;
+                return FloorStyle::Checker;
+            case RoomType::Extract:
+                return FloorStyle::Mosaic;
+            case RoomType::Treasure:
+            case RoomType::Vault:
+                return (rng.next01() < 0.5f) ? FloorStyle::Mosaic : FloorStyle::Checker;
+            default:
+                return FloorStyle::Checker;
+        }
+    }
+
+    CorridorStyle pickCorridorStyle(const Room& a, const Room& b, Rng& rng) {
+        if (a.type == RoomType::Boss || b.type == RoomType::Boss) return CorridorStyle::Choke;
+        if (a.type == RoomType::Extract || b.type == RoomType::Extract) return CorridorStyle::Standard;
+        const float u = rng.next01();
+        if (u < 0.22f) return CorridorStyle::Ruined;
+        if (u < 0.40f) return CorridorStyle::Choke;
+        if (u < 0.58f) return CorridorStyle::Flooded;
+        return CorridorStyle::Standard;
+    }
+
+    Transition makeLink(const Room& a, const Room& b, float cell, CorridorStyle style) {
         Transition t;
         t.fromRoom = a.id;
         t.toRoom   = b.id;
         t.alongX   = (a.cellZ == b.cellZ);
+        t.style    = style;
 
-        t.center.x = (a.center.x + b.center.x) * 0.5f;
+        // Center on the actual gap between facing AABB edges — NOT the midpoint of
+        // room centers. Unequal room sizes previously left a black seam on the
+        // larger room's side (corridor was shifted toward the smaller room).
+        (void)cell;
+        if (t.alongX) {
+            float x0, x1;
+            if (a.center.x <= b.center.x) {
+                x0 = a.center.x + a.halfW;
+                x1 = b.center.x - b.halfW;
+            } else {
+                x0 = b.center.x + b.halfW;
+                x1 = a.center.x - a.halfW;
+            }
+            t.center.x = (x0 + x1) * 0.5f;
+            t.center.z = (a.center.z + b.center.z) * 0.5f;
+            t.halfLen  = std::max(2.0f, (x1 - x0) * 0.5f);
+        } else {
+            float z0, z1;
+            if (a.center.z <= b.center.z) {
+                z0 = a.center.z + a.halfD;
+                z1 = b.center.z - b.halfD;
+            } else {
+                z0 = b.center.z + b.halfD;
+                z1 = a.center.z - a.halfD;
+            }
+            t.center.z = (z0 + z1) * 0.5f;
+            t.center.x = (a.center.x + b.center.x) * 0.5f;
+            t.halfLen  = std::max(2.0f, (z1 - z0) * 0.5f);
+        }
         t.center.y = a.center.y;
-        t.center.z = (a.center.z + b.center.z) * 0.5f;
 
-        // Corridor spans the gap between the two room walls.
-        const float gap = t.alongX ? (cell - a.halfW - b.halfW)
-                                   : (cell - a.halfD - b.halfD);
-        t.halfLen   = std::max(2.0f, gap * 0.5f);
-        t.halfWidth = 3.0f;
+        switch (style) {
+            case CorridorStyle::Choke:   t.halfWidth = 1.85f; break;
+            case CorridorStyle::Ruined:  t.halfWidth = 3.4f;  break;
+            case CorridorStyle::Flooded: t.halfWidth = 3.1f;  break;
+            default:                     t.halfWidth = 3.0f;  break;
+        }
         return t;
     }
 
@@ -136,7 +241,7 @@ Layout Generate(uint32_t seed, const GenProfile& profile) {
     }
 
     layout.rooms = path;
-    for (auto& r : layout.rooms) applyFootprint(r);
+    for (auto& r : layout.rooms) applyFootprint(r, rng, profile);
 
     // --- Side branches off the critical path ---
     // Optional content lives here: treasure, hidden rooms, and key-locked vaults.
@@ -172,11 +277,18 @@ Layout Generate(uint32_t seed, const GenProfile& profile) {
                 r.type = (rng.next01() < 0.5f) ? RoomType::Treasure : RoomType::Combat;
             }
 
-            applyFootprint(r);
+            applyFootprint(r, rng, profile);
             layout.rooms.push_back(r);
             occupied[cellKey(nx, nz)] = r.id;
             break;
         }
+    }
+
+    // --- Floors (silhouettes come from theme masks at stamp time) ---
+    for (auto& r : layout.rooms) {
+        r.floor = pickFloor(r.type, rng);
+        r.shape = RoomShape::Rect;
+        r.shapeVariant = 0;
     }
 
     // --- World placement ---
@@ -194,12 +306,15 @@ Layout Generate(uint32_t seed, const GenProfile& profile) {
 
     // --- Links: critical path chain, then branch spurs ---
     for (int i = 0; i + 1 < n; ++i) {
-        Transition t = makeLink(layout.rooms[i], layout.rooms[i + 1], profile.cell);
+        const CorridorStyle style = pickCorridorStyle(layout.rooms[i], layout.rooms[i + 1], rng);
+        Transition t = makeLink(layout.rooms[i], layout.rooms[i + 1], profile.cell, style);
         // The way into the extract room stays sealed until the boss is dead.
         if (layout.rooms[i + 1].type == RoomType::Extract && layout.bossRoom >= 0) {
-            t.type     = TransitionType::LockedGate;
-            t.locked   = true;
+            t.type      = TransitionType::LockedGate;
+            t.locked    = true;
             t.requires_ = GateRequirement::BossDead;
+            t.style     = CorridorStyle::Standard;
+            t.halfWidth = 3.0f;
         } else if (layout.rooms[i + 1].type == RoomType::Boss) {
             t.type = TransitionType::Door;  // framed threshold into the arena
         }
@@ -215,15 +330,19 @@ Layout Generate(uint32_t seed, const GenProfile& profile) {
             const Room& host = layout.rooms[it->second];
             if (!host.onCriticalPath) continue;
 
-            Transition t = makeLink(host, branch, profile.cell);
+            const CorridorStyle style = pickCorridorStyle(host, branch, rng);
+            Transition t = makeLink(host, branch, profile.cell, style);
             if (branch.type == RoomType::Secret) {
                 t.type      = TransitionType::HiddenPassage;
                 t.locked    = true;
                 t.requires_ = GateRequirement::Search;
+                t.style     = CorridorStyle::Standard;
             } else if (branch.type == RoomType::Vault) {
                 t.type      = TransitionType::LockedGate;
                 t.locked    = true;
                 t.requires_ = GateRequirement::Key;
+                t.style     = CorridorStyle::Standard;
+                t.halfWidth = 3.0f;
             }
             layout.links.push_back(t);
             break;

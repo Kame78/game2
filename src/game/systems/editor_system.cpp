@@ -4,6 +4,8 @@
 #include "game/spells.hpp"
 #include "game/world/world_gen.hpp"
 #include "game/world/landmarks.hpp"
+#include "game/world/panel_build.hpp"
+#include "game/dungeon/dungeon.hpp"
 #include "engine/input.hpp"
 #include "engine/math/noise.hpp"
 #include "engine/math/hydrology.hpp"
@@ -15,6 +17,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -48,6 +51,17 @@ bool g_probeEnabled = true;
 std::string g_dumpStatus;
 float g_dumpStatusUntil = 0.0f;
 bool g_dumpStatusOk = false;
+
+std::string g_defectStatus;
+float g_defectStatusUntil = 0.0f;
+bool g_defectStatusOk = false;
+char g_defectNote[128] = "";
+
+struct DefectMarker {
+    Vector3 pos{};
+    float until = 0.0f;
+};
+std::vector<DefectMarker> g_defectMarkers;
 
 engine::ecs::Entity playerEntity(engine::ecs::Registry& reg);
 Vector3 probeXZ(engine::ecs::Registry& reg);
@@ -100,6 +114,50 @@ bool writeTextFile(const std::string& path, const std::string& contents) {
     if (!out) return false;
     out.write(contents.data(), (std::streamsize)contents.size());
     return (bool)out;
+}
+
+bool appendTextFile(const std::string& path, const std::string& contents) {
+    std::ofstream out(path, std::ios::binary | std::ios::app);
+    if (!out) return false;
+    out.write(contents.data(), (std::streamsize)contents.size());
+    return (bool)out;
+}
+
+const char* themeId(game::dungeon::Theme theme) {
+    return theme == game::dungeon::Theme::Cave ? "Cave" : "Masonry";
+}
+
+const char* sizeTierName(game::dungeon::SizeTier tier) {
+    using ST = game::dungeon::SizeTier;
+    switch (tier) {
+        case ST::Small: return "Small";
+        case ST::Large: return "Large";
+        default:        return "Medium";
+    }
+}
+
+std::string jsonEscape(const char* s) {
+    std::string out;
+    if (!s) return out;
+    out.reserve(std::strlen(s) + 8);
+    for (const char* p = s; *p; ++p) {
+        const char c = *p;
+        if (c == '\\' || c == '"') {
+            out.push_back('\\');
+            out.push_back(c);
+        } else if (c == '\n') {
+            out += "\\n";
+        } else if (c == '\r') {
+            out += "\\r";
+        } else if ((unsigned char)c < 0x20) {
+            char buf[8];
+            std::snprintf(buf, sizeof(buf), "\\u%04x", (unsigned)(unsigned char)c);
+            out += buf;
+        } else {
+            out.push_back(c);
+        }
+    }
+    return out;
 }
 
 std::string buildEditorDump(engine::ecs::Registry& reg) {
@@ -157,6 +215,64 @@ std::string buildEditorDump(engine::ecs::Registry& reg) {
         append("slope: %.4f\n", probe.slope);
         append("water_gate: %.4f\n", probe.waterGate);
         append("water_level: %.3f\n", probe.waterLevel);
+        if (game::dungeon::IsActive()) {
+            auto dp = game::dungeon::ProbeDefect(xz.x, xz.z);
+            append("dungeon_ground_y: %.3f\n", dp.groundY);
+            append("dungeon_room_id: %d\n", dp.roomId);
+            append("dungeon_link_index: %d\n", dp.linkIndex);
+            append("dungeon_local_xz: %.2f, %.2f\n", dp.localX, dp.localZ);
+            append("dungeon_mask_cell: %d, %d\n", dp.maskIx, dp.maskIz);
+            append("dungeon_walkable: %s\n", dp.walkable ? "yes" : "no");
+            append("dungeon_floor_off: %.3f  ceil_off: %.3f\n", dp.floorOff, dp.ceilOff);
+        }
+    }
+    s += "\n";
+
+    // --- Dungeon session ---
+    append("--- Dungeon session ---\n");
+    if (!game::dungeon::IsActive()) {
+        append("active: no\n");
+    } else {
+        const auto& layout = game::dungeon::GetLayout();
+        const auto& profile = game::dungeon::GetGenProfile();
+        append("active: yes\n");
+        append("seed: %u (0x%X)\n", game::dungeon::CurrentSeed(), game::dungeon::CurrentSeed());
+        append("theme: %s (%s)\n", themeId(game::dungeon::CurrentTheme()),
+               game::dungeon::ThemeName(game::dungeon::CurrentTheme()));
+        append("stage: %d / %d\n", game::dungeon::CurrentStage(), game::dungeon::StageCount());
+        append("current_room: %d\n", game::dungeon::CurrentRoom());
+        append("intermission: %s  vault_key: %s\n",
+               game::dungeon::InIntermission() ? "yes" : "no",
+               game::dungeon::HasVaultKey() ? "yes" : "no");
+        append("rooms: %zu  links: %zu\n", layout.rooms.size(), layout.links.size());
+        append("entrance_room: %d  boss: %d  extract: %d  key_room: %d\n",
+               layout.entranceRoom, layout.bossRoom, layout.extractRoom, layout.keyRoom);
+        append("profile cell: %.1f  maskCellSize: %.2f\n", profile.cell, profile.maskCellSize);
+        append("path_rooms: %d-%d  max_branches: %d\n",
+               profile.minPathRooms, profile.maxPathRooms, profile.maxBranches);
+        for (const auto& room : layout.rooms) {
+            append("  room %d type=%d size=%s half=%.1fx%.1f center=(%.1f,%.1f,%.1f) crit=%d cleared=%d\n",
+                   room.id, (int)room.type, sizeTierName(room.size),
+                   room.halfW, room.halfD,
+                   room.center.x, room.center.y, room.center.z,
+                   room.onCriticalPath ? 1 : 0, room.cleared ? 1 : 0);
+        }
+        for (size_t i = 0; i < layout.links.size(); ++i) {
+            const auto& link = layout.links[i];
+            append("  link %zu %d->%d type=%d style=%d alongX=%d halfLen=%.1f halfW=%.1f center=(%.1f,%.1f,%.1f) locked=%d\n",
+                   i, link.fromRoom, link.toRoom, (int)link.type, (int)link.style,
+                   link.alongX ? 1 : 0, link.halfLen, link.halfWidth,
+                   link.center.x, link.center.y, link.center.z, link.locked ? 1 : 0);
+        }
+        const auto& mods = game::dungeon::ActiveModifiers();
+        if (mods.empty()) {
+            append("modifiers: (none)\n");
+        } else {
+            append("modifiers:\n");
+            for (const auto* m : mods) {
+                if (m) append("  %s (%s)\n", m->id.c_str(), m->name.c_str());
+            }
+        }
     }
     s += "\n";
 
@@ -334,6 +450,84 @@ void exportEditorDump(engine::ecs::Registry& reg) {
     g_dumpStatusUntil = (float)GetTime() + 12.0f;
 }
 
+void markDefectAtProbe(engine::ecs::Registry& reg) {
+    Vector3 xz = probeXZ(reg);
+    game::dungeon::DefectProbe dp{};
+    if (game::dungeon::IsActive()) {
+        dp = game::dungeon::ProbeDefect(xz.x, xz.z);
+    } else {
+        dp.world = xz;
+        dp.groundY = engine::math::WorldHeight(xz.x, xz.z);
+        dp.world.y = dp.groundY;
+    }
+
+    const std::string roomTypeEsc = jsonEscape(dp.roomType ? dp.roomType : "");
+    const std::string noteEsc = jsonEscape(g_defectNote);
+    const char* theme = game::dungeon::IsActive() ? themeId(dp.theme) : "overworld";
+
+    char line[1024];
+    std::snprintf(
+        line, sizeof(line),
+        "{\"seed\":%u,\"theme\":\"%s\",\"stage\":%d,\"roomId\":%d,\"linkIndex\":%d,"
+        "\"roomType\":\"%s\",\"world\":[%.3f,%.3f,%.3f],\"local\":[%.3f,%.3f],"
+        "\"maskCell\":[%d,%d],\"maskSize\":[%d,%d],\"walkable\":%s,"
+        "\"floorOff\":%.3f,\"ceilOff\":%.3f,\"groundY\":%.3f,\"note\":\"%s\",\"timestamp\":\"%s\"}\n",
+        dp.seed,
+        theme,
+        dp.stage,
+        dp.roomId,
+        dp.linkIndex,
+        roomTypeEsc.c_str(),
+        dp.world.x, dp.world.y, dp.world.z,
+        dp.localX, dp.localZ,
+        dp.maskIx, dp.maskIz,
+        dp.maskNx, dp.maskNz,
+        dp.walkable ? "true" : "false",
+        dp.floorOff, dp.ceilOff, dp.groundY,
+        noteEsc.c_str(),
+        timestampNow().c_str());
+
+    std::vector<std::string> written;
+    std::vector<std::string> failed;
+    std::string exePath = std::string(GetApplicationDirectory()) + "editor_defects.jsonl";
+    if (appendTextFile(exePath, line)) written.push_back(exePath);
+    else failed.push_back(exePath);
+
+    std::string root = findRepoRoot();
+    if (!root.empty()) {
+        namespace fs = std::filesystem;
+        std::string repoPath = (fs::path(root) / "editor_defects.jsonl").string();
+        if (repoPath != exePath) {
+            if (appendTextFile(repoPath, line)) written.push_back(repoPath);
+            else failed.push_back(repoPath);
+        }
+    } else {
+        failed.push_back("(repo root not found)");
+    }
+
+    g_defectMarkers.push_back({dp.world, (float)GetTime() + 20.0f});
+
+    g_defectStatusOk = !written.empty();
+    g_defectStatus.clear();
+    if (g_defectStatusOk) {
+        g_defectStatus = "Pinned defect:\n";
+        for (const auto& p : written) {
+            g_defectStatus += "  ";
+            g_defectStatus += p;
+            g_defectStatus += "\n";
+        }
+    } else {
+        g_defectStatus = "Defect pin FAILED\n";
+        for (const auto& p : failed) {
+            g_defectStatus += "  ";
+            g_defectStatus += p;
+            g_defectStatus += "\n";
+        }
+    }
+    g_defectStatusUntil = (float)GetTime() + 12.0f;
+}
+
+
 void seedBookmarks() {
     if (g_bookmarksSeeded) return;
     g_bookmarksSeeded = true;
@@ -475,65 +669,84 @@ void EditorInputSystem(engine::ecs::Registry& reg) {
         }
     }
 
-    if (g_showEditor) {
-        if (IsKeyPressed(KEY_LEFT_ALT)) {
-            if (engine::input::IsCursorLocked()) engine::input::UnlockCursor();
-            else engine::input::LockCursor();
-        }
+    // Panel build stays active after enabling in the editor (sticky until unchecked).
+    auto runPanelBuildInput = [&]() {
+        if (!game::world::panel_build::IsEnabled()) return;
+        auto pe = playerEntity(reg);
+        if (!reg.cameras.Has(pe)) return;
+        game::world::panel_build::Update(reg.cameras.Get(pe).camera);
+        if (!engine::input::IsCursorLocked() || ImGui::GetIO().WantCaptureMouse) return;
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) game::world::panel_build::TryPlace();
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) game::world::panel_build::TryRemove();
+    };
 
-        // Place / delete while free-look (cursor locked) so mouse aim works.
-        if (engine::input::IsCursorLocked() && !ImGui::GetIO().WantCaptureMouse) {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && g_placeMode != 0) {
-                Vector3 hit = cameraLookHit(reg);
-                hit.y = engine::math::WorldHeight(hit.x, hit.z) +
-                        (game::enemy_model::IsReady() ? game::enemy_model::GetTargetHeight() : 2.55f) * 0.5f;
-                if (g_placeMode == 1) {
-                    factories::EntityFactory::CreateEnemy(reg, hit, g_editorNetId++);
-                } else if (g_placeMode == 2) {
-                    factories::EntityFactory::CreateSpawner(reg, hit);
-                } else if (g_placeMode == 3) {
-                    factories::EntityFactory::CreateLandmarkProxy(reg, hit, g_landmarkPlaceType);
-                } else if (g_placeMode == 4) {
-                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + 2.0f;
-                    factories::EntityFactory::CreateEliteEnemy(reg, hit, g_editorNetId++);
-                } else if (g_placeMode == 5) {
-                    constexpr float kGiantHalfH = 25.0f * 0.3048f * 0.5f;
-                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kGiantHalfH;
-                    factories::EntityFactory::CreateGiantEnemy(reg, hit, g_editorNetId++);
-                } else if (g_placeMode == 6) {
-                    constexpr float kColossalHalfH = 100.0f * 0.3048f * 0.5f;
-                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kColossalHalfH;
-                    factories::EntityFactory::CreateColossalEnemy(reg, hit, g_editorNetId++);
-                } else if (g_placeMode == 7) {
-                    constexpr float kTitanHalfH = 250.0f * 0.3048f * 0.5f;
-                    hit.y = engine::math::WorldHeight(hit.x, hit.z) + kTitanHalfH;
-                    factories::EntityFactory::CreateTitanEnemy(reg, hit, g_editorNetId++);
+    if (!g_showEditor) {
+        runPanelBuildInput();
+        return;
+    }
+
+    if (IsKeyPressed(KEY_F7)) {
+        markDefectAtProbe(reg);
+    }
+
+    if (IsKeyPressed(KEY_LEFT_ALT)) {
+        if (engine::input::IsCursorLocked()) engine::input::UnlockCursor();
+        else engine::input::LockCursor();
+    }
+
+    if (game::world::panel_build::IsEnabled()) {
+        runPanelBuildInput();
+    } else if (engine::input::IsCursorLocked() && !ImGui::GetIO().WantCaptureMouse) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && g_placeMode != 0) {
+            Vector3 hit = cameraLookHit(reg);
+            hit.y = engine::math::WorldHeight(hit.x, hit.z) +
+                    (game::enemy_model::IsReady() ? game::enemy_model::GetTargetHeight() : 2.55f) * 0.5f;
+            if (g_placeMode == 1) {
+                factories::EntityFactory::CreateEnemy(reg, hit, g_editorNetId++);
+            } else if (g_placeMode == 2) {
+                factories::EntityFactory::CreateSpawner(reg, hit);
+            } else if (g_placeMode == 3) {
+                factories::EntityFactory::CreateLandmarkProxy(reg, hit, g_landmarkPlaceType);
+            } else if (g_placeMode == 4) {
+                hit.y = engine::math::WorldHeight(hit.x, hit.z) + 2.0f;
+                factories::EntityFactory::CreateEliteEnemy(reg, hit, g_editorNetId++);
+            } else if (g_placeMode == 5) {
+                constexpr float kGiantHalfH = 25.0f * 0.3048f * 0.5f;
+                hit.y = engine::math::WorldHeight(hit.x, hit.z) + kGiantHalfH;
+                factories::EntityFactory::CreateGiantEnemy(reg, hit, g_editorNetId++);
+            } else if (g_placeMode == 6) {
+                constexpr float kColossalHalfH = 100.0f * 0.3048f * 0.5f;
+                hit.y = engine::math::WorldHeight(hit.x, hit.z) + kColossalHalfH;
+                factories::EntityFactory::CreateColossalEnemy(reg, hit, g_editorNetId++);
+            } else if (g_placeMode == 7) {
+                constexpr float kTitanHalfH = 250.0f * 0.3048f * 0.5f;
+                hit.y = engine::math::WorldHeight(hit.x, hit.z) + kTitanHalfH;
+                factories::EntityFactory::CreateTitanEnemy(reg, hit, g_editorNetId++);
+            }
+        }
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            Vector3 hit = cameraLookHit(reg, 120.0f);
+            float bestD = 8.0f;
+            engine::ecs::Entity best = {0};
+            bool found = false;
+            auto consider = [&](engine::ecs::Entity e) {
+                if (!reg.transforms.Has(e)) return;
+                if (reg.playerInputs.Has(e)) return;
+                Vector3 p = reg.transforms.Get(e).position;
+                float d = Vector3Distance(p, hit);
+                if (d < bestD) {
+                    bestD = d;
+                    best = e;
+                    found = true;
                 }
-            }
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-                Vector3 hit = cameraLookHit(reg, 120.0f);
-                float bestD = 8.0f;
-                engine::ecs::Entity best = {0};
-                bool found = false;
-                auto consider = [&](engine::ecs::Entity e) {
-                    if (!reg.transforms.Has(e)) return;
-                    if (reg.playerInputs.Has(e)) return;
-                    Vector3 p = reg.transforms.Get(e).position;
-                    float d = Vector3Distance(p, hit);
-                    if (d < bestD) {
-                        bestD = d;
-                        best = e;
-                        found = true;
-                    }
-                };
-                for (size_t i = 0; i < reg.enemyAIs.data.size(); ++i)
-                    consider({reg.enemyAIs.indexToEntity[i]});
-                for (size_t i = 0; i < reg.spawners.data.size(); ++i)
-                    consider({reg.spawners.indexToEntity[i]});
-                for (size_t i = 0; i < reg.landmarkProxies.data.size(); ++i)
-                    consider({reg.landmarkProxies.indexToEntity[i]});
-                if (found) engine::ecs::DestroyEntity(reg, best);
-            }
+            };
+            for (size_t i = 0; i < reg.enemyAIs.data.size(); ++i)
+                consider({reg.enemyAIs.indexToEntity[i]});
+            for (size_t i = 0; i < reg.spawners.data.size(); ++i)
+                consider({reg.spawners.indexToEntity[i]});
+            for (size_t i = 0; i < reg.landmarkProxies.data.size(); ++i)
+                consider({reg.landmarkProxies.indexToEntity[i]});
+            if (found) engine::ecs::DestroyEntity(reg, best);
         }
     }
 }
@@ -564,6 +777,28 @@ void EditorUISystem(engine::ecs::Registry& reg) {
                               g_dumpStatusOk ? ImVec4(0.45f, 0.90f, 0.50f, 1.0f)
                                              : ImVec4(1.0f, 0.40f, 0.35f, 1.0f));
         ImGui::TextWrapped("%s", g_dumpStatus.c_str());
+        ImGui::PopStyleColor();
+    }
+
+    ImGui::InputText("Defect note", g_defectNote, sizeof(g_defectNote));
+    if (ImGui::Button("Mark defect at probe")) {
+        markDefectAtProbe(reg);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("F7  -> editor_defects.jsonl (F8 exits dungeon)");
+    if (game::dungeon::IsActive()) {
+        ImGui::Text("Dungeon seed %u  theme %s  room %d",
+                    game::dungeon::CurrentSeed(),
+                    themeId(game::dungeon::CurrentTheme()),
+                    game::dungeon::CurrentRoom());
+    } else {
+        ImGui::TextDisabled("Enter a dungeon to pin gen defects with seed/room context.");
+    }
+    if (!g_defectStatus.empty() && (float)GetTime() < g_defectStatusUntil) {
+        ImGui::PushStyleColor(ImGuiCol_Text,
+                              g_defectStatusOk ? ImVec4(0.45f, 0.90f, 0.50f, 1.0f)
+                                               : ImVec4(1.0f, 0.40f, 0.35f, 1.0f));
+        ImGui::TextWrapped("%s", g_defectStatus.c_str());
         ImGui::PopStyleColor();
     }
     ImGui::Separator();
@@ -736,6 +971,14 @@ void EditorUISystem(engine::ecs::Registry& reg) {
                         probe.weights.wetlands, probe.weights.water);
             ImGui::Text("Slope: %.3f  waterGate: %.3f  waterLevel: %.2f",
                         probe.slope, probe.waterGate, probe.waterLevel);
+            if (game::dungeon::IsActive()) {
+                auto dp = game::dungeon::ProbeDefect(xz.x, xz.z);
+                ImGui::Text("Dungeon Y: %.2f  room %d  link %d",
+                            dp.groundY, dp.roomId, dp.linkIndex);
+                ImGui::Text("Local: %.1f, %.1f  mask [%d,%d] walk=%s",
+                            dp.localX, dp.localZ, dp.maskIx, dp.maskIz,
+                            dp.walkable ? "yes" : "no");
+            }
         }
     }
 
@@ -812,6 +1055,46 @@ void EditorUISystem(engine::ecs::Registry& reg) {
                 }
             }
         }
+    }
+
+    if (ImGui::CollapsingHeader("9b. Panel build (snap)")) {
+        bool en = game::world::panel_build::IsEnabled();
+        if (ImGui::Checkbox("Panel build mode", &en)) {
+            game::world::panel_build::SetEnabled(en);
+            if (en) g_placeMode = 0; // avoid fighting entity place
+        }
+        ImGui::TextWrapped("When on: ALT lock mouse, LMB place, RMB remove, Q/E rotate 90. Snaps to 4m kit grid.");
+
+        int pieceIdx = (int)game::world::panel_build::GetSelectedPiece();
+        int styleIdx = (int)game::world::panel_build::GetSelectedStyle();
+        const char* pieceNames[] = {
+            "Floor", "Wall", "WallDoor", "WallWindow", "Pillar",
+            "RoofSlope", "Gable", "GableRamp", "WallRise", "RoofPyramid", "Stairs"};
+        const char* styleNames[] = {"Stone", "Wood", "RoofDark"};
+        if (ImGui::Combo("Piece", &pieceIdx, pieceNames, IM_ARRAYSIZE(pieceNames))) {
+            game::world::panel_build::SetSelectedPiece(
+                (game::world::building_panels::Piece)pieceIdx);
+        }
+        if (ImGui::Combo("Style", &styleIdx, styleNames, IM_ARRAYSIZE(styleNames))) {
+            game::world::panel_build::SetSelectedStyle(
+                (game::world::building_panels::Style)styleIdx);
+        }
+        ImGui::Text("Yaw: %.0f deg | Placed: %d",
+                    game::world::panel_build::GetYawDeg(),
+                    game::world::panel_build::PlacedCount());
+
+        if (ImGui::Button("Save placements")) {
+            game::world::panel_build::Save();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Load placements")) {
+            game::world::panel_build::Load();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Clear all")) {
+            game::world::panel_build::ClearAll();
+        }
+        ImGui::TextDisabled("File: assets/data/buildings_placed.json");
     }
 
     if (ImGui::CollapsingHeader("10. Exclusion zones")) {
@@ -1146,8 +1429,22 @@ void EditorDebugDrawSystem(engine::ecs::Registry& reg) {
     // Probe marker
     if (g_probeEnabled) {
         Vector3 xz = probeXZ(reg);
-        float h = engine::math::WorldHeight(xz.x, xz.z);
+        float h = game::dungeon::IsActive()
+            ? game::dungeon::GroundY(xz.x, xz.z)
+            : engine::math::WorldHeight(xz.x, xz.z);
         DrawSphere({xz.x, h + 0.5f, xz.z}, 0.6f, Color{255, 255, 0, 200});
+    }
+
+    const float now = (float)GetTime();
+    for (size_t i = 0; i < g_defectMarkers.size();) {
+        if (g_defectMarkers[i].until < now) {
+            g_defectMarkers[i] = g_defectMarkers.back();
+            g_defectMarkers.pop_back();
+            continue;
+        }
+        DrawSphere(g_defectMarkers[i].pos, 0.85f, Color{255, 60, 60, 220});
+        DrawSphereWires(g_defectMarkers[i].pos, 1.4f, 8, 8, Color{255, 120, 80, 200});
+        ++i;
     }
 }
 

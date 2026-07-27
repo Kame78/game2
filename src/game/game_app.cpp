@@ -108,6 +108,7 @@ namespace Game::GameApp {
         engine::math::BuildHydrology(engine::math::GetWorldConfig().seed);
         engine::render::sky::Init();
         game::world::InitWater();
+        game::world::InitBuildingPanels();
         engine::terrain::chunks::Init();
         game::enemy_model::Init();
         game::systems::WeaponViewmodelInit();
@@ -128,6 +129,7 @@ namespace Game::GameApp {
         game::enemy_model::Shutdown();
         engine::terrain::chunks::Shutdown();
         game::world::ShutdownWater();
+        game::world::ShutdownBuildingPanels();
         engine::render::sky::Shutdown();
         engine::math::ClearHydrology();
         rlImGuiShutdown();
@@ -172,10 +174,20 @@ namespace Game::GameApp {
             if (!inDungeon && IsKeyPressed(KEY_E)) {
                 const int idx = game::dungeon::FindNearbyEntrance(playerPos, 7.0f);
                 if (idx >= 0) {
-                    game::dungeon::Enter(registry, playerEntity, game::dungeon::GetEntrances()[idx]);
+                    const bool lobbied = engine::networking::HasRemotePeer();
+                    if (lobbied && !engine::networking::IsHost()) {
+                        // Host owns enter; clients wait for seed/theme sync.
+                    } else {
+                        game::dungeon::Enter(registry, playerEntity,
+                                             game::dungeon::GetEntrances()[idx]);
+                    }
                 }
             } else if (inDungeon && IsKeyPressed(KEY_F8)) {
-                game::dungeon::Exit(registry, playerEntity);
+                if (!engine::networking::HasRemotePeer() || engine::networking::IsHost()) {
+                    game::dungeon::BroadcastLifecycle(
+                        static_cast<uint8_t>(engine::networking::DungeonOp::Exit));
+                    game::dungeon::Exit(registry, playerEntity);
+                }
             }
         }
         game::dungeon::Update(registry, playerEntity);

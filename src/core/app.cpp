@@ -6,6 +6,9 @@
 namespace Core::App {
 
     int Run() {
+        // Silence raylib FILEIO/VAO INFO spam — chunk streaming logs every UploadMesh
+        // and that console I/O alone hitchs hard while the overworld fills VRAM.
+        SetTraceLogLevel(LOG_WARNING);
         // Must be set before InitWindow — requests MSAA 4x (driver may fall back).
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, "game");

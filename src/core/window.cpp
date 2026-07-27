@@ -3,6 +3,8 @@
 
 namespace core::window {
     void Init(int width, int height, const std::string& title) {
+        // Silence raylib FILEIO/VAO INFO spam from chunk UploadMesh streaming.
+        ::SetTraceLogLevel(LOG_WARNING);
         // Must be set before InitWindow — requests MSAA 4x (driver may fall back).
         ::SetConfigFlags(FLAG_MSAA_4X_HINT);
         ::InitWindow(width, height, title.c_str());

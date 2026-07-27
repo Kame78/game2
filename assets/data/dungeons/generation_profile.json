@@ -1,11 +1,18 @@
 {
-  // Room-graph budget for one dungeon stage.
   "minPathRooms": 6,
   "maxPathRooms": 9,
   "maxBranches": 3,
-  // Grid spacing between room centers (world units).
-  "cell": 44.0,
-  // Chance a side branch becomes a hidden room / key-locked vault.
+  "cell": 120.0,
   "secretChance": 0.55,
-  "vaultChance": 0.5
+  "vaultChance": 0.5,
+  "maskCellSize": 1.5,
+  "largeCombatChance": 0.72,
+  "smallSpanMin": 35.0,
+  "smallSpanMax": 55.0,
+  "mediumSpanMin": 50.0,
+  "mediumSpanMax": 65.0,
+  "largeSpanMin": 70.0,
+  "largeSpanMax": 100.0,
+  "bossSpanMin": 90.0,
+  "bossSpanMax": 110.0
 }

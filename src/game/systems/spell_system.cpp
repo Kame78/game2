@@ -2,6 +2,7 @@
 #include "game/factories/entity_factory.hpp"
 #include "game/spells.hpp"
 #include "game/sfx.hpp"
+#include "game/dungeon/dungeon.hpp"
 #include "engine/input.hpp"
 #include "engine/math/noise.hpp"
 #include "engine/networking.hpp"
@@ -339,7 +340,7 @@ static engine::ecs::Entity SpawnSummon(engine::ecs::Registry& reg,
         r.width = 3.2f; r.height = 5.5f; r.depth = 2.4f;
         r.visual = game::CharacterVisual::Reaper;
         // Rise from hell: start buried, climb to standing height
-        float gy = engine::math::WorldHeight(pos.x, pos.z);
+        float gy = game::dungeon::GroundY(pos.x, pos.z);
         s.spawnAnimDuration = 2.4f;
         s.spawnHomeX = pos.x;
         s.spawnHomeZ = pos.z;
@@ -359,7 +360,7 @@ static engine::ecs::Entity SpawnSummon(engine::ecs::Registry& reg,
         r.width = 3.0f; r.height = 6.0f; r.depth = 2.0f;
         r.visual = game::CharacterVisual::ArchAngel;
         // Descend from the heavens along a light beam
-        float gy = engine::math::WorldHeight(pos.x, pos.z);
+        float gy = game::dungeon::GroundY(pos.x, pos.z);
         s.spawnAnimDuration = 2.6f;
         s.spawnHomeX = pos.x;
         s.spawnHomeZ = pos.z;
@@ -391,7 +392,7 @@ static engine::ecs::Entity SpawnSummon(engine::ecs::Registry& reg,
 }
 
 static void SnapEnemyToGround(game::TransformComponent& t) {
-    float gy = engine::math::WorldHeight(t.position.x, t.position.z);
+    float gy = game::dungeon::GroundY(t.position.x, t.position.z);
     t.position.y = gy + 1.0f;
 }
 
@@ -461,7 +462,7 @@ static Vector3 AimPointFromLook(const game::TransformComponent& pTrans,
 
     for (float t = 1.0f; t < bestT; t += 0.5f) {
         Vector3 p = Vector3Add(origin, Vector3Scale(dir, t));
-        float gy = engine::math::WorldHeight(p.x, p.z);
+        float gy = game::dungeon::GroundY(p.x, p.z);
         if (p.y <= gy + 0.2f) {
             best = {p.x, gy + 0.15f, p.z};
             break;
@@ -691,18 +692,18 @@ static void FinishCast(engine::ecs::Registry& reg, engine::ecs::Entity player,
     } else if (def.delivery == SpellDelivery::SummonPet) {
         game::sfx::PlaySpellCast(def.id, pTrans.position);
         Vector3 spawn = aimPoint;
-        spawn.y = engine::math::WorldHeight(spawn.x, spawn.z) + 1.5f;
+        spawn.y = game::dungeon::GroundY(spawn.x, spawn.z) + 1.5f;
         // Prefer near player if aim is too far
         if (Vector3Distance(spawn, pTrans.position) > 18.0f) {
             spawn = Vector3Add(pTrans.position, Vector3Scale(lookDir, 3.0f));
-            spawn.y = engine::math::WorldHeight(spawn.x, spawn.z) + 1.5f;
+            spawn.y = game::dungeon::GroundY(spawn.x, spawn.z) + 1.5f;
         }
         SpawnSummon(reg, player, spawn, def);
         if (def.id == SpellId::SummonReaper) {
-            Vector3 ground = {spawn.x, engine::math::WorldHeight(spawn.x, spawn.z), spawn.z};
+            Vector3 ground = {spawn.x, game::dungeon::GroundY(spawn.x, spawn.z), spawn.z};
             SpawnHellRiftBurst(ground, 4.5f);
         } else if (def.id == SpellId::SummonArchAngel) {
-            Vector3 ground = {spawn.x, engine::math::WorldHeight(spawn.x, spawn.z), spawn.z};
+            Vector3 ground = {spawn.x, game::dungeon::GroundY(spawn.x, spawn.z), spawn.z};
             SpawnHolyBeamBurst(ground, 48.0f);
         } else if (def.element == SpellElement::Necromancer) {
             SpawnSmokePuff(spawn, 8, 2.0f);
@@ -749,7 +750,7 @@ static void FinishCast(engine::ecs::Registry& reg, engine::ecs::Entity player,
                 delta = Vector3Scale(Vector3Normalize(delta), maxR);
                 dest = Vector3Add(from, delta);
             }
-            dest.y = engine::math::WorldHeight(dest.x, dest.z) + 2.0f; // eye height
+            dest.y = game::dungeon::GroundY(dest.x, dest.z) + 2.0f; // eye height
             SpawnMistPuff(from, 10, 2.0f);
             SpawnSparks(from, 6, 4.0f);
             pTrans.position = dest;
@@ -773,7 +774,7 @@ static void FinishCast(engine::ecs::Registry& reg, engine::ecs::Entity player,
         if (Vector3LengthSqr(horiz) < 0.01f) horiz = {0, 0, 1};
         horiz = Vector3Normalize(horiz);
         Vector3 spawn = Vector3Add(pTrans.position, Vector3Scale(horiz, 3.0f));
-        float gy = engine::math::WorldHeight(spawn.x, spawn.z);
+        float gy = game::dungeon::GroundY(spawn.x, spawn.z);
         spawn.y = gy + 0.2f;
         SpawnSpellZone(reg, spawn, def, true, false, horiz);
         SpawnWaterBurst(spawn, 24, 8.0f, 1.6f);
@@ -1300,7 +1301,7 @@ void SpellSystem(engine::ecs::Registry& reg) {
         if (z.travelSpeed > 0.0f) {
             Vector3 md = {z.moveDirX, z.moveDirY, z.moveDirZ};
             t.position = Vector3Add(t.position, Vector3Scale(md, z.travelSpeed * dt));
-            float gy = engine::math::WorldHeight(t.position.x, t.position.z);
+            float gy = game::dungeon::GroundY(t.position.x, t.position.z);
             t.position.y = gy + 0.2f;
         }
 
@@ -1951,11 +1952,11 @@ void SpellVfxRenderSystem(engine::ecs::Registry& reg) {
 
                 Vector3 base = Vector3Add(c, Vector3Scale(right, u * hw));
                 base = Vector3Add(base, Vector3Scale(md, -hd * 0.15f));
-                base.y = engine::math::WorldHeight(base.x, base.z) + 0.05f;
+                base.y = game::dungeon::GroundY(base.x, base.z) + 0.05f;
 
                 // Deep body of the wave (rear → front bulk)
                 Vector3 rear = Vector3Subtract(base, Vector3Scale(md, wallThick * 0.55f));
-                rear.y = engine::math::WorldHeight(rear.x, rear.z) + 0.05f;
+                rear.y = game::dungeon::GroundY(rear.x, rear.z) + 0.05f;
                 Vector3 face = Vector3Add(base, Vector3Scale(md, wallThick * 0.25f));
                 face.y = base.y;
 
@@ -1990,7 +1991,7 @@ void SpellVfxRenderSystem(engine::ecs::Registry& reg) {
                 float h = z.height * undulate * edgeTaper * pulse;
                 Vector3 base = Vector3Add(c, Vector3Scale(right, u * hw));
                 base = Vector3Add(base, Vector3Scale(md, wallThick * 0.25f));
-                base.y = engine::math::WorldHeight(base.x, base.z) + 0.05f;
+                base.y = game::dungeon::GroundY(base.x, base.z) + 0.05f;
                 Vector3 tip = Vector3Add({base.x, base.y + h, base.z},
                                          Vector3Scale(md, crestLean * undulate));
                 DrawSphere(tip, mega ? 0.85f : 0.32f, foam);
@@ -1998,14 +1999,14 @@ void SpellVfxRenderSystem(engine::ecs::Registry& reg) {
 
             // Base surge sheet under the wave
             Vector3 sheetC = Vector3Add(c, Vector3Scale(md, hd * 0.1f));
-            sheetC.y = engine::math::WorldHeight(sheetC.x, sheetC.z) + 0.12f;
+            sheetC.y = game::dungeon::GroundY(sheetC.x, sheetC.z) + 0.12f;
             DrawCylinder(sheetC, mega ? 3.0f : 1.0f, hw * 0.95f, mega ? 0.8f : 0.35f, 24,
                          Color{30, 90, 180, (unsigned char)(80 * fade)});
 
             // Mist curtain behind the wall
             if (mega) {
                 Vector3 mist = Vector3Subtract(c, Vector3Scale(md, hd * 0.7f));
-                mist.y = engine::math::WorldHeight(mist.x, mist.z) + z.height * 0.35f;
+                mist.y = game::dungeon::GroundY(mist.x, mist.z) + z.height * 0.35f;
                 DrawSphere(mist, hw * 0.35f, Color{160, 200, 230, (unsigned char)(35 * fade)});
                 DrawSphere(Vector3Add(mist, Vector3Scale(right, hw * 0.4f)), hw * 0.22f,
                            Color{160, 200, 230, (unsigned char)(28 * fade)});
@@ -2026,7 +2027,7 @@ void SpellVfxRenderSystem(engine::ecs::Registry& reg) {
                     t.position.y,
                     t.position.z + sinf(a) * r
                 };
-                base.y = engine::math::WorldHeight(base.x, base.z);
+                base.y = game::dungeon::GroundY(base.x, base.z);
                 float h = z.height * pulse * (0.55f + 0.45f * sinf(z.age * 9.0f + s));
                 Color bone = Color{160, 150, 140, (unsigned char)(200 * fade)};
                 Color dark = Color{60, 20, 80, (unsigned char)(180 * fade)};

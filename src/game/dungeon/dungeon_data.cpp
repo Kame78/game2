@@ -51,6 +51,16 @@ void LoadData() {
         g_profile.cell         = profile.Float("cell",         g_profile.cell);
         g_profile.secretChance = profile.Float("secretChance", g_profile.secretChance);
         g_profile.vaultChance  = profile.Float("vaultChance",  g_profile.vaultChance);
+        g_profile.maskCellSize = profile.Float("maskCellSize", g_profile.maskCellSize);
+        g_profile.largeCombatChance = profile.Float("largeCombatChance", g_profile.largeCombatChance);
+        g_profile.smallSpanMin  = profile.Float("smallSpanMin",  g_profile.smallSpanMin);
+        g_profile.smallSpanMax  = profile.Float("smallSpanMax",  g_profile.smallSpanMax);
+        g_profile.mediumSpanMin = profile.Float("mediumSpanMin", g_profile.mediumSpanMin);
+        g_profile.mediumSpanMax = profile.Float("mediumSpanMax", g_profile.mediumSpanMax);
+        g_profile.largeSpanMin  = profile.Float("largeSpanMin",  g_profile.largeSpanMin);
+        g_profile.largeSpanMax  = profile.Float("largeSpanMax",  g_profile.largeSpanMax);
+        g_profile.bossSpanMin   = profile.Float("bossSpanMin",   g_profile.bossSpanMin);
+        g_profile.bossSpanMax   = profile.Float("bossSpanMax",   g_profile.bossSpanMax);
     }
 
     const engine::data::Json mods =

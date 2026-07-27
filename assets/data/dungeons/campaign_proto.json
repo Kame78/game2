@@ -1,8 +1,8 @@
 {
   "id": "crypt_proto",
   "name": "Sunken Crypt",
-  // Stages run back to back with no full heal between them: attrition is the
-  // pacing pressure. Later stages roll more modifiers and hit harder.
+  // Stages are separated by a SafeHaven checkpoint rest (partial heal, no aggro).
+  // Later stages roll more modifiers and hit harder.
   "stages": [
     {
       "name": "Upper Halls",

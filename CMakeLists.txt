@@ -59,8 +59,13 @@ add_executable(game
 	src/game/systems/network_system.cpp
 	src/game/systems/editor_system.cpp
 	src/game/world/world_gen.cpp
+	src/game/world/building_panels.cpp
+	src/game/world/panel_build.cpp
 	src/game/dungeon/dungeon_gen.cpp
 	src/game/dungeon/dungeon_data.cpp
+	src/game/dungeon/dungeon_props.cpp
+	src/game/dungeon/dungeon_events.cpp
+	src/game/dungeon/dungeon_mask.cpp
 	src/game/dungeon/dungeon_session.cpp
 	${rlimgui_SOURCE_DIR}/rlImGui.cpp
 	${imgui_SOURCE_DIR}/imgui.cpp
@@ -114,7 +119,7 @@ else()
 		$<TARGET_FILE_DIR:game>/libsteam_api.so)
 endif()
 
-# steam_appid.txt (480 = Spacewar test app) — lets you run without a Steam client
+# steam_appid.txt (480 = Spacewar test app)  Elets you run without a Steam client
 add_custom_command(TARGET game POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different
 	${CMAKE_SOURCE_DIR}/steam_appid.txt

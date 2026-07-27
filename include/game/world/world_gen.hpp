@@ -11,6 +11,10 @@ void InstallHeightModifier();
 void InitWater();
 void ShutdownWater();
 
+// Generate shared procedural building panel meshes. Call after window init / before close.
+void InitBuildingPanels();
+void ShutdownBuildingPanels();
+
 // Editor: toggle lake/river mesh draw (landmarks still draw).
 void SetDrawWaterEnabled(bool enabled);
 bool GetDrawWaterEnabled();

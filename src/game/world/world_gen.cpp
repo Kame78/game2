@@ -1,4 +1,6 @@
 #include "game/world/world_gen.hpp"
+#include "game/world/building_panels.hpp"
+#include "game/world/panel_build.hpp"
 #include "game/world/landmarks.hpp"
 #include "engine/math/noise.hpp"
 #include "engine/math/hydrology.hpp"
@@ -90,6 +92,34 @@ void InstallHeightModifier() {
     engine::math::SetHeightModifier(applyLandmarks);
 }
 
+void InitBuildingPanels() {
+    building_panels::Init();
+
+    // Keep grass from baking through foundation Floor tiles (and a small edge pad).
+    engine::terrain::chunks::ClearGrassExclusions();
+    const float G = building_panels::Grid();
+    const float pad = 0.4f;
+    for (size_t i = 0; i < LANDMARK_COUNT; ++i) {
+        const Landmark& lm = LANDMARKS[i];
+        if (lm.type != LandmarkType::Church) continue;
+        // Matches drawChurch: 6 x 10 bays = 24 x 40 m
+        const float halfX = 6.0f * G * 0.5f;
+        const float halfZ = 10.0f * G * 0.5f;
+        engine::terrain::chunks::AddGrassExclusionRect(
+            lm.center.x - halfX - pad,
+            lm.center.z - halfZ - pad,
+            lm.center.x + halfX + pad,
+            lm.center.z + halfZ + pad);
+    }
+
+    panel_build::Init(); // loads placements + adds floor grass exclusions
+}
+
+void ShutdownBuildingPanels() {
+    panel_build::Shutdown();
+    building_panels::Shutdown();
+}
+
 // ---------------------------------------------------------------------------
 // Blockout drawing  Eone function per landmark type. All primitives, no textures.
 // Everything is drawn on the main thread inside BeginMode3D/EndMode3D.
@@ -114,49 +144,145 @@ static float hashUnit(int seedTag, int gx, int gz) {
 }
 
 // ---------------- Church + graveyard ----------------
+// Footprint on the 4 m panel grid: 6 bays wide (X) x 10 bays long (Z) = 24 x 40 m.
 static void drawChurch(const Landmark& lm) {
+    using namespace building_panels;
+    const float G  = Grid();
+    const float WH = WallHeight();
+
     float baseY = lm.flatHeight;
     Vector3 c   = {lm.center.x, baseY, lm.center.z};
 
-    // Church footprint: 24 x 40 (X x Z). Open "colonnade" style so first-person walks through easily.
-    const float lenX = 24.0f, lenZ = 40.0f;
+    const int baysX = 6;
+    const int baysZ = 10;
+    const float lenX = baysX * G;
+    const float lenZ = baysZ * G;
+    const float halfX = lenX * 0.5f;
+    const float halfZ = lenZ * 0.5f;
 
-    // Floor slab
-    DrawCube({c.x, baseY + 0.25f, c.z}, lenX, 0.5f, lenZ, COLOR_STONE);
-
-    // Four corner pillars
-    for (int sx = -1; sx <= 1; sx += 2) {
-        for (int sz = -1; sz <= 1; sz += 2) {
-            Vector3 p = {c.x + sx * (lenX * 0.5f - 1.5f), baseY + 6.0f,
-                         c.z + sz * (lenZ * 0.5f - 1.5f)};
-            DrawCube(p, 2.0f, 12.0f, 2.0f, COLOR_STONE);
+    // Floors — tiled Floor panels (floor-center origin)
+    for (int ix = 0; ix < baysX; ++ix) {
+        for (int iz = 0; iz < baysZ; ++iz) {
+            float px = c.x - halfX + (ix + 0.5f) * G;
+            float pz = c.z - halfZ + (iz + 0.5f) * G;
+            Draw(Piece::Floor, {px, baseY, pz}, 0.0f, Style::Stone);
         }
     }
 
-    // Long-side colonnade pillars (thinner, evenly spaced)
-    for (int i = -3; i <= 3; ++i) {
-        if (i == 0) continue;  // leave center open (main aisle "window")
-        float pz = c.z + i * (lenZ * 0.5f - 2.0f) / 3.5f;
-        DrawCube({c.x - lenX * 0.5f + 0.5f, baseY + 5.0f, pz}, 1.0f, 10.0f, 1.5f, COLOR_STONE);
-        DrawCube({c.x + lenX * 0.5f - 0.5f, baseY + 5.0f, pz}, 1.0f, 10.0f, 1.5f, COLOR_STONE);
+    // Long walls (east/west) — wall-center bottom on footprint edges; openings for colonnade feel
+    for (int iz = 0; iz < baysZ; ++iz) {
+        float pz = c.z - halfZ + (iz + 0.5f) * G;
+        Piece west = (iz == baysZ / 2) ? Piece::WallDoor
+                     : ((iz % 2 == 0) ? Piece::WallWindow : Piece::Wall);
+        Piece east = west;
+        // West wall faces inward (+X): yaw 90 → local +Z of panel points world +X
+        Draw(west, {c.x - halfX, baseY, pz}, 90.0f, Style::Stone);
+        // East wall faces inward (-X): yaw -90 / 270
+        Draw(east, {c.x + halfX, baseY, pz}, -90.0f, Style::Stone);
+        // Second story wall run for nave height
+        Draw(Piece::Wall, {c.x - halfX, baseY + WH, pz}, 90.0f, Style::Stone);
+        Draw(Piece::Wall, {c.x + halfX, baseY + WH, pz}, -90.0f, Style::Stone);
     }
 
-    // Peaked roof (single big slab tilted; simple blockout)
-    DrawCube({c.x, baseY + 13.0f, c.z}, lenX + 2.0f, 1.5f, lenZ + 2.0f, COLOR_ROOF);
-    // Roof ridge
-    DrawCube({c.x, baseY + 15.0f, c.z}, 2.0f, 3.0f, lenZ + 2.0f, COLOR_ROOF);
+    // South end (altar) — solid with windows; north end has main door
+    for (int ix = 0; ix < baysX; ++ix) {
+        float px = c.x - halfX + (ix + 0.5f) * G;
+        Piece south = (ix == 2 || ix == 3) ? Piece::WallWindow : Piece::Wall;
+        Piece north = (ix == 2 || ix == 3) ? Piece::WallDoor : Piece::WallWindow;
+        // South wall faces +Z (into nave): yaw 0
+        Draw(south, {px, baseY, c.z - halfZ}, 0.0f, Style::Stone);
+        Draw(Piece::Wall, {px, baseY + WH, c.z - halfZ}, 0.0f, Style::Stone);
+        // North wall faces -Z (into nave): yaw 180
+        Draw(north, {px, baseY, c.z + halfZ}, 180.0f, Style::Stone);
+        Draw(Piece::Wall, {px, baseY + WH, c.z + halfZ}, 180.0f, Style::Stone);
+    }
 
-    // Bell tower at north end
-    Vector3 tower = {c.x, baseY + 12.0f, c.z + lenZ * 0.5f - 3.0f};
-    DrawCube(tower, 8.0f, 24.0f, 8.0f, COLOR_STONE);
-    DrawCube({tower.x, tower.y + 14.0f, tower.z}, 6.0f, 4.0f, 6.0f, COLOR_ROOF);
+    // Corner pillars (two stories)
+    for (int sx = -1; sx <= 1; sx += 2) {
+        for (int sz = -1; sz <= 1; sz += 2) {
+            Vector3 p = {c.x + sx * (halfX - 0.3f), baseY, c.z + sz * (halfZ - 0.3f)};
+            Draw(Piece::Pillar, p, 0.0f, Style::Stone);
+            Draw(Piece::Pillar, {p.x, baseY + WH, p.z}, 0.0f, Style::Stone);
+        }
+    }
 
-    // Cross on top of tower
-    DrawCube({tower.x, tower.y + 18.5f, tower.z}, 0.4f, 4.0f, 0.4f, COLOR_GOLD);
-    DrawCube({tower.x, tower.y + 20.0f, tower.z}, 2.5f, 0.4f, 0.4f, COLOR_GOLD);
+    // Long-side colonnade pillars along nave
+    for (int i = 1; i < baysZ; ++i) {
+        if (i == baysZ / 2) continue;
+        float pz = c.z - halfZ + i * G;
+        Draw(Piece::Pillar, {c.x - halfX + 0.3f, baseY, pz}, 0.0f, Style::Stone);
+        Draw(Piece::Pillar, {c.x + halfX - 0.3f, baseY, pz}, 0.0f, Style::Stone);
+        Draw(Piece::Pillar, {c.x - halfX + 0.3f, baseY + WH, pz}, 0.0f, Style::Stone);
+        Draw(Piece::Pillar, {c.x + halfX - 0.3f, baseY + WH, pz}, 0.0f, Style::Stone);
+    }
+
+    // Peaked roof: cascade RoofSlope bays so each continues the previous rise to the ridge.
+    // RoofSlope origin = bay center; eave on local -Z, ridge on local +Z.
+    const float eaveY = baseY + WH * 2.0f;
+    const float rise  = RoofRise();
+    const int halfBaysX = baysX / 2;
+    for (int iz = 0; iz < baysZ; ++iz) {
+        float pz = c.z - halfZ + (iz + 0.5f) * G;
+        // West half: eave at west wall, slopes toward +X (yaw +90 → local +Z → world +X)
+        for (int ix = 0; ix < halfBaysX; ++ix) {
+            float px = c.x - halfX + (ix + 0.5f) * G;
+            float py = eaveY + (float)ix * rise;
+            Draw(Piece::RoofSlope, {px, py, pz}, 90.0f, Style::RoofDark);
+        }
+        // East half: eave at east wall, slopes toward -X (yaw -90 → local +Z → world -X)
+        for (int ix = 0; ix < halfBaysX; ++ix) {
+            float px = c.x + halfX - (ix + 0.5f) * G;
+            float py = eaveY + (float)ix * rise;
+            Draw(Piece::RoofSlope, {px, py, pz}, -90.0f, Style::RoofDark);
+        }
+    }
+    // Ridge beam where the two slopes meet
+    const float ridgeY = eaveY + (float)halfBaysX * rise;
+    DrawCube({c.x, ridgeY + 0.15f, c.z}, 0.45f, 0.35f, lenZ + 0.5f, COLOR_ROOF);
+
+    // End-wall gables: modular cascade (Gable + GableRamp) matching RoofSlope bays.
+    auto drawGableRun = [&](float wallZ, float yaw, bool mirror) {
+        for (int ix = 0; ix < halfBaysX; ++ix) {
+            float px = mirror ? (c.x + halfX - (ix + 0.5f) * G)
+                              : (c.x - halfX + (ix + 0.5f) * G);
+            if (ix == 0) {
+                Draw(Piece::Gable, {px, eaveY, wallZ}, yaw, Style::Stone, WHITE, mirror);
+            } else {
+                float py = eaveY + (float)(ix - 1) * rise;
+                Draw(Piece::GableRamp, {px, py, wallZ}, yaw, Style::Stone, WHITE, mirror);
+            }
+        }
+    };
+    // South (yaw 0): west rake high=+X, east rake mirrored
+    drawGableRun(c.z - halfZ, 0.0f, false);
+    drawGableRun(c.z - halfZ, 0.0f, true);
+    // North (yaw 180): facing flips X, so west uses mirror and east does not
+    drawGableRun(c.z + halfZ, 180.0f, true);
+    drawGableRun(c.z + halfZ, 180.0f, false);
+
+    // Bell tower at north end — panel box + pyramid cap + cross
+    const float towerHalf = G;
+    Vector3 towerBase = {c.x, baseY, c.z + halfZ - G};
+    for (int story = 0; story < 4; ++story) {
+        float y = baseY + story * WH;
+        Draw(Piece::Wall, {towerBase.x - towerHalf, y, towerBase.z}, 90.0f, Style::Stone);
+        Draw(Piece::Wall, {towerBase.x + towerHalf, y, towerBase.z}, -90.0f, Style::Stone);
+        Draw(Piece::Wall, {towerBase.x, y, towerBase.z - towerHalf}, 0.0f, Style::Stone);
+        Draw(Piece::WallWindow, {towerBase.x, y, towerBase.z + towerHalf}, 180.0f, Style::Stone);
+        for (int sx = -1; sx <= 1; sx += 2)
+            for (int sz = -1; sz <= 1; sz += 2)
+                Draw(Piece::Pillar,
+                     {towerBase.x + sx * (towerHalf - 0.2f), y, towerBase.z + sz * (towerHalf - 0.2f)},
+                     0.0f, Style::Stone);
+    }
+    const float towerTop = baseY + 4.0f * WH;
+    Draw(Piece::RoofPyramid, {towerBase.x, towerTop, towerBase.z}, 0.0f, Style::RoofDark);
+    const float peakY = towerTop + RoofPyramidHeight();
+    DrawCube({towerBase.x, peakY + 1.6f, towerBase.z}, 0.35f, 3.2f, 0.35f, COLOR_GOLD);
+    DrawCube({towerBase.x, peakY + 2.6f, towerBase.z}, 2.2f, 0.35f, 0.35f, COLOR_GOLD);
 
     // Altar block at south end
-    DrawCube({c.x, baseY + 1.0f, c.z - lenZ * 0.5f + 3.0f}, 4.0f, 1.5f, 2.0f, COLOR_STONE_DARK);
+    DrawCube({c.x, baseY + 1.0f, c.z - halfZ + 3.0f}, 4.0f, 1.5f, 2.0f, COLOR_STONE_DARK);
 
     // ------- Graveyard: deterministic scatter of gravestones around the church -------
     // Grid of cells around the church footprint, one gravestone per cell (with jitter).
@@ -1335,6 +1461,8 @@ void DrawLandmarks(const Camera3D& cam) {
             case LandmarkType::LichCastle:   drawLichCastle(lm);   break;
         }
     }
+
+    panel_build::Draw();
 }
 
 }  // namespace game::world

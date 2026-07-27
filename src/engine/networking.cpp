@@ -12,6 +12,7 @@ namespace engine::networking {
     static constexpr int CHANNEL_ENEMIES = 1;
     static constexpr int CHANNEL_DAMAGE = 2;
     static constexpr int CHANNEL_FIREBALL = 3;
+    static constexpr int CHANNEL_DUNGEON = 4;
 
     #pragma pack(push, 1)
     struct WirePacket {
@@ -35,6 +36,14 @@ namespace engine::networking {
         float dirX, dirY, dirZ;
         float speed;
     };
+    struct WireDungeon {
+        uint8_t  type;   // 5 = dungeon sync
+        uint8_t  op;     // DungeonOp
+        uint32_t seed;
+        uint8_t  theme;
+        uint8_t  stage;
+        uint8_t  pad;
+    };
     #pragma pack(pop)
 
     static bool steamInitialized = false;
@@ -47,6 +56,7 @@ namespace engine::networking {
     static bool newSnapshotReady = false;
     static std::vector<DamageEvent> pendingDamage;
     static std::vector<RemoteFireball> pendingFireballs;
+    static std::vector<DungeonSyncMsg> pendingDungeon;
 
     // Username + lobby browser state
     static std::string g_username;
@@ -265,6 +275,24 @@ namespace engine::networking {
             }
             fMsgs[i]->Release();
         }
+
+        // Receive dungeon session sync (clients apply host authority)
+        SteamNetworkingMessage_t* dnMsgs[8];
+        int dnReceived = SteamNetworkingMessages()->ReceiveMessagesOnChannel(CHANNEL_DUNGEON, dnMsgs, 8);
+        for (int i = 0; i < dnReceived; i++) {
+            if (dnMsgs[i]->GetSize() == sizeof(WireDungeon)) {
+                WireDungeon* d = (WireDungeon*)dnMsgs[i]->GetData();
+                if (d->type == 5) {
+                    DungeonSyncMsg msg;
+                    msg.op    = static_cast<DungeonOp>(d->op);
+                    msg.seed  = d->seed;
+                    msg.theme = d->theme;
+                    msg.stage = d->stage;
+                    pendingDungeon.push_back(msg);
+                }
+            }
+            dnMsgs[i]->Release();
+        }
     }
 
     void CreateLobby() {
@@ -453,6 +481,37 @@ namespace engine::networking {
         if (pendingFireballs.empty()) return false;
         out = pendingFireballs;
         pendingFireballs.clear();
+        return true;
+    }
+
+    void BroadcastDungeonSync(const DungeonSyncMsg& msg) {
+        if (!steamInitialized || lobbyState != LobbyState::InLobby || !isHostFlag) return;
+
+        WireDungeon pkt = {};
+        pkt.type  = 5;
+        pkt.op    = static_cast<uint8_t>(msg.op);
+        pkt.seed  = msg.seed;
+        pkt.theme = msg.theme;
+        pkt.stage = msg.stage;
+        pkt.pad   = 0;
+
+        int memberCount = SteamMatchmaking()->GetNumLobbyMembers(currentLobby);
+        CSteamID me = SteamUser()->GetSteamID();
+        for (int i = 0; i < memberCount; i++) {
+            CSteamID member = SteamMatchmaking()->GetLobbyMemberByIndex(currentLobby, i);
+            if (member == me) continue;
+            SteamNetworkingIdentity id = {};
+            id.SetSteamID(member);
+            SteamNetworkingMessages()->SendMessageToUser(
+                id, &pkt, sizeof(pkt),
+                k_nSteamNetworkingSend_Reliable, CHANNEL_DUNGEON);
+        }
+    }
+
+    bool GetPendingDungeonSync(DungeonSyncMsg& out) {
+        if (pendingDungeon.empty()) return false;
+        out = pendingDungeon.front();
+        pendingDungeon.erase(pendingDungeon.begin());
         return true;
     }
 }

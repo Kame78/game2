@@ -74,6 +74,24 @@ namespace engine::networking {
     void SendDamageToHost(uint32_t netId, float damage);
     void GetPendingDamage(std::vector<DamageEvent>& out);
 
+    // Dungeon session sync (host-authoritative seed / stage / enter-exit)
+    enum class DungeonOp : uint8_t {
+        Enter = 1,
+        Stage = 2,         // rebuild at stage index (after intermission)
+        Exit  = 3,
+        Intermission = 4,  // safe-haven rest; stage = next stage index
+    };
+
+    struct DungeonSyncMsg {
+        DungeonOp op    = DungeonOp::Enter;
+        uint32_t  seed  = 0;
+        uint8_t   theme = 0;
+        uint8_t   stage = 0;
+    };
+
+    void BroadcastDungeonSync(const DungeonSyncMsg& msg);
+    bool GetPendingDungeonSync(DungeonSyncMsg& out);
+
     // -------- Username (used in lobby browser and player nametags) --------
     void SetUsername(const std::string& name);
     const std::string& GetUsername();

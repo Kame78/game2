@@ -21,10 +21,10 @@ namespace chunks {
     // Call inside BeginMode3D / EndMode3D.
     void Draw();
 
-    // Instanced Quaternius grass (baked on terrain LOD0–1). Call after Draw().
+    // Instanced Quaternius grass (baked within draw distance). Call after Draw().
     void DrawGrass(Vector3 viewPos);
 
-    // Instanced Quaternius trees / undergrowth (baked on terrain LOD0–1). Call after DrawGrass().
+    // Instanced Quaternius trees / undergrowth (baked within draw distance). Call after DrawGrass().
     void DrawTrees(Vector3 viewPos);
 
     // Optional debug overlays (chunk AABB wires). Call inside BeginMode3D after Draw().
@@ -135,6 +135,11 @@ namespace chunks {
     // Ground sink in centimeters. Rebuild to apply.
     void SetGrassSinkCm(float cm);
     float GetGrassSinkCm();
+
+    // Axis-aligned XZ rects where grass will not bake (building foundations, etc.).
+    // Register before chunks::Init or call ReloadAround after changing.
+    void ClearGrassExclusions();
+    void AddGrassExclusionRect(float minX, float minZ, float maxX, float maxZ);
 
     // Trees / undergrowth — bake knobs need ReloadAround; draw distance + enable are live.
     void SetTreesEnabled(bool enabled);

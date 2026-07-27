@@ -34,17 +34,17 @@ struct WorldConfig {
     static constexpr float CHUNK_SIZE        = 128.0f;
     // 2^n+1 so LOD edge verts nest exactly (33⊃17⊃9⊃5⊃3) and hide cracks
     static constexpr int   CHUNK_RESOLUTION  = 33;   // default/LOD0 resolution
-    static constexpr int   LOAD_RADIUS       = 32;   // 65x65 ≈ 4225 chunks (~4.1 km)
-    static constexpr int   UNLOAD_RADIUS     = 34;   // hysteresis unload (~4.4 km)
+    // Was 32 (≈4225 chunks / ~4 km) — flooded VRAM uploads and hitching while walking.
+    static constexpr int   LOAD_RADIUS       = 12;   // 25x25 ≈ 625 chunks (~1.5 km)
+    static constexpr int   UNLOAD_RADIUS     = 14;   // hysteresis unload (~1.8 km)
     static constexpr float WORLD_HALF_EXTENT = 3000.0f;  // ±3 km from origin
     // N/S containment mountains use an arced front (see NsAlpineDepth), not a flat |z| wall.
 
     // Multi-level terrain LOD — near detail, far cheap meshes
     static constexpr int LOD0_RADIUS = 3;   // 0..3  (~384m)  -> 33x33
     static constexpr int LOD1_RADIUS = 7;   // 4..7  (~896m)  -> 17x17
-    static constexpr int LOD2_RADIUS = 14;  // 8..14 (~1.8km) -> 9x9 (extended for smoother lakes)
-    static constexpr int LOD3_RADIUS = 20;  // 15..20 (~2.5km) -> 5x5
-                                           // 21..32 (~4.1km) -> 5x5 (LOD4, same res — avoids tiny 3x3 facets)
+    static constexpr int LOD2_RADIUS = 12;  // 8..12 (~1.5km) -> 9x9
+    static constexpr int LOD3_RADIUS = 14;  // 13..14 (unload ring) -> 5x5
 
     static inline int GetLODForDistance(int dist) {
         if (dist <= LOD0_RADIUS) return 0;

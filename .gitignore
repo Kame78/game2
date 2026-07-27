@@ -8,6 +8,7 @@ compile_commands.json
 .vscode/
 vendor/
 editor_dump.txt
+editor_defects.jsonl
 
 # ANTIGRAVITY: Ignoring the .agents customization folder
 .agents/

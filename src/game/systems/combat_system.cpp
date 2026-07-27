@@ -2,6 +2,8 @@
 #include "game/factories/entity_factory.hpp"
 #include "game/spells.hpp"
 #include "game/sfx.hpp"
+#include "game/dungeon/dungeon.hpp"
+#include "game/world/panel_build.hpp"
 #include "engine/input.hpp"
 #include "engine/math/noise.hpp"
 #include "raymath.h"
@@ -408,7 +410,8 @@ namespace game::systems {
             }
         }
 
-        if (engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
+            !game::world::panel_build::IsEnabled()) {
             if (g_melee.phase == MeleePhase::Idle) {
                 if (g_melee.comboWindow > 0.0f && g_melee.dir == 0) StartSwing(1);
                 else StartSwing(0);
@@ -420,7 +423,8 @@ namespace game::systems {
             }
         }
 
-        if (engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        if (engine::input::IsCursorLocked() && IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) &&
+            !game::world::panel_build::IsEnabled()) {
             if (reg.spellCasters.Has(player)) {
                 auto& caster = reg.spellCasters.Get(player);
                 SpellId list[16];
@@ -451,7 +455,7 @@ namespace game::systems {
             t.position = Vector3Add(t.position, Vector3Scale(p.direction, p.speed * dt));
 
             bool hitTerrain = false;
-            float groundY = engine::math::WorldHeight(t.position.x, t.position.z);
+            float groundY = game::dungeon::GroundY(t.position.x, t.position.z);
             if (t.position.y <= groundY + p.radius) {
                 hitTerrain = true;
             }

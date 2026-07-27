@@ -71,8 +71,63 @@ namespace game::systems {
                 transform.position.z += moveDir.z * g_playerMoveSpeed * dt;
             }
 
-            // --- Cube collision against all renderable entities ---
+            // --- Collision ---
+            // In dungeons, walls live in a lightweight solid list (not ECS renderables).
+            // Overworld still uses the renderable AABB pass for props/landmarks.
             if (!input.noClip) {
+                if (game::dungeon::IsActive()) {
+                    game::dungeon::ResolvePlayerCollision(
+                        transform.position, PLAYER_RADIUS, EYE_HEIGHT);
+                    // Still collide with living enemies / summons.
+                    for (size_t j = 0; j < reg.renderables.data.size(); j++) {
+                        engine::ecs::Entity other = {reg.renderables.indexToEntity[j]};
+                        if (other == e) continue;
+                        if (!reg.transforms.Has(other)) continue;
+                        if (!reg.enemyAIs.Has(other) && !reg.summons.Has(other)) continue;
+
+                        auto& otherT = reg.transforms.Get(other);
+                        auto& otherR = reg.renderables.data[j];
+
+                        float halfW = otherR.width  * 0.5f;
+                        float halfH = otherR.height * 0.5f;
+                        float halfD = otherR.depth  * 0.5f;
+
+                        float pMinX = transform.position.x - PLAYER_RADIUS;
+                        float pMaxX = transform.position.x + PLAYER_RADIUS;
+                        float pMinY = transform.position.y;
+                        float pMaxY = transform.position.y + EYE_HEIGHT;
+                        float pMinZ = transform.position.z - PLAYER_RADIUS;
+                        float pMaxZ = transform.position.z + PLAYER_RADIUS;
+
+                        float oMinX = otherT.position.x - halfW;
+                        float oMaxX = otherT.position.x + halfW;
+                        float oMinY = otherT.position.y - halfH;
+                        float oMaxY = otherT.position.y + halfH;
+                        float oMinZ = otherT.position.z - halfD;
+                        float oMaxZ = otherT.position.z + halfD;
+
+                        if (pMaxX > oMinX && pMinX < oMaxX &&
+                            pMaxY > oMinY && pMinY < oMaxY &&
+                            pMaxZ > oMinZ && pMinZ < oMaxZ) {
+
+                            float pushL = pMaxX - oMinX;
+                            float pushR = oMaxX - pMinX;
+                            float pushB = pMaxZ - oMinZ;
+                            float pushF = oMaxZ - pMinZ;
+
+                            float minPush = pushL;
+                            int axis = 0;
+                            if (pushR < minPush) { minPush = pushR; axis = 1; }
+                            if (pushB < minPush) { minPush = pushB; axis = 2; }
+                            if (pushF < minPush) { minPush = pushF; axis = 3; }
+
+                            if      (axis == 0) transform.position.x -= minPush;
+                            else if (axis == 1) transform.position.x += minPush;
+                            else if (axis == 2) transform.position.z -= minPush;
+                            else                transform.position.z += minPush;
+                        }
+                    }
+                } else {
                 for (size_t j = 0; j < reg.renderables.data.size(); j++) {
                     engine::ecs::Entity other = {reg.renderables.indexToEntity[j]};
                     if (other == e) continue;
@@ -119,6 +174,7 @@ namespace game::systems {
                         else if (axis == 2) transform.position.z -= minPush;
                         else                transform.position.z += minPush;
                     }
+                }
                 }
             } // end !input.noClip
 

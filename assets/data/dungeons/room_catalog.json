@@ -1,0 +1,19 @@
+{
+  "rooms": [
+    { "id": "entrance", "type": "Entrance", "tags": ["start", "safe"] },
+    { "id": "combat_pack", "type": "Combat", "tags": ["fight"] },
+    { "id": "elite_arena", "type": "Elite", "tags": ["fight", "elite"] },
+    { "id": "safe_haven", "type": "SafeHaven", "tags": ["rest", "heal"] },
+    { "id": "treasure", "type": "Treasure", "tags": ["reward"] },
+    { "id": "secret", "type": "Secret", "tags": ["hidden", "reward"] },
+    { "id": "vault", "type": "Vault", "tags": ["locked", "reward"] },
+    { "id": "boss", "type": "Boss", "tags": ["fight", "boss"] },
+    { "id": "extract", "type": "Extract", "tags": ["exit"] }
+  ],
+  "transitions": [
+    { "id": "corridor", "type": "Corridor" },
+    { "id": "door", "type": "Door" },
+    { "id": "locked_gate", "type": "LockedGate" },
+    { "id": "hidden", "type": "HiddenPassage" }
+  ]
+}
