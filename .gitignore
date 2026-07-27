@@ -6,9 +6,19 @@ cmake-build-*/
 .cache/
 compile_commands.json
 .vscode/
+.cursor/
 vendor/
 editor_dump.txt
 editor_defects.jsonl
+imgui.ini
+build_out.txt
+*.pdb
+*.ilk
+*.exp
+enemy_anim_diag.txt
+
+# Local asset import / conversion scratch (source zips, blends, extracts)
+/agent_import/
 
 # ANTIGRAVITY: Ignoring the .agents customization folder
 .agents/
